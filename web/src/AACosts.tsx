@@ -232,7 +232,7 @@ export default function AACosts({ navigation, baseData, theme, lang }: AACostsPr
   const adapted = useMemo(() => adaptAAChart(visible, scope, baseData), [visible, scope, baseData]);
   const state: State = { ...chartState, view: "pareto", board: "aa_combined", configuration: "all", lang };
   const chartData = useMemo(() => ({ ...baseData, boards: { ...baseData.boards, aa_combined: {
-    name: "AA + подписки", metric: "Artificial Analysis Intelligence Index", url: "https://artificialanalysis.ai/#price-and-cost", snapshot: String(data?.quota_scenario.metadata?.aa_retrieved_at || "").slice(0, 10),
+    name: "AA Task Cost", metric: "Artificial Analysis Intelligence Index", url: "https://artificialanalysis.ai/#price-and-cost", snapshot: String(data?.quota_scenario.metadata?.aa_retrieved_at || "").slice(0, 10),
   } } }), [baseData, data]);
   const plotted = groups(adapted.rows), frontier = pareto(plotted);
   const frontIds = new Set(frontier.flatMap(group => group.rows.map(row => row.point.id)));

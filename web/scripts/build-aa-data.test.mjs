@@ -14,7 +14,7 @@ const reference = createAaData(aa, pricing, rates, audit, weighting);
 test('Основная вкладка получает обычные подписки, метод переноса и исходные числа замера', async () => {
   const empirical = await read('pricing/empirical-evidence.json');
   const data = createAaData(aa, pricing, rates, audit, weighting, empirical);
-  assert.equal(data.quota_scenario.metadata.included_plans, 50);
+  assert.equal(data.quota_scenario.metadata.included_plans, 41);
   assert.equal(data.metadata.row_count, data.quota_scenario.rows.length);
   const luna = data.quota_scenario.rows.find(row => row.pricing_id === 'chatgpt_plus::gpt-5.6-luna');
   assert.equal(luna.method, 'empirical_api_calibration');
@@ -36,7 +36,7 @@ for (const [name, mixture] of [['без смеси RAP', undefined], ['с нев
     else changed.standard_token_mix = mixture;
     const actual = createAaData(aa, changed, rates, audit, weighting);
     assert.equal(actual.quota_scenario.metadata.status, 'partial');
-    assert.equal(actual.quota_scenario.metadata.included_plans, 36);
+    assert.equal(actual.quota_scenario.metadata.included_plans, 27);
     assert.deepEqual(actual.quota_scenario, reference.quota_scenario);
     assert.deepEqual(actual.api_estimate, reference.api_estimate);
     assert.equal('token_scenario' in actual, false);

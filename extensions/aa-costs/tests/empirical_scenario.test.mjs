@@ -255,21 +255,25 @@ test('Sol и Devin используют категории практическ�
   assert.match(cursor.notes.join(' '), /внутренних единицах Cursor/);
 });
 
-test('Реальный снимок: 36 native + 14 калибровок, остальные 15 тарифов видны без оценки', async () => {
+test('Реальный снимок: 27 native + 14 калибровок, остальные 24 тарифа видны без оценки', async () => {
   const data = await snapshot();
   const result = calculate(data);
   assert.equal(result.metadata.status, 'ok');
   assert.equal(result.metadata.empirical_status, 'ok');
   assert.equal(result.metadata.native_rates_status, 'ok');
-  assert.equal(result.metadata.included_plans, 50);
+  assert.equal(result.metadata.included_plans, 41);
   assert.equal(result.plans.length, 65);
   assert.equal(result.metadata.empirical_plans, 14);
   assert.equal(result.metadata.empirical_api_calibration_plans, 14);
   assert.equal(result.metadata.empirical_token_proxy_plans, 0);
-  assert.equal(result.excluded.length, 15);
+  assert.equal(result.excluded.length, 24);
   assert.equal(result.rows.length, 231);
   assert.ok(result.rows.filter(row => row.pricing_id === 'supergrok_lite::grok-4.6').length > 0);
-  assert.equal(result.plans.filter(plan => plan.included && !plan.method.startsWith('empirical_')).length, 36);
+  assert.equal(result.plans.filter(plan => plan.included && !plan.method.startsWith('empirical_')).length, 27);
+  const oldGlm = result.rows.filter(row => row.plan_id?.startsWith('glm_coding_') && row.plan_id.includes('_old_'));
+  assert.equal(oldGlm.length, 9);
+  assert.ok(oldGlm.every(row => row.task.cost_usd === null && row.suite.cost_usd === null && row.monthly_quota === null));
+  assert.ok(oldGlm.every(row => row.notes.join(' ').includes('V2') && row.notes.join(' ').includes('V3')));
 });
 
 test('Реальный снимок: девять обычных OpenAI и пять Anthropic сохранены со всеми точными AA effort', async () => {
@@ -315,18 +319,18 @@ test('Реальный снимок: расширение не меняет ни
   const baseline = buildQuotaScenario(data.aa, data.pricing, data.rates);
   const result = calculate(data);
   assert.deepEqual(result.rows.filter(row => row.kind === 'api'), baseline.rows.filter(row => row.kind === 'api'));
-  const nativeIds = new Set(data.rates.rows.map(row => row.id));
+  const nativeIds = new Set(data.rates.rows.filter(row => row.status !== 'unavailable').map(row => row.id));
   assert.deepEqual(result.rows.filter(row => nativeIds.has(row.pricing_id)), baseline.rows.filter(row => row.kind === 'subscription'));
   assert.deepEqual(data, before);
   assert.equal(new Set(result.rows.map(row => row.id)).size, result.rows.length);
 });
 
-test('Реальный снимок: устаревший эмпирический fingerprint оставляет все 36 native-пар', async () => {
+test('Реальный снимок: устаревший эмпирический fingerprint оставляет 27 доступных native-пар', async () => {
   const data = await snapshot();
   data.evidence.metadata.pricing_rows_sha256 = 'stale';
   const result = calculate(data);
   assert.equal(result.metadata.empirical_status, 'stale_or_invalid');
-  assert.equal(result.metadata.included_plans, 36);
+  assert.equal(result.metadata.included_plans, 27);
   assert.equal(result.rows.filter(row => row.kind === 'api').length, data.aa.rows.length);
   assert.equal(empiricalRows(result).length, 0);
 });

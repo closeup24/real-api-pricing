@@ -244,7 +244,7 @@ function Explorer({
 }) {
   // Дополнительный раздел участвует в ссылках, но не добавляет выдуманный бенчмарк в данные RAP.
   const routingData = useMemo(() => ({ ...data, boards: { ...data.boards,
-    [AA_COMBINED_BOARD]: { ...data.boards.aa_intelligence_index, name: "AA + подписки" },
+    [AA_COMBINED_BOARD]: { ...data.boards.aa_intelligence_index, name: "AA Task Cost" },
   } }), [data]);
   const initial = useMemo(() => {
     const parsed = restore(location.hash, routingData, localLanguage());
@@ -442,7 +442,7 @@ function Explorer({
       className={state.board === id ? "board-tab selected" : "board-tab"}
       aria-pressed={state.board === id} onClick={() => patch({ board: id })}
       title={id === AA_COMBINED_BOARD ? "Стоимость задач Artificial Analysis по API и квотам подписок" : undefined}>
-      {id === AA_COMBINED_BOARD ? "AA + подписки" : (zh ? boardZh : boardLabels)[id] || data.boards[id].name}
+      {id === AA_COMBINED_BOARD ? "AA Task Cost" : (zh ? boardZh : boardLabels)[id] || data.boards[id].name}
     </button>)}
   </div>;
   return (
@@ -1132,7 +1132,7 @@ function Explorer({
           <ArrowUpRight size={13} />
         </a>
         <a href={FORK} target="_blank" rel="noreferrer">
-          Код форка · AA + подписки
+          Код форка · AA Task Cost
           <ArrowUpRight size={13} />
         </a>
       </footer>

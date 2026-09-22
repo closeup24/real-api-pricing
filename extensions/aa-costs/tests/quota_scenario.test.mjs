@@ -2,6 +2,7 @@ import test from 'node:test';
 import assert from 'node:assert/strict';
 import { readFile } from 'node:fs/promises';
 import { buildQuotaScenario, pricingRowsSha256 } from '../scripts/quota_scenario.mjs';
+import { buildExpandedQuotaScenario } from '../scripts/empirical_scenario.mjs';
 
 const close = (actual, expected) => assert.ok(Math.abs(actual - expected) < 1e-10, `${actual} != ${expected}`);
 
@@ -198,6 +199,45 @@ test('GLM peak/offpeak: тот же пул и вдвое меньшие став
   assert.equal(rows[0].task.status, 'approximate');
 });
 
+test('GLM V2: девять старых тарифов сохраняются без цены, подтверждённые квоты V3 не меняются', async () => {
+  const [aa, pricing, rates] = await Promise.all(['aa/aa.json', 'pricing/pricing.json', 'pricing/quota-rates.json'].map(async path => JSON.parse(await readFile(new URL(`../data/${path}`, import.meta.url), 'utf8'))));
+  const oldRates = rates.rows.filter(rate => rate.id.includes('_old_'));
+  const newRates = rates.rows.filter(rate => rate.id.includes('_new_'));
+  assert.equal(oldRates.length, 9);
+  assert.equal(newRates.length, 9);
+  const result = buildQuotaScenario(aa, pricing, rates);
+  for (const rate of oldRates) {
+    assert.equal(rate.status, 'unavailable');
+    assert.equal(rate.monthly_quota, null);
+    assert.equal(rate.original_quota, null);
+    assert.ok(Object.values(rate.component_rates).every(value => value === null));
+    assert.match(rate.unavailable_reason_ru, /V2.*V3/);
+    assert.equal(result.plans.find(plan => plan.id === rate.id).included, false);
+    assert.match(result.excluded.find(plan => plan.id === rate.id).reasons.join(' '), /V2.*V3/);
+    assert.ok(!result.rows.some(row => row.pricing_id === rate.id));
+  }
+  for (const rate of newRates) {
+    const tier = rate.id.match(/glm_coding_(lite|pro|max)_/)[1];
+    assert.equal(rate.monthly_quota, {lite: 40000, pro: 240000, max: 560000}[tier]);
+    assert.equal(rate.status, 'assumed');
+    const row = result.rows.find(item => item.pricing_id === rate.id);
+    assert.ok(row.task.cost_usd > 0);
+    const expectedQuota = Object.entries(row.task.component_tokens).reduce((sum, [key, tokens]) => sum + tokens * rate.component_rates[key] / 1e6, 0);
+    close(row.task.cost_usd, rate.monthly_usd * expectedQuota / rate.monthly_quota);
+  }
+  const retained = buildExpandedQuotaScenario(aa, pricing, rates, null).rows.filter(row => row.pricing_id?.includes('_old_'));
+  assert.equal(retained.length, oldRates.length * aa.rows.filter(row => row.model === 'glm-5.3-flash').length);
+  for (const row of retained) {
+    assert.equal(row.status, 'unavailable');
+    assert.equal(row.monthly_quota, null);
+    for (const scope of ['task', 'suite']) {
+      assert.equal(row[scope].cost_usd, null);
+      assert.equal(row[scope].units_per_month, null);
+      assert.equal(row[scope].units_per_100_usd, null);
+    }
+  }
+});
+
 test('Дубли ставок, чужая модель и несогласованная плата не проходят соединение', () => {
   const duplicate = fixture();
   duplicate.rates.rows.push(structuredClone(duplicate.rates.rows[0]));
@@ -229,7 +269,7 @@ test('Реальный снимок: каждый допущенный тари�
   assert.equal(result.metadata.status, 'ok');
   assert.equal(result.metadata.included_plans, rates.rows.filter(rate => ['documented', 'assumed'].includes(rate.status)).length);
   const subscriptionRows = result.rows.filter(row => row.kind === 'subscription');
-  assert.equal(subscriptionRows.length, rates.rows.reduce((count, rate) => count + aa.rows.filter(variant => variant.model === rate.model_id).length, 0));
+  assert.equal(subscriptionRows.length, rates.rows.filter(rate => ['documented', 'assumed'].includes(rate.status)).reduce((count, rate) => count + aa.rows.filter(variant => variant.model === rate.model_id).length, 0));
   for (const row of subscriptionRows) {
     const rate = rates.rows.find(rate => rate.id === row.pricing_id);
     assert.equal(row.model_id, rate.model_id);

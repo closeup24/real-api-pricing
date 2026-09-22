@@ -39,7 +39,11 @@ function validatePlan(plan, rate, guard) {
   if (guard.status !== 'ok') return reasons;
   if (!rate) return ['Для точного ID тарифа отсутствует описание квоты и её ставок.'];
   if (rate.model_id !== plan.model) reasons.push('Модель в описании квоты не совпадает с моделью тарифа.');
-  if (!['documented', 'assumed'].includes(rate.status)) reasons.push('Ставки расхода квоты недоступны или не подтверждены для расчёта.');
+  if (!['documented', 'assumed'].includes(rate.status)) {
+    const explanation = strings(rate.unavailable_reason_ru).filter(reason => typeof reason === 'string' && reason.trim());
+    reasons.push(...(explanation.length ? explanation : ['Ставки расхода квоты недоступны или не подтверждены для расчёта.']));
+    if (rate.status === 'unavailable') return reasons;
+  }
   if (!isCost(rate.monthly_usd) || !almostEqual(rate.monthly_usd, plan.monthly_usd)) reasons.push('Плата за месяц отсутствует или не совпадает со снимком цен.');
   if (!positive(rate.monthly_quota)) reasons.push('Отсутствует положительная месячная квота.');
   if (typeof rate.quota_unit !== 'string' || !rate.quota_unit.trim()) reasons.push('Неизвестна единица квоты.');

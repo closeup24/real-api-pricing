@@ -157,6 +157,16 @@ function glmRow(plan) {
   const match = plan.plan_id.match(/^glm_coding_(lite|pro|max)_cn_(new|old)_(peak|mid|offpeak)$/);
   assert.ok(match, `Неизвестный тариф GLM ${plan.id}`);
   const [, tier, generation, band] = match;
+  if (generation === 'old') {
+    const reason = 'Для старого тарифа GLM известна цена продления V2, но сохранённые квоты и ставки относятся к V3. Совместимость систем V2/V3 не подтверждена; соединять цену V2 с лимитом V3 и рассчитывать стоимость задачи нельзя.';
+    return {quota_unit: null, monthly_quota: null, rates: null,
+      original_quota: null, rate_basis: reason, quota_basis_status: 'unavailable',
+      unavailable_reason_ru: reason,
+      source_urls: [sourceUrl(glmQuotasPath), sourceUrl(glmScenariosPath), 'https://docs.bigmodel.cn/cn/coding-plan/overview'],
+      assumptions_ru: [], notes_ru: [reason], source_conflicts_ru: [reason],
+      additional_limits: null, capacity_multiplier: null, charge_multiplier: null,
+      shared_pool_note: null};
+  }
   const tierName = tier[0].toUpperCase() + tier.slice(1);
   const pool = glmQuotas.glmOfficialQuotaTable95Cache.credits[tierName];
   const ratesMatch = build.match(/"glm-5\.3-flash": \(([\d.]+), ([\d.]+), ([\d.]+)\)/);
@@ -170,12 +180,11 @@ function glmRow(plan) {
   const rateMultiplier = 1 / capacityMultiplier;
   const assumptions = ['Недельный пул приведён к условному месяцу из четырёх недель по конвенции RAP; это не новый официальный месячный лимит.'];
   if (band === 'mid') assumptions.push('Mid — сценарий RAP: среднее арифметическое ёмкостей peak/off-peak, то есть peak × 1.5. При неизменном пуле ставки равны peak × 2/3; это не официальный тариф и не смесь 50/50 токенов по времени.');
-  if (generation === 'old') assumptions.push('Строка использует legacy V2 цену со значениями pools/rates V3, как в принятой таблице RAP. Источник отмечает различие систем квот V2/V3; перенос на старый тариф не подтверждён.');
   return {quota_unit: 'points', monthly_quota: pool.perWeek * conventions.monthWeeks,
     rates: {cacheRead: cacheRead * rateMultiplier, input: input * rateMultiplier, output: output * rateMultiplier},
     original_quota: {period: 'week', amount: pool.perWeek, periods_per_month: conventions.monthWeeks, shared_pool_amount: pool.perWeek, model_pool_amount: null},
     rate_basis: `Баллы за 1 000 000 токенов: исходные коэффициенты на 10 000 токенов × 100 / ${capacityMultiplier}. Пул одинаков для всех временных сценариев.`,
-    quota_basis_status: generation === 'old' ? 'assumed' : 'documented',
+    quota_basis_status: 'documented',
     source_urls: [sourceUrl(glmQuotasPath), sourceUrl(glmScenariosPath), 'https://docs.bigmodel.cn/cn/coding-plan/overview'],
     assumptions_ru: assumptions,
     notes_ru: ['Peak: пн–пт 14:00–18:00 UTC+8. В off-peak официальный расход составляет 50% базового.', 'Квота ограничена недельным и пятичасовым окнами; месячный результат предполагает их полное использование.', 'Расчёт включает только пять токенных категорий AA. Возможные отдельные расходы инструментов не восстановлены из этих категорий.'],
@@ -186,13 +195,22 @@ function glmRow(plan) {
 
 const rows = selected.map(plan => {
   const evidence = plan.plan_id.startsWith('glm_coding_') ? glmRow(plan) : dollarRow(plan);
+  if (evidence.quota_basis_status === 'unavailable') {
+    const {rates, ...detail} = evidence;
+    const categories = ['non_cache_input', 'cache_read', 'cache_write', 'answer', 'reasoning'];
+    return {id: plan.id, model_id: plan.model, plan: plan.plan, monthly_usd: plan.monthly_usd,
+      ...detail, component_rates: Object.fromEntries(categories.map(key => [key, null])),
+      component_rate_status: Object.fromEntries(categories.map(key => [key, 'unavailable'])),
+      status: 'unavailable',
+      source_urls: unique([sourceUrl('scripts/build_adopted.py'), ...evidence.source_urls])};
+  }
   const explicitWrite = Number.isFinite(evidence.rates.cacheWrite) && evidence.rates.cacheWrite >= 0;
   const assumptions = [...evidence.assumptions_ru];
   if (!explicitWrite) assumptions.push('Отдельная ставка cache write в сохранённой таблице не указана. Принята обычная input-ставка; отсутствие отдельной записи не считается доказанным нулевым тарифом.');
   assumptions.push('Reasoning-токены сопоставлены опубликованной ставке output. Отдельное подтверждение этого сопоставления в сохранённых данных канала отсутствует.');
   const componentRates = {non_cache_input: evidence.rates.input, cache_read: evidence.rates.cacheRead, cache_write: explicitWrite ? evidence.rates.cacheWrite : evidence.rates.input, answer: evidence.rates.output, reasoning: evidence.rates.output};
   const rateStatus = {non_cache_input: 'documented', cache_read: 'documented', cache_write: explicitWrite ? 'documented' : 'assumed', answer: 'documented', reasoning: 'assumed'};
-  if (plan.plan_id.startsWith('glm_coding_') && (plan.plan_id.includes('_old_') || plan.plan_id.endsWith('_mid'))) for (const key of Object.keys(rateStatus)) rateStatus[key] = 'assumed';
+  if (plan.plan_id.startsWith('glm_coding_') && plan.plan_id.endsWith('_mid')) for (const key of Object.keys(rateStatus)) rateStatus[key] = 'assumed';
   const available = positive(evidence.monthly_quota) && Object.values(componentRates).every(value => Number.isFinite(value) && value >= 0);
   const {rates, ...detail} = evidence;
   return {id: plan.id, model_id: plan.model, plan: plan.plan, monthly_usd: plan.monthly_usd,

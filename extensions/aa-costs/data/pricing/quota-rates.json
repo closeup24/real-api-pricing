@@ -20,8 +20,8 @@
     "rows": 36,
     "status_counts": {
       "documented": 0,
-      "assumed": 36,
-      "unavailable": 0
+      "assumed": 27,
+      "unavailable": 9
     },
     "component_rate_unit": "quota_unit per 1 000 000 tokens",
     "method_ru": "Квоты и ставки взяты из исходных credits/points и таблиц research закреплённого RAP. monthly_tokens, real_price и фиксированная смесь не используются для восстановления квоты.",
@@ -206,175 +206,132 @@
       "model_id": "glm-5.3-flash",
       "plan": "GLM Coding Lite (老客 ¥49) 忙时",
       "monthly_usd": 7.228524643368197,
-      "quota_unit": "points",
-      "monthly_quota": 40000,
-      "original_quota": {
-        "period": "week",
-        "amount": 10000,
-        "periods_per_month": 4,
-        "shared_pool_amount": 10000,
-        "model_pool_amount": null
-      },
-      "rate_basis": "Баллы за 1 000 000 токенов: исходные коэффициенты на 10 000 токенов × 100 / 1. Пул одинаков для всех временных сценариев.",
-      "quota_basis_status": "assumed",
+      "quota_unit": null,
+      "monthly_quota": null,
+      "original_quota": null,
+      "rate_basis": "Для старого тарифа GLM известна цена продления V2, но сохранённые квоты и ставки относятся к V3. Совместимость систем V2/V3 не подтверждена; соединять цену V2 с лимитом V3 и рассчитывать стоимость задачи нельзя.",
+      "quota_basis_status": "unavailable",
+      "unavailable_reason_ru": "Для старого тарифа GLM известна цена продления V2, но сохранённые квоты и ставки относятся к V3. Совместимость систем V2/V3 не подтверждена; соединять цену V2 с лимитом V3 и рассчитывать стоимость задачи нельзя.",
       "source_urls": [
         "https://github.com/FeiZhuLulu/real-api-pricing/blob/6489b60a14680a5ce848131d461a90eb054d03ac/scripts/build_adopted.py",
         "https://github.com/FeiZhuLulu/real-api-pricing/blob/6489b60a14680a5ce848131d461a90eb054d03ac/data/research/quotas-web-2026-09.json",
         "https://github.com/FeiZhuLulu/real-api-pricing/blob/6489b60a14680a5ce848131d461a90eb054d03ac/data/research/glm-adoption-round4-2026-09-07.json",
         "https://docs.bigmodel.cn/cn/coding-plan/overview"
       ],
-      "assumptions_ru": [
-        "Недельный пул приведён к условному месяцу из четырёх недель по конвенции RAP; это не новый официальный месячный лимит.",
-        "Строка использует legacy V2 цену со значениями pools/rates V3, как в принятой таблице RAP. Источник отмечает различие систем квот V2/V3; перенос на старый тариф не подтверждён.",
-        "Отдельная ставка cache write в сохранённой таблице не указана. Принята обычная input-ставка; отсутствие отдельной записи не считается доказанным нулевым тарифом.",
-        "Reasoning-токены сопоставлены опубликованной ставке output. Отдельное подтверждение этого сопоставления в сохранённых данных канала отсутствует."
-      ],
+      "assumptions_ru": [],
       "notes_ru": [
-        "Peak: пн–пт 14:00–18:00 UTC+8. В off-peak официальный расход составляет 50% базового.",
-        "Квота ограничена недельным и пятичасовым окнами; месячный результат предполагает их полное использование.",
-        "Расчёт включает только пять токенных категорий AA. Возможные отдельные расходы инструментов не восстановлены из этих категорий.",
-        "Состав AA переносится в расчёт расхода credits; воспроизведение той же доли cache hits на другом канале не гарантировано. Полное использование месячного пула является условием оценки."
+        "Для старого тарифа GLM известна цена продления V2, но сохранённые квоты и ставки относятся к V3. Совместимость систем V2/V3 не подтверждена; соединять цену V2 с лимитом V3 и рассчитывать стоимость задачи нельзя."
       ],
-      "source_conflicts_ru": [],
-      "additional_limits": {
-        "per_5h": 2000,
-        "per_week": 10000
-      },
-      "capacity_multiplier": 1,
-      "charge_multiplier": 1,
-      "shared_pool_note": "Общие баллы Coding Plan расходуются на все модели; здесь весь пул выделен GLM 5.3 Flash. Peak, mid и off-peak — альтернативные сценарии одного пула, их нельзя складывать.",
+      "source_conflicts_ru": [
+        "Для старого тарифа GLM известна цена продления V2, но сохранённые квоты и ставки относятся к V3. Совместимость систем V2/V3 не подтверждена; соединять цену V2 с лимитом V3 и рассчитывать стоимость задачи нельзя."
+      ],
+      "additional_limits": null,
+      "capacity_multiplier": null,
+      "charge_multiplier": null,
+      "shared_pool_note": null,
       "component_rates": {
-        "non_cache_input": 230,
-        "cache_read": 56,
-        "cache_write": 230,
-        "answer": 800,
-        "reasoning": 800
+        "non_cache_input": null,
+        "cache_read": null,
+        "cache_write": null,
+        "answer": null,
+        "reasoning": null
       },
       "component_rate_status": {
-        "non_cache_input": "assumed",
-        "cache_read": "assumed",
-        "cache_write": "assumed",
-        "answer": "assumed",
-        "reasoning": "assumed"
+        "non_cache_input": "unavailable",
+        "cache_read": "unavailable",
+        "cache_write": "unavailable",
+        "answer": "unavailable",
+        "reasoning": "unavailable"
       },
-      "status": "assumed"
+      "status": "unavailable"
     },
     {
       "id": "glm_coding_lite_cn_old_mid::glm-5.3-flash",
       "model_id": "glm-5.3-flash",
       "plan": "GLM Coding Lite (老客 ¥49) 中间值",
       "monthly_usd": 7.228524643368197,
-      "quota_unit": "points",
-      "monthly_quota": 40000,
-      "original_quota": {
-        "period": "week",
-        "amount": 10000,
-        "periods_per_month": 4,
-        "shared_pool_amount": 10000,
-        "model_pool_amount": null
-      },
-      "rate_basis": "Баллы за 1 000 000 токенов: исходные коэффициенты на 10 000 токенов × 100 / 1.5. Пул одинаков для всех временных сценариев.",
-      "quota_basis_status": "assumed",
+      "quota_unit": null,
+      "monthly_quota": null,
+      "original_quota": null,
+      "rate_basis": "Для старого тарифа GLM известна цена продления V2, но сохранённые квоты и ставки относятся к V3. Совместимость систем V2/V3 не подтверждена; соединять цену V2 с лимитом V3 и рассчитывать стоимость задачи нельзя.",
+      "quota_basis_status": "unavailable",
+      "unavailable_reason_ru": "Для старого тарифа GLM известна цена продления V2, но сохранённые квоты и ставки относятся к V3. Совместимость систем V2/V3 не подтверждена; соединять цену V2 с лимитом V3 и рассчитывать стоимость задачи нельзя.",
       "source_urls": [
         "https://github.com/FeiZhuLulu/real-api-pricing/blob/6489b60a14680a5ce848131d461a90eb054d03ac/scripts/build_adopted.py",
         "https://github.com/FeiZhuLulu/real-api-pricing/blob/6489b60a14680a5ce848131d461a90eb054d03ac/data/research/quotas-web-2026-09.json",
         "https://github.com/FeiZhuLulu/real-api-pricing/blob/6489b60a14680a5ce848131d461a90eb054d03ac/data/research/glm-adoption-round4-2026-09-07.json",
         "https://docs.bigmodel.cn/cn/coding-plan/overview"
       ],
-      "assumptions_ru": [
-        "Недельный пул приведён к условному месяцу из четырёх недель по конвенции RAP; это не новый официальный месячный лимит.",
-        "Mid — сценарий RAP: среднее арифметическое ёмкостей peak/off-peak, то есть peak × 1.5. При неизменном пуле ставки равны peak × 2/3; это не официальный тариф и не смесь 50/50 токенов по времени.",
-        "Строка использует legacy V2 цену со значениями pools/rates V3, как в принятой таблице RAP. Источник отмечает различие систем квот V2/V3; перенос на старый тариф не подтверждён.",
-        "Отдельная ставка cache write в сохранённой таблице не указана. Принята обычная input-ставка; отсутствие отдельной записи не считается доказанным нулевым тарифом.",
-        "Reasoning-токены сопоставлены опубликованной ставке output. Отдельное подтверждение этого сопоставления в сохранённых данных канала отсутствует."
-      ],
+      "assumptions_ru": [],
       "notes_ru": [
-        "Peak: пн–пт 14:00–18:00 UTC+8. В off-peak официальный расход составляет 50% базового.",
-        "Квота ограничена недельным и пятичасовым окнами; месячный результат предполагает их полное использование.",
-        "Расчёт включает только пять токенных категорий AA. Возможные отдельные расходы инструментов не восстановлены из этих категорий.",
-        "Состав AA переносится в расчёт расхода credits; воспроизведение той же доли cache hits на другом канале не гарантировано. Полное использование месячного пула является условием оценки."
+        "Для старого тарифа GLM известна цена продления V2, но сохранённые квоты и ставки относятся к V3. Совместимость систем V2/V3 не подтверждена; соединять цену V2 с лимитом V3 и рассчитывать стоимость задачи нельзя."
       ],
-      "source_conflicts_ru": [],
-      "additional_limits": {
-        "per_5h": 2000,
-        "per_week": 10000
-      },
-      "capacity_multiplier": 1.5,
-      "charge_multiplier": 0.6666666666666666,
-      "shared_pool_note": "Общие баллы Coding Plan расходуются на все модели; здесь весь пул выделен GLM 5.3 Flash. Peak, mid и off-peak — альтернативные сценарии одного пула, их нельзя складывать.",
+      "source_conflicts_ru": [
+        "Для старого тарифа GLM известна цена продления V2, но сохранённые квоты и ставки относятся к V3. Совместимость систем V2/V3 не подтверждена; соединять цену V2 с лимитом V3 и рассчитывать стоимость задачи нельзя."
+      ],
+      "additional_limits": null,
+      "capacity_multiplier": null,
+      "charge_multiplier": null,
+      "shared_pool_note": null,
       "component_rates": {
-        "non_cache_input": 153.33333333333331,
-        "cache_read": 37.33333333333333,
-        "cache_write": 153.33333333333331,
-        "answer": 533.3333333333333,
-        "reasoning": 533.3333333333333
+        "non_cache_input": null,
+        "cache_read": null,
+        "cache_write": null,
+        "answer": null,
+        "reasoning": null
       },
       "component_rate_status": {
-        "non_cache_input": "assumed",
-        "cache_read": "assumed",
-        "cache_write": "assumed",
-        "answer": "assumed",
-        "reasoning": "assumed"
+        "non_cache_input": "unavailable",
+        "cache_read": "unavailable",
+        "cache_write": "unavailable",
+        "answer": "unavailable",
+        "reasoning": "unavailable"
       },
-      "status": "assumed"
+      "status": "unavailable"
     },
     {
       "id": "glm_coding_lite_cn_old_offpeak::glm-5.3-flash",
       "model_id": "glm-5.3-flash",
       "plan": "GLM Coding Lite (老客 ¥49) 闲时",
       "monthly_usd": 7.228524643368197,
-      "quota_unit": "points",
-      "monthly_quota": 40000,
-      "original_quota": {
-        "period": "week",
-        "amount": 10000,
-        "periods_per_month": 4,
-        "shared_pool_amount": 10000,
-        "model_pool_amount": null
-      },
-      "rate_basis": "Баллы за 1 000 000 токенов: исходные коэффициенты на 10 000 токенов × 100 / 2. Пул одинаков для всех временных сценариев.",
-      "quota_basis_status": "assumed",
+      "quota_unit": null,
+      "monthly_quota": null,
+      "original_quota": null,
+      "rate_basis": "Для старого тарифа GLM известна цена продления V2, но сохранённые квоты и ставки относятся к V3. Совместимость систем V2/V3 не подтверждена; соединять цену V2 с лимитом V3 и рассчитывать стоимость задачи нельзя.",
+      "quota_basis_status": "unavailable",
+      "unavailable_reason_ru": "Для старого тарифа GLM известна цена продления V2, но сохранённые квоты и ставки относятся к V3. Совместимость систем V2/V3 не подтверждена; соединять цену V2 с лимитом V3 и рассчитывать стоимость задачи нельзя.",
       "source_urls": [
         "https://github.com/FeiZhuLulu/real-api-pricing/blob/6489b60a14680a5ce848131d461a90eb054d03ac/scripts/build_adopted.py",
         "https://github.com/FeiZhuLulu/real-api-pricing/blob/6489b60a14680a5ce848131d461a90eb054d03ac/data/research/quotas-web-2026-09.json",
         "https://github.com/FeiZhuLulu/real-api-pricing/blob/6489b60a14680a5ce848131d461a90eb054d03ac/data/research/glm-adoption-round4-2026-09-07.json",
         "https://docs.bigmodel.cn/cn/coding-plan/overview"
       ],
-      "assumptions_ru": [
-        "Недельный пул приведён к условному месяцу из четырёх недель по конвенции RAP; это не новый официальный месячный лимит.",
-        "Строка использует legacy V2 цену со значениями pools/rates V3, как в принятой таблице RAP. Источник отмечает различие систем квот V2/V3; перенос на старый тариф не подтверждён.",
-        "Отдельная ставка cache write в сохранённой таблице не указана. Принята обычная input-ставка; отсутствие отдельной записи не считается доказанным нулевым тарифом.",
-        "Reasoning-токены сопоставлены опубликованной ставке output. Отдельное подтверждение этого сопоставления в сохранённых данных канала отсутствует."
-      ],
+      "assumptions_ru": [],
       "notes_ru": [
-        "Peak: пн–пт 14:00–18:00 UTC+8. В off-peak официальный расход составляет 50% базового.",
-        "Квота ограничена недельным и пятичасовым окнами; месячный результат предполагает их полное использование.",
-        "Расчёт включает только пять токенных категорий AA. Возможные отдельные расходы инструментов не восстановлены из этих категорий.",
-        "Состав AA переносится в расчёт расхода credits; воспроизведение той же доли cache hits на другом канале не гарантировано. Полное использование месячного пула является условием оценки."
+        "Для старого тарифа GLM известна цена продления V2, но сохранённые квоты и ставки относятся к V3. Совместимость систем V2/V3 не подтверждена; соединять цену V2 с лимитом V3 и рассчитывать стоимость задачи нельзя."
       ],
-      "source_conflicts_ru": [],
-      "additional_limits": {
-        "per_5h": 2000,
-        "per_week": 10000
-      },
-      "capacity_multiplier": 2,
-      "charge_multiplier": 0.5,
-      "shared_pool_note": "Общие баллы Coding Plan расходуются на все модели; здесь весь пул выделен GLM 5.3 Flash. Peak, mid и off-peak — альтернативные сценарии одного пула, их нельзя складывать.",
+      "source_conflicts_ru": [
+        "Для старого тарифа GLM известна цена продления V2, но сохранённые квоты и ставки относятся к V3. Совместимость систем V2/V3 не подтверждена; соединять цену V2 с лимитом V3 и рассчитывать стоимость задачи нельзя."
+      ],
+      "additional_limits": null,
+      "capacity_multiplier": null,
+      "charge_multiplier": null,
+      "shared_pool_note": null,
       "component_rates": {
-        "non_cache_input": 115,
-        "cache_read": 28,
-        "cache_write": 115,
-        "answer": 400,
-        "reasoning": 400
+        "non_cache_input": null,
+        "cache_read": null,
+        "cache_write": null,
+        "answer": null,
+        "reasoning": null
       },
       "component_rate_status": {
-        "non_cache_input": "assumed",
-        "cache_read": "assumed",
-        "cache_write": "assumed",
-        "answer": "assumed",
-        "reasoning": "assumed"
+        "non_cache_input": "unavailable",
+        "cache_read": "unavailable",
+        "cache_write": "unavailable",
+        "answer": "unavailable",
+        "reasoning": "unavailable"
       },
-      "status": "assumed"
+      "status": "unavailable"
     },
     {
       "id": "glm_coding_pro_cn_new_peak::glm-5.3-flash",
@@ -553,175 +510,132 @@
       "model_id": "glm-5.3-flash",
       "plan": "GLM Coding Pro (老客 ¥149) 忙时",
       "monthly_usd": 21.980615752282887,
-      "quota_unit": "points",
-      "monthly_quota": 240000,
-      "original_quota": {
-        "period": "week",
-        "amount": 60000,
-        "periods_per_month": 4,
-        "shared_pool_amount": 60000,
-        "model_pool_amount": null
-      },
-      "rate_basis": "Баллы за 1 000 000 токенов: исходные коэффициенты на 10 000 токенов × 100 / 1. Пул одинаков для всех временных сценариев.",
-      "quota_basis_status": "assumed",
+      "quota_unit": null,
+      "monthly_quota": null,
+      "original_quota": null,
+      "rate_basis": "Для старого тарифа GLM известна цена продления V2, но сохранённые квоты и ставки относятся к V3. Совместимость систем V2/V3 не подтверждена; соединять цену V2 с лимитом V3 и рассчитывать стоимость задачи нельзя.",
+      "quota_basis_status": "unavailable",
+      "unavailable_reason_ru": "Для старого тарифа GLM известна цена продления V2, но сохранённые квоты и ставки относятся к V3. Совместимость систем V2/V3 не подтверждена; соединять цену V2 с лимитом V3 и рассчитывать стоимость задачи нельзя.",
       "source_urls": [
         "https://github.com/FeiZhuLulu/real-api-pricing/blob/6489b60a14680a5ce848131d461a90eb054d03ac/scripts/build_adopted.py",
         "https://github.com/FeiZhuLulu/real-api-pricing/blob/6489b60a14680a5ce848131d461a90eb054d03ac/data/research/quotas-web-2026-09.json",
         "https://github.com/FeiZhuLulu/real-api-pricing/blob/6489b60a14680a5ce848131d461a90eb054d03ac/data/research/glm-adoption-round4-2026-09-07.json",
         "https://docs.bigmodel.cn/cn/coding-plan/overview"
       ],
-      "assumptions_ru": [
-        "Недельный пул приведён к условному месяцу из четырёх недель по конвенции RAP; это не новый официальный месячный лимит.",
-        "Строка использует legacy V2 цену со значениями pools/rates V3, как в принятой таблице RAP. Источник отмечает различие систем квот V2/V3; перенос на старый тариф не подтверждён.",
-        "Отдельная ставка cache write в сохранённой таблице не указана. Принята обычная input-ставка; отсутствие отдельной записи не считается доказанным нулевым тарифом.",
-        "Reasoning-токены сопоставлены опубликованной ставке output. Отдельное подтверждение этого сопоставления в сохранённых данных канала отсутствует."
-      ],
+      "assumptions_ru": [],
       "notes_ru": [
-        "Peak: пн–пт 14:00–18:00 UTC+8. В off-peak официальный расход составляет 50% базового.",
-        "Квота ограничена недельным и пятичасовым окнами; месячный результат предполагает их полное использование.",
-        "Расчёт включает только пять токенных категорий AA. Возможные отдельные расходы инструментов не восстановлены из этих категорий.",
-        "Состав AA переносится в расчёт расхода credits; воспроизведение той же доли cache hits на другом канале не гарантировано. Полное использование месячного пула является условием оценки."
+        "Для старого тарифа GLM известна цена продления V2, но сохранённые квоты и ставки относятся к V3. Совместимость систем V2/V3 не подтверждена; соединять цену V2 с лимитом V3 и рассчитывать стоимость задачи нельзя."
       ],
-      "source_conflicts_ru": [],
-      "additional_limits": {
-        "per_5h": 12000,
-        "per_week": 60000
-      },
-      "capacity_multiplier": 1,
-      "charge_multiplier": 1,
-      "shared_pool_note": "Общие баллы Coding Plan расходуются на все модели; здесь весь пул выделен GLM 5.3 Flash. Peak, mid и off-peak — альтернативные сценарии одного пула, их нельзя складывать.",
+      "source_conflicts_ru": [
+        "Для старого тарифа GLM известна цена продления V2, но сохранённые квоты и ставки относятся к V3. Совместимость систем V2/V3 не подтверждена; соединять цену V2 с лимитом V3 и рассчитывать стоимость задачи нельзя."
+      ],
+      "additional_limits": null,
+      "capacity_multiplier": null,
+      "charge_multiplier": null,
+      "shared_pool_note": null,
       "component_rates": {
-        "non_cache_input": 230,
-        "cache_read": 56,
-        "cache_write": 230,
-        "answer": 800,
-        "reasoning": 800
+        "non_cache_input": null,
+        "cache_read": null,
+        "cache_write": null,
+        "answer": null,
+        "reasoning": null
       },
       "component_rate_status": {
-        "non_cache_input": "assumed",
-        "cache_read": "assumed",
-        "cache_write": "assumed",
-        "answer": "assumed",
-        "reasoning": "assumed"
+        "non_cache_input": "unavailable",
+        "cache_read": "unavailable",
+        "cache_write": "unavailable",
+        "answer": "unavailable",
+        "reasoning": "unavailable"
       },
-      "status": "assumed"
+      "status": "unavailable"
     },
     {
       "id": "glm_coding_pro_cn_old_mid::glm-5.3-flash",
       "model_id": "glm-5.3-flash",
       "plan": "GLM Coding Pro (老客 ¥149) 中间值",
       "monthly_usd": 21.980615752282887,
-      "quota_unit": "points",
-      "monthly_quota": 240000,
-      "original_quota": {
-        "period": "week",
-        "amount": 60000,
-        "periods_per_month": 4,
-        "shared_pool_amount": 60000,
-        "model_pool_amount": null
-      },
-      "rate_basis": "Баллы за 1 000 000 токенов: исходные коэффициенты на 10 000 токенов × 100 / 1.5. Пул одинаков для всех временных сценариев.",
-      "quota_basis_status": "assumed",
+      "quota_unit": null,
+      "monthly_quota": null,
+      "original_quota": null,
+      "rate_basis": "Для старого тарифа GLM известна цена продления V2, но сохранённые квоты и ставки относятся к V3. Совместимость систем V2/V3 не подтверждена; соединять цену V2 с лимитом V3 и рассчитывать стоимость задачи нельзя.",
+      "quota_basis_status": "unavailable",
+      "unavailable_reason_ru": "Для старого тарифа GLM известна цена продления V2, но сохранённые квоты и ставки относятся к V3. Совместимость систем V2/V3 не подтверждена; соединять цену V2 с лимитом V3 и рассчитывать стоимость задачи нельзя.",
       "source_urls": [
         "https://github.com/FeiZhuLulu/real-api-pricing/blob/6489b60a14680a5ce848131d461a90eb054d03ac/scripts/build_adopted.py",
         "https://github.com/FeiZhuLulu/real-api-pricing/blob/6489b60a14680a5ce848131d461a90eb054d03ac/data/research/quotas-web-2026-09.json",
         "https://github.com/FeiZhuLulu/real-api-pricing/blob/6489b60a14680a5ce848131d461a90eb054d03ac/data/research/glm-adoption-round4-2026-09-07.json",
         "https://docs.bigmodel.cn/cn/coding-plan/overview"
       ],
-      "assumptions_ru": [
-        "Недельный пул приведён к условному месяцу из четырёх недель по конвенции RAP; это не новый официальный месячный лимит.",
-        "Mid — сценарий RAP: среднее арифметическое ёмкостей peak/off-peak, то есть peak × 1.5. При неизменном пуле ставки равны peak × 2/3; это не официальный тариф и не смесь 50/50 токенов по времени.",
-        "Строка использует legacy V2 цену со значениями pools/rates V3, как в принятой таблице RAP. Источник отмечает различие систем квот V2/V3; перенос на старый тариф не подтверждён.",
-        "Отдельная ставка cache write в сохранённой таблице не указана. Принята обычная input-ставка; отсутствие отдельной записи не считается доказанным нулевым тарифом.",
-        "Reasoning-токены сопоставлены опубликованной ставке output. Отдельное подтверждение этого сопоставления в сохранённых данных канала отсутствует."
-      ],
+      "assumptions_ru": [],
       "notes_ru": [
-        "Peak: пн–пт 14:00–18:00 UTC+8. В off-peak официальный расход составляет 50% базового.",
-        "Квота ограничена недельным и пятичасовым окнами; месячный результат предполагает их полное использование.",
-        "Расчёт включает только пять токенных категорий AA. Возможные отдельные расходы инструментов не восстановлены из этих категорий.",
-        "Состав AA переносится в расчёт расхода credits; воспроизведение той же доли cache hits на другом канале не гарантировано. Полное использование месячного пула является условием оценки."
+        "Для старого тарифа GLM известна цена продления V2, но сохранённые квоты и ставки относятся к V3. Совместимость систем V2/V3 не подтверждена; соединять цену V2 с лимитом V3 и рассчитывать стоимость задачи нельзя."
       ],
-      "source_conflicts_ru": [],
-      "additional_limits": {
-        "per_5h": 12000,
-        "per_week": 60000
-      },
-      "capacity_multiplier": 1.5,
-      "charge_multiplier": 0.6666666666666666,
-      "shared_pool_note": "Общие баллы Coding Plan расходуются на все модели; здесь весь пул выделен GLM 5.3 Flash. Peak, mid и off-peak — альтернативные сценарии одного пула, их нельзя складывать.",
+      "source_conflicts_ru": [
+        "Для старого тарифа GLM известна цена продления V2, но сохранённые квоты и ставки относятся к V3. Совместимость систем V2/V3 не подтверждена; соединять цену V2 с лимитом V3 и рассчитывать стоимость задачи нельзя."
+      ],
+      "additional_limits": null,
+      "capacity_multiplier": null,
+      "charge_multiplier": null,
+      "shared_pool_note": null,
       "component_rates": {
-        "non_cache_input": 153.33333333333331,
-        "cache_read": 37.33333333333333,
-        "cache_write": 153.33333333333331,
-        "answer": 533.3333333333333,
-        "reasoning": 533.3333333333333
+        "non_cache_input": null,
+        "cache_read": null,
+        "cache_write": null,
+        "answer": null,
+        "reasoning": null
       },
       "component_rate_status": {
-        "non_cache_input": "assumed",
-        "cache_read": "assumed",
-        "cache_write": "assumed",
-        "answer": "assumed",
-        "reasoning": "assumed"
+        "non_cache_input": "unavailable",
+        "cache_read": "unavailable",
+        "cache_write": "unavailable",
+        "answer": "unavailable",
+        "reasoning": "unavailable"
       },
-      "status": "assumed"
+      "status": "unavailable"
     },
     {
       "id": "glm_coding_pro_cn_old_offpeak::glm-5.3-flash",
       "model_id": "glm-5.3-flash",
       "plan": "GLM Coding Pro (老客 ¥149) 闲时",
       "monthly_usd": 21.980615752282887,
-      "quota_unit": "points",
-      "monthly_quota": 240000,
-      "original_quota": {
-        "period": "week",
-        "amount": 60000,
-        "periods_per_month": 4,
-        "shared_pool_amount": 60000,
-        "model_pool_amount": null
-      },
-      "rate_basis": "Баллы за 1 000 000 токенов: исходные коэффициенты на 10 000 токенов × 100 / 2. Пул одинаков для всех временных сценариев.",
-      "quota_basis_status": "assumed",
+      "quota_unit": null,
+      "monthly_quota": null,
+      "original_quota": null,
+      "rate_basis": "Для старого тарифа GLM известна цена продления V2, но сохранённые квоты и ставки относятся к V3. Совместимость систем V2/V3 не подтверждена; соединять цену V2 с лимитом V3 и рассчитывать стоимость задачи нельзя.",
+      "quota_basis_status": "unavailable",
+      "unavailable_reason_ru": "Для старого тарифа GLM известна цена продления V2, но сохранённые квоты и ставки относятся к V3. Совместимость систем V2/V3 не подтверждена; соединять цену V2 с лимитом V3 и рассчитывать стоимость задачи нельзя.",
       "source_urls": [
         "https://github.com/FeiZhuLulu/real-api-pricing/blob/6489b60a14680a5ce848131d461a90eb054d03ac/scripts/build_adopted.py",
         "https://github.com/FeiZhuLulu/real-api-pricing/blob/6489b60a14680a5ce848131d461a90eb054d03ac/data/research/quotas-web-2026-09.json",
         "https://github.com/FeiZhuLulu/real-api-pricing/blob/6489b60a14680a5ce848131d461a90eb054d03ac/data/research/glm-adoption-round4-2026-09-07.json",
         "https://docs.bigmodel.cn/cn/coding-plan/overview"
       ],
-      "assumptions_ru": [
-        "Недельный пул приведён к условному месяцу из четырёх недель по конвенции RAP; это не новый официальный месячный лимит.",
-        "Строка использует legacy V2 цену со значениями pools/rates V3, как в принятой таблице RAP. Источник отмечает различие систем квот V2/V3; перенос на старый тариф не подтверждён.",
-        "Отдельная ставка cache write в сохранённой таблице не указана. Принята обычная input-ставка; отсутствие отдельной записи не считается доказанным нулевым тарифом.",
-        "Reasoning-токены сопоставлены опубликованной ставке output. Отдельное подтверждение этого сопоставления в сохранённых данных канала отсутствует."
-      ],
+      "assumptions_ru": [],
       "notes_ru": [
-        "Peak: пн–пт 14:00–18:00 UTC+8. В off-peak официальный расход составляет 50% базового.",
-        "Квота ограничена недельным и пятичасовым окнами; месячный результат предполагает их полное использование.",
-        "Расчёт включает только пять токенных категорий AA. Возможные отдельные расходы инструментов не восстановлены из этих категорий.",
-        "Состав AA переносится в расчёт расхода credits; воспроизведение той же доли cache hits на другом канале не гарантировано. Полное использование месячного пула является условием оценки."
+        "Для старого тарифа GLM известна цена продления V2, но сохранённые квоты и ставки относятся к V3. Совместимость систем V2/V3 не подтверждена; соединять цену V2 с лимитом V3 и рассчитывать стоимость задачи нельзя."
       ],
-      "source_conflicts_ru": [],
-      "additional_limits": {
-        "per_5h": 12000,
-        "per_week": 60000
-      },
-      "capacity_multiplier": 2,
-      "charge_multiplier": 0.5,
-      "shared_pool_note": "Общие баллы Coding Plan расходуются на все модели; здесь весь пул выделен GLM 5.3 Flash. Peak, mid и off-peak — альтернативные сценарии одного пула, их нельзя складывать.",
+      "source_conflicts_ru": [
+        "Для старого тарифа GLM известна цена продления V2, но сохранённые квоты и ставки относятся к V3. Совместимость систем V2/V3 не подтверждена; соединять цену V2 с лимитом V3 и рассчитывать стоимость задачи нельзя."
+      ],
+      "additional_limits": null,
+      "capacity_multiplier": null,
+      "charge_multiplier": null,
+      "shared_pool_note": null,
       "component_rates": {
-        "non_cache_input": 115,
-        "cache_read": 28,
-        "cache_write": 115,
-        "answer": 400,
-        "reasoning": 400
+        "non_cache_input": null,
+        "cache_read": null,
+        "cache_write": null,
+        "answer": null,
+        "reasoning": null
       },
       "component_rate_status": {
-        "non_cache_input": "assumed",
-        "cache_read": "assumed",
-        "cache_write": "assumed",
-        "answer": "assumed",
-        "reasoning": "assumed"
+        "non_cache_input": "unavailable",
+        "cache_read": "unavailable",
+        "cache_write": "unavailable",
+        "answer": "unavailable",
+        "reasoning": "unavailable"
       },
-      "status": "assumed"
+      "status": "unavailable"
     },
     {
       "id": "glm_coding_max_cn_new_peak::glm-5.3-flash",
@@ -900,175 +814,132 @@
       "model_id": "glm-5.3-flash",
       "plan": "GLM Coding Max (老客 ¥469) 忙时",
       "monthly_usd": 69.18730730080989,
-      "quota_unit": "points",
-      "monthly_quota": 560000,
-      "original_quota": {
-        "period": "week",
-        "amount": 140000,
-        "periods_per_month": 4,
-        "shared_pool_amount": 140000,
-        "model_pool_amount": null
-      },
-      "rate_basis": "Баллы за 1 000 000 токенов: исходные коэффициенты на 10 000 токенов × 100 / 1. Пул одинаков для всех временных сценариев.",
-      "quota_basis_status": "assumed",
+      "quota_unit": null,
+      "monthly_quota": null,
+      "original_quota": null,
+      "rate_basis": "Для старого тарифа GLM известна цена продления V2, но сохранённые квоты и ставки относятся к V3. Совместимость систем V2/V3 не подтверждена; соединять цену V2 с лимитом V3 и рассчитывать стоимость задачи нельзя.",
+      "quota_basis_status": "unavailable",
+      "unavailable_reason_ru": "Для старого тарифа GLM известна цена продления V2, но сохранённые квоты и ставки относятся к V3. Совместимость систем V2/V3 не подтверждена; соединять цену V2 с лимитом V3 и рассчитывать стоимость задачи нельзя.",
       "source_urls": [
         "https://github.com/FeiZhuLulu/real-api-pricing/blob/6489b60a14680a5ce848131d461a90eb054d03ac/scripts/build_adopted.py",
         "https://github.com/FeiZhuLulu/real-api-pricing/blob/6489b60a14680a5ce848131d461a90eb054d03ac/data/research/quotas-web-2026-09.json",
         "https://github.com/FeiZhuLulu/real-api-pricing/blob/6489b60a14680a5ce848131d461a90eb054d03ac/data/research/glm-adoption-round4-2026-09-07.json",
         "https://docs.bigmodel.cn/cn/coding-plan/overview"
       ],
-      "assumptions_ru": [
-        "Недельный пул приведён к условному месяцу из четырёх недель по конвенции RAP; это не новый официальный месячный лимит.",
-        "Строка использует legacy V2 цену со значениями pools/rates V3, как в принятой таблице RAP. Источник отмечает различие систем квот V2/V3; перенос на старый тариф не подтверждён.",
-        "Отдельная ставка cache write в сохранённой таблице не указана. Принята обычная input-ставка; отсутствие отдельной записи не считается доказанным нулевым тарифом.",
-        "Reasoning-токены сопоставлены опубликованной ставке output. Отдельное подтверждение этого сопоставления в сохранённых данных канала отсутствует."
-      ],
+      "assumptions_ru": [],
       "notes_ru": [
-        "Peak: пн–пт 14:00–18:00 UTC+8. В off-peak официальный расход составляет 50% базового.",
-        "Квота ограничена недельным и пятичасовым окнами; месячный результат предполагает их полное использование.",
-        "Расчёт включает только пять токенных категорий AA. Возможные отдельные расходы инструментов не восстановлены из этих категорий.",
-        "Состав AA переносится в расчёт расхода credits; воспроизведение той же доли cache hits на другом канале не гарантировано. Полное использование месячного пула является условием оценки."
+        "Для старого тарифа GLM известна цена продления V2, но сохранённые квоты и ставки относятся к V3. Совместимость систем V2/V3 не подтверждена; соединять цену V2 с лимитом V3 и рассчитывать стоимость задачи нельзя."
       ],
-      "source_conflicts_ru": [],
-      "additional_limits": {
-        "per_5h": 28000,
-        "per_week": 140000
-      },
-      "capacity_multiplier": 1,
-      "charge_multiplier": 1,
-      "shared_pool_note": "Общие баллы Coding Plan расходуются на все модели; здесь весь пул выделен GLM 5.3 Flash. Peak, mid и off-peak — альтернативные сценарии одного пула, их нельзя складывать.",
+      "source_conflicts_ru": [
+        "Для старого тарифа GLM известна цена продления V2, но сохранённые квоты и ставки относятся к V3. Совместимость систем V2/V3 не подтверждена; соединять цену V2 с лимитом V3 и рассчитывать стоимость задачи нельзя."
+      ],
+      "additional_limits": null,
+      "capacity_multiplier": null,
+      "charge_multiplier": null,
+      "shared_pool_note": null,
       "component_rates": {
-        "non_cache_input": 230,
-        "cache_read": 56,
-        "cache_write": 230,
-        "answer": 800,
-        "reasoning": 800
+        "non_cache_input": null,
+        "cache_read": null,
+        "cache_write": null,
+        "answer": null,
+        "reasoning": null
       },
       "component_rate_status": {
-        "non_cache_input": "assumed",
-        "cache_read": "assumed",
-        "cache_write": "assumed",
-        "answer": "assumed",
-        "reasoning": "assumed"
+        "non_cache_input": "unavailable",
+        "cache_read": "unavailable",
+        "cache_write": "unavailable",
+        "answer": "unavailable",
+        "reasoning": "unavailable"
       },
-      "status": "assumed"
+      "status": "unavailable"
     },
     {
       "id": "glm_coding_max_cn_old_mid::glm-5.3-flash",
       "model_id": "glm-5.3-flash",
       "plan": "GLM Coding Max (老客 ¥469) 中间值",
       "monthly_usd": 69.18730730080989,
-      "quota_unit": "points",
-      "monthly_quota": 560000,
-      "original_quota": {
-        "period": "week",
-        "amount": 140000,
-        "periods_per_month": 4,
-        "shared_pool_amount": 140000,
-        "model_pool_amount": null
-      },
-      "rate_basis": "Баллы за 1 000 000 токенов: исходные коэффициенты на 10 000 токенов × 100 / 1.5. Пул одинаков для всех временных сценариев.",
-      "quota_basis_status": "assumed",
+      "quota_unit": null,
+      "monthly_quota": null,
+      "original_quota": null,
+      "rate_basis": "Для старого тарифа GLM известна цена продления V2, но сохранённые квоты и ставки относятся к V3. Совместимость систем V2/V3 не подтверждена; соединять цену V2 с лимитом V3 и рассчитывать стоимость задачи нельзя.",
+      "quota_basis_status": "unavailable",
+      "unavailable_reason_ru": "Для старого тарифа GLM известна цена продления V2, но сохранённые квоты и ставки относятся к V3. Совместимость систем V2/V3 не подтверждена; соединять цену V2 с лимитом V3 и рассчитывать стоимость задачи нельзя.",
       "source_urls": [
         "https://github.com/FeiZhuLulu/real-api-pricing/blob/6489b60a14680a5ce848131d461a90eb054d03ac/scripts/build_adopted.py",
         "https://github.com/FeiZhuLulu/real-api-pricing/blob/6489b60a14680a5ce848131d461a90eb054d03ac/data/research/quotas-web-2026-09.json",
         "https://github.com/FeiZhuLulu/real-api-pricing/blob/6489b60a14680a5ce848131d461a90eb054d03ac/data/research/glm-adoption-round4-2026-09-07.json",
         "https://docs.bigmodel.cn/cn/coding-plan/overview"
       ],
-      "assumptions_ru": [
-        "Недельный пул приведён к условному месяцу из четырёх недель по конвенции RAP; это не новый официальный месячный лимит.",
-        "Mid — сценарий RAP: среднее арифметическое ёмкостей peak/off-peak, то есть peak × 1.5. При неизменном пуле ставки равны peak × 2/3; это не официальный тариф и не смесь 50/50 токенов по времени.",
-        "Строка использует legacy V2 цену со значениями pools/rates V3, как в принятой таблице RAP. Источник отмечает различие систем квот V2/V3; перенос на старый тариф не подтверждён.",
-        "Отдельная ставка cache write в сохранённой таблице не указана. Принята обычная input-ставка; отсутствие отдельной записи не считается доказанным нулевым тарифом.",
-        "Reasoning-токены сопоставлены опубликованной ставке output. Отдельное подтверждение этого сопоставления в сохранённых данных канала отсутствует."
-      ],
+      "assumptions_ru": [],
       "notes_ru": [
-        "Peak: пн–пт 14:00–18:00 UTC+8. В off-peak официальный расход составляет 50% базового.",
-        "Квота ограничена недельным и пятичасовым окнами; месячный результат предполагает их полное использование.",
-        "Расчёт включает только пять токенных категорий AA. Возможные отдельные расходы инструментов не восстановлены из этих категорий.",
-        "Состав AA переносится в расчёт расхода credits; воспроизведение той же доли cache hits на другом канале не гарантировано. Полное использование месячного пула является условием оценки."
+        "Для старого тарифа GLM известна цена продления V2, но сохранённые квоты и ставки относятся к V3. Совместимость систем V2/V3 не подтверждена; соединять цену V2 с лимитом V3 и рассчитывать стоимость задачи нельзя."
       ],
-      "source_conflicts_ru": [],
-      "additional_limits": {
-        "per_5h": 28000,
-        "per_week": 140000
-      },
-      "capacity_multiplier": 1.5,
-      "charge_multiplier": 0.6666666666666666,
-      "shared_pool_note": "Общие баллы Coding Plan расходуются на все модели; здесь весь пул выделен GLM 5.3 Flash. Peak, mid и off-peak — альтернативные сценарии одного пула, их нельзя складывать.",
+      "source_conflicts_ru": [
+        "Для старого тарифа GLM известна цена продления V2, но сохранённые квоты и ставки относятся к V3. Совместимость систем V2/V3 не подтверждена; соединять цену V2 с лимитом V3 и рассчитывать стоимость задачи нельзя."
+      ],
+      "additional_limits": null,
+      "capacity_multiplier": null,
+      "charge_multiplier": null,
+      "shared_pool_note": null,
       "component_rates": {
-        "non_cache_input": 153.33333333333331,
-        "cache_read": 37.33333333333333,
-        "cache_write": 153.33333333333331,
-        "answer": 533.3333333333333,
-        "reasoning": 533.3333333333333
+        "non_cache_input": null,
+        "cache_read": null,
+        "cache_write": null,
+        "answer": null,
+        "reasoning": null
       },
       "component_rate_status": {
-        "non_cache_input": "assumed",
-        "cache_read": "assumed",
-        "cache_write": "assumed",
-        "answer": "assumed",
-        "reasoning": "assumed"
+        "non_cache_input": "unavailable",
+        "cache_read": "unavailable",
+        "cache_write": "unavailable",
+        "answer": "unavailable",
+        "reasoning": "unavailable"
       },
-      "status": "assumed"
+      "status": "unavailable"
     },
     {
       "id": "glm_coding_max_cn_old_offpeak::glm-5.3-flash",
       "model_id": "glm-5.3-flash",
       "plan": "GLM Coding Max (老客 ¥469) 闲时",
       "monthly_usd": 69.18730730080989,
-      "quota_unit": "points",
-      "monthly_quota": 560000,
-      "original_quota": {
-        "period": "week",
-        "amount": 140000,
-        "periods_per_month": 4,
-        "shared_pool_amount": 140000,
-        "model_pool_amount": null
-      },
-      "rate_basis": "Баллы за 1 000 000 токенов: исходные коэффициенты на 10 000 токенов × 100 / 2. Пул одинаков для всех временных сценариев.",
-      "quota_basis_status": "assumed",
+      "quota_unit": null,
+      "monthly_quota": null,
+      "original_quota": null,
+      "rate_basis": "Для старого тарифа GLM известна цена продления V2, но сохранённые квоты и ставки относятся к V3. Совместимость систем V2/V3 не подтверждена; соединять цену V2 с лимитом V3 и рассчитывать стоимость задачи нельзя.",
+      "quota_basis_status": "unavailable",
+      "unavailable_reason_ru": "Для старого тарифа GLM известна цена продления V2, но сохранённые квоты и ставки относятся к V3. Совместимость систем V2/V3 не подтверждена; соединять цену V2 с лимитом V3 и рассчитывать стоимость задачи нельзя.",
       "source_urls": [
         "https://github.com/FeiZhuLulu/real-api-pricing/blob/6489b60a14680a5ce848131d461a90eb054d03ac/scripts/build_adopted.py",
         "https://github.com/FeiZhuLulu/real-api-pricing/blob/6489b60a14680a5ce848131d461a90eb054d03ac/data/research/quotas-web-2026-09.json",
         "https://github.com/FeiZhuLulu/real-api-pricing/blob/6489b60a14680a5ce848131d461a90eb054d03ac/data/research/glm-adoption-round4-2026-09-07.json",
         "https://docs.bigmodel.cn/cn/coding-plan/overview"
       ],
-      "assumptions_ru": [
-        "Недельный пул приведён к условному месяцу из четырёх недель по конвенции RAP; это не новый официальный месячный лимит.",
-        "Строка использует legacy V2 цену со значениями pools/rates V3, как в принятой таблице RAP. Источник отмечает различие систем квот V2/V3; перенос на старый тариф не подтверждён.",
-        "Отдельная ставка cache write в сохранённой таблице не указана. Принята обычная input-ставка; отсутствие отдельной записи не считается доказанным нулевым тарифом.",
-        "Reasoning-токены сопоставлены опубликованной ставке output. Отдельное подтверждение этого сопоставления в сохранённых данных канала отсутствует."
-      ],
+      "assumptions_ru": [],
       "notes_ru": [
-        "Peak: пн–пт 14:00–18:00 UTC+8. В off-peak официальный расход составляет 50% базового.",
-        "Квота ограничена недельным и пятичасовым окнами; месячный результат предполагает их полное использование.",
-        "Расчёт включает только пять токенных категорий AA. Возможные отдельные расходы инструментов не восстановлены из этих категорий.",
-        "Состав AA переносится в расчёт расхода credits; воспроизведение той же доли cache hits на другом канале не гарантировано. Полное использование месячного пула является условием оценки."
+        "Для старого тарифа GLM известна цена продления V2, но сохранённые квоты и ставки относятся к V3. Совместимость систем V2/V3 не подтверждена; соединять цену V2 с лимитом V3 и рассчитывать стоимость задачи нельзя."
       ],
-      "source_conflicts_ru": [],
-      "additional_limits": {
-        "per_5h": 28000,
-        "per_week": 140000
-      },
-      "capacity_multiplier": 2,
-      "charge_multiplier": 0.5,
-      "shared_pool_note": "Общие баллы Coding Plan расходуются на все модели; здесь весь пул выделен GLM 5.3 Flash. Peak, mid и off-peak — альтернативные сценарии одного пула, их нельзя складывать.",
+      "source_conflicts_ru": [
+        "Для старого тарифа GLM известна цена продления V2, но сохранённые квоты и ставки относятся к V3. Совместимость систем V2/V3 не подтверждена; соединять цену V2 с лимитом V3 и рассчитывать стоимость задачи нельзя."
+      ],
+      "additional_limits": null,
+      "capacity_multiplier": null,
+      "charge_multiplier": null,
+      "shared_pool_note": null,
       "component_rates": {
-        "non_cache_input": 115,
-        "cache_read": 28,
-        "cache_write": 115,
-        "answer": 400,
-        "reasoning": 400
+        "non_cache_input": null,
+        "cache_read": null,
+        "cache_write": null,
+        "answer": null,
+        "reasoning": null
       },
       "component_rate_status": {
-        "non_cache_input": "assumed",
-        "cache_read": "assumed",
-        "cache_write": "assumed",
-        "answer": "assumed",
-        "reasoning": "assumed"
+        "non_cache_input": "unavailable",
+        "cache_read": "unavailable",
+        "cache_write": "unavailable",
+        "answer": "unavailable",
+        "reasoning": "unavailable"
       },
-      "status": "assumed"
+      "status": "unavailable"
     },
     {
       "id": "opencode_go::grok-4.6",
