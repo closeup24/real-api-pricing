@@ -5,6 +5,7 @@ import type {
   PlotlyHTMLElement,
   PlotMouseEvent,
 } from "plotly.js";
+import { ArrowsInSimple, ArrowsOutSimple } from "@phosphor-icons/react";
 import type { Group, Row, State, SiteData } from "./types";
 import { BrandMarks, logoUrlMap } from "./ProviderLogo";
 import { wheelRange } from "./wheelZoom";
@@ -38,7 +39,6 @@ import {
   DOT_RADIUS,
   FRONTIER_RADIUS,
   LABEL_FORCE_CAP,
-  badgeGroups,
   buildExportDecorationsFromLayout,
   cardGroups,
   dataToPixel,
@@ -101,6 +101,7 @@ export default function Chart({
   metricLabels?: ChartMetricLabels;
 }) {
   const host = useRef<HTMLDivElement>(null);
+  const fullscreenShell = useRef<HTMLDivElement>(null);
   const selection = useRef(onSelect);
   selection.current = onSelect;
   const [error, setError] = useState("");
@@ -129,6 +130,7 @@ export default function Chart({
     reset: () => void;
   } | null>(null);
   const [dragMode, setDragMode] = useState<"pan" | "zoom">("pan");
+  const [isFullscreen, setIsFullscreen] = useState(false);
   const [logos, setLogos] = useState<FrontierLogoView[]>([]);
   const [labels, setLabels] = useState<TextLabelView[]>([]);
   const [area, setArea] = useState<PlotBox | null>(null);
@@ -511,11 +513,12 @@ export default function Chart({
           const hitList = plotted.filter((g) => hitSet.has(g.key));
           setLogos(
             frontierLogoViews(
-              badgeGroups(front, hitList),
+              plotted,
               full,
               logoMap,
               state.lang,
               hitSet,
+              frontKeys,
             ),
           );
           const labelGroups = orderLabelGroups(textGroups, hitList);
@@ -671,6 +674,15 @@ export default function Chart({
             });
           });
         };
+        const onFullscreenChange = () => {
+          const active = document.fullscreenElement === shell;
+          setIsFullscreen(active);
+          requestAnimationFrame(() => requestAnimationFrame(() => {
+            const height = active ? shell.clientHeight : mobile ? 470 : 540;
+            void Plotly.relayout(el, { width: el.clientWidth, height }).then(() => syncOverlay());
+          }));
+        };
+        document.addEventListener("fullscreenchange", onFullscreenChange);
         shell.addEventListener("wheel", wheel, { passive: false });
         handle.current = {
           download: async (format) => {
@@ -774,13 +786,17 @@ export default function Chart({
               }
               const baked = exportFull
                 ? buildExportDecorationsFromLayout(
-                    badgeGroups(front, exportHitList),
+                    plotted,
                     exportText,
                     logoMap,
                     exportFull,
                     false,
                     {
                       frontier: frontKeys,
+                      assessments: new Map(plotted.flatMap((group) => {
+                        const assessment = summarizeCostAssessment(group.rows);
+                        return assessment ? [[group.key, assessment.assessment.color] as const] : [];
+                      })),
                       hits: new Map(
                         exportHitList.map((g) => [
                           g.key,
@@ -790,26 +806,6 @@ export default function Chart({
                     },
                   )
                 : { annotations: [], images: [], shapes: [] };
-              // Экспорт сохраняет те же метки на логотипах, что и интерактивный график.
-              const exportBox = exportFull && plotBox(exportFull);
-              if (exportFull && exportBox) {
-                for (const group of badgeGroups(front, exportHitList)) {
-                  const assessment = summarizeCostAssessment(group.rows);
-                  const pt = dataToPixel(exportFull, group.plotPrice, group.score, exportBox);
-                  if (!assessment || !pt || pt.x < exportBox.left || pt.x > exportBox.right
-                      || pt.y < exportBox.top || pt.y > exportBox.bottom) continue;
-                  baked.images.push({
-                    source: `data:image/svg+xml;charset=utf-8,${encodeURIComponent(
-                      `<svg xmlns="http://www.w3.org/2000/svg" width="8" height="8"><circle cx="4" cy="4" r="3.5" fill="${escape(assessment.assessment.color)}" stroke="white"/></svg>`,
-                    )}`,
-                    xref: "paper", yref: "paper",
-                    x: (pt.x + 13 - exportBox.left) / exportBox.width,
-                    y: 1 - (pt.y + 13 - exportBox.top) / exportBox.height,
-                    sizex: 8 / exportBox.width, sizey: 8 / exportBox.height,
-                    xanchor: "center", yanchor: "middle", layer: "above", sizing: "contain", opacity: 0.9,
-                  });
-                }
-              }
               await Plotly.relayout(exportHost, {
                 annotations: [...baked.annotations, ...keyAnnotations],
                 images: baked.images,
@@ -829,14 +825,20 @@ export default function Chart({
         };
         const observer = new ResizeObserver(() => {
           if (!cancelled) {
-            void Plotly.Plots.resize(el);
-            syncOverlay();
+            if (document.fullscreenElement === shell) {
+              const height = shell.clientHeight;
+              void Plotly.relayout(el, { width: el.clientWidth, height }).then(() => syncOverlay());
+            } else {
+              void Plotly.Plots.resize(el);
+              syncOverlay();
+            }
           }
         });
         observer.observe(el);
         cleanup = () => {
           document.fonts?.removeEventListener("loadingdone", fontsLoaded);
           shell.removeEventListener("wheel", wheel);
+          document.removeEventListener("fullscreenchange", onFullscreenChange);
           cancelAnimationFrame(wheelFrame);
           cancelAnimationFrame(dragFrame);
           observer.disconnect();
@@ -954,9 +956,25 @@ export default function Chart({
         )}
       </div>
       <div
+        ref={fullscreenShell}
         className={`chart-shell ${state.view !== "pareto" ? "ranking-chart" : ""}`}
         aria-label={zh ? "交互数据图表" : "Interactive data chart"}
       >
+        <button
+          className="icon-button fullscreen-chart-button"
+          type="button"
+          title={isFullscreen ? (zh ? "退出全屏" : "Exit full screen") : (zh ? "全屏" : "Full screen")}
+          aria-label={isFullscreen ? (zh ? "退出全屏" : "Exit full screen") : (zh ? "展开至全屏" : "Expand chart to full screen")}
+          aria-pressed={isFullscreen}
+          onClick={() => {
+            const shell = fullscreenShell.current;
+            if (!shell) return;
+            if (document.fullscreenElement === shell) void document.exitFullscreen();
+            else if (!document.fullscreenElement) void shell.requestFullscreen();
+          }}
+        >
+          {isFullscreen ? <ArrowsInSimple size={19} /> : <ArrowsOutSimple size={19} />}
+        </button>
         <div ref={host} className="plot" />
         {(logos.some((l) => l.inPlot) ||
           labels.some((l) => l.inPlot) ||
@@ -1007,18 +1025,17 @@ export default function Chart({
               .map((l) => (
                 <span
                   key={`logo-${l.key}`}
-                  className={`arena-logo-mark${l.hit ? " is-hit" : ""}${hover?.key === l.key ? " is-hovered" : ""}`}
-                  style={{ left: l.x, top: l.y, ...hitStyle.get(l.key) }}
+                  className={`arena-logo-mark is-compact${l.frontier ? " is-frontier" : ""}${l.hit ? " is-hit" : ""}${hover?.key === l.key ? " is-hovered" : ""}`}
+                  style={{ left: l.x, top: l.y,
+                    "--assessment-color": assessments.get(l.key)?.assessment.color ?? (dark ? "#77818d" : "#9299a3"),
+                    ...hitStyle.get(l.key),
+                  } as React.CSSProperties}
                 >
                   {l.logoUrl ? (
-                    <img src={l.logoUrl} alt="" width={20} height={20} />
+                    <img src={l.logoUrl} alt="" width={10} height={10} />
                   ) : (
                     <span>{l.provider.slice(0, 2)}</span>
                   )}
-                  {assessments.get(l.key) && <i
-                    className="arena-assessment-dot"
-                    style={{ background: assessments.get(l.key)!.assessment.color }}
-                  />}
                 </span>
               ))}
           </div>

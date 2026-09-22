@@ -450,6 +450,24 @@ h1 {
   position: relative;
   min-height: 470px;
 }
+.fullscreen-chart-button {
+  position: absolute;
+  z-index: 5;
+  top: 10px;
+  left: 10px;
+}
+.chart-shell:fullscreen {
+  width: 100vw;
+  height: 100vh;
+  min-height: 0;
+  overflow: hidden;
+  background: #fff;
+}
+.chart-shell:fullscreen .plot {
+  width: 100%;
+  height: 100% !important;
+  min-height: 0;
+}
 .plot {
   width: 100%;
   min-height: 470px;
@@ -2158,6 +2176,22 @@ small {
   box-shadow: 0 3px 10px rgba(24, 28, 34, 0.18);
   z-index: 1;
 }
+.arena-logo-mark.is-compact {
+  box-sizing: border-box;
+  width: 16px;
+  height: 16px;
+  padding: 1px;
+  border: 2px solid var(--assessment-color, #9299a3);
+  border-radius: 50%;
+  box-shadow: 0 1px 2px rgba(24, 28, 34, 0.18);
+}
+.arena-logo-mark.is-compact.is-frontier {
+  outline: 1px solid #20242a;
+  outline-offset: 1px;
+}
+.arena-logo-mark.is-compact.is-hovered {
+  transform: translate(-50%, -50%) scale(1.5);
+}
 /* Search hits outrank frontier black. The 3px ring, not the hue, is what
    separates a hit from a frontier badge: near-black channel colours (Zhipu)
    would otherwise read as the frontier frame. The ring is box-shadow so the 1px
@@ -2171,6 +2205,9 @@ small {
   box-shadow:
     0 0 0 3px var(--hit-ring, rgba(8, 127, 91, 0.22)),
     0 3px 10px rgba(24, 28, 34, 0.18);
+}
+.arena-logo-mark.is-compact.is-hit {
+  border-color: var(--assessment-color, #9299a3);
 }
 .point-halo {
   position: absolute;
@@ -2197,6 +2234,10 @@ small {
   height: 20px;
   object-fit: contain;
   display: block;
+}
+.arena-logo-mark.is-compact img {
+  width: 10px;
+  height: 10px;
 }
 .arena-logo-mark span {
   font-size: 9px;
@@ -2905,6 +2946,9 @@ body,
   border-color: #69727e;
   background: #20242a;
 }
+:root[data-theme="dark"] .chart-shell:fullscreen {
+  background: #15181c;
+}
 :root[data-theme="dark"] .view-tab small,
 :root[data-theme="dark"] .intro > p,
 :root[data-theme="dark"] .chart-heading p,
@@ -3077,6 +3121,12 @@ body,
   border-color: #2c3239;
   background: #f1f2f3;
 }
+:root[data-theme="dark"] .arena-logo-mark.is-compact {
+  border-color: var(--assessment-color, #9299a3);
+}
+:root[data-theme="dark"] .arena-logo-mark.is-compact.is-frontier {
+  outline-color: #20242a;
+}
 /* The dark base rules above outrank plain .is-hit, so the hit rules must be
    restated here — colours and alpha still come from --hit/--hit-ring. */
 :root[data-theme="dark"] .arena-logo-mark.is-hit {
@@ -3088,6 +3138,9 @@ body,
   box-shadow:
     0 0 0 3px var(--hit-ring, rgba(104, 197, 162, 0.3)),
     0 3px 10px rgba(0, 0, 0, 0.5);
+}
+:root[data-theme="dark"] .arena-logo-mark.is-compact.is-hit {
+  border-color: var(--assessment-color, #9299a3);
 }
 :root[data-theme="dark"] .arena-name-label {
   color: #e6e9ec;

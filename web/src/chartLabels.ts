@@ -5,6 +5,7 @@ import { manufacturer } from "./domain";
 export type LabelMode = "frontier" | "all" | "none";
 
 export const LOGO_SIZE = 28;
+export const POINT_LOGO_SIZE = 16;
 /** Clearance radius of a frontier logo badge and of a plain scatter dot. */
 export const FRONTIER_RADIUS = LOGO_SIZE / 2;
 export const DOT_RADIUS = 6;
@@ -39,6 +40,7 @@ export interface FrontierLogoView {
   y: number;
   logoUrl?: string;
   inPlot: boolean;
+  frontier: boolean;
   /** Search-marked badge: ringed in its channel colour instead of frontier black. */
   hit: boolean;
 }
@@ -421,10 +423,11 @@ export function frontierLogoViews(
   logos: Map<string, string>,
   lang = "en",
   hits?: Set<string>,
+  frontier?: Set<string>,
 ): FrontierLogoView[] {
   const box = plotBox(layout);
   if (!box) return [];
-  const half = LOGO_SIZE / 2;
+  const half = POINT_LOGO_SIZE / 2;
   const out: FrontierLogoView[] = [];
   for (const g of badges) {
     const pt = dataToPixel(layout, g.plotPrice, g.score, box);
@@ -439,6 +442,7 @@ export function frontierLogoViews(
       y: pt.y,
       logoUrl: logos.get(labelProvider(g)),
       inPlot: inPlotBox(pt.x, pt.y, box, -half),
+      frontier: !!frontier?.has(g.key),
       hit: !!hits?.has(g.key),
     });
   }
@@ -578,7 +582,7 @@ function escapeHtml(s: string): string {
 
 /**
  * Build export images/annotations from a finished export plot's fullLayout.
- * Paper coords are plot-area normalized (fx, fy); logo size is 28/plotW × 28/plotH.
+ * Paper coords are plot-area normalized (fx, fy); point-logo size is 16/plotW × 16/plotH.
  */
 export function buildExportDecorationsFromLayout(
   badges: Group[],
@@ -586,7 +590,7 @@ export function buildExportDecorationsFromLayout(
   logos: Map<string, string>,
   layout: PlotLayout,
   mobile: boolean,
-  marks?: { frontier?: Set<string>; hits?: Map<string, string> },
+  marks?: { frontier?: Set<string>; hits?: Map<string, string>; assessments?: Map<string, string> },
 ): {
   annotations: Partial<Annotations>[];
   images: Array<Partial<Image> & Record<string, unknown>>;
@@ -613,20 +617,22 @@ export function buildExportDecorationsFromLayout(
     const fx = toPaperX(pt.x);
     const fy = toPaperY(pt.y);
     if (fx < -0.05 || fx > 1.05 || fy < -0.05 || fy > 1.05) continue;
-    // Export marks mirror the overlay: hits get their channel colour as a
-    // 1.6px stroke, everything else the near-black frontier frame (also the
-    // default without marks).
+    // The reliability colour is the compact logo's outline. Frontier and
+    // search styling add a second ring without hiding that rating.
     const hitColor = marks?.hits?.get(g.key);
+    const ratingColor = marks?.assessments?.get(g.key) ?? "#858b95";
+    const frontier = marks?.frontier?.has(g.key);
+    const frameColor = hitColor ?? ratingColor;
     images.push({
       source: `data:image/svg+xml;charset=utf-8,${encodeURIComponent(
-        `<svg xmlns="http://www.w3.org/2000/svg" width="28" height="28" viewBox="0 0 28 28"><rect x=".5" y=".5" width="27" height="27" rx="6" fill="white" stroke="${escapeHtml(hitColor ?? "#20242a")}" stroke-width="${hitColor ? 1.6 : 1}"/><image href="${escapeHtml(src)}" x="4" y="4" width="20" height="20"/></svg>`,
+        `<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 16 16"><circle cx="8" cy="8" r="7.2" fill="white" stroke="${escapeHtml(frameColor)}" stroke-width="2"/><image href="${escapeHtml(src)}" x="3" y="3" width="10" height="10"/>${frontier ? '<circle cx="8" cy="8" r="7.7" fill="none" stroke="#20242a" stroke-width=".7"/>' : ""}${hitColor ? '<circle cx="8" cy="8" r="7.8" fill="none" stroke="' + escapeHtml(hitColor) + '" stroke-width=".8"/>' : ""}</svg>`,
       )}`,
       xref: "paper",
       yref: "paper",
       x: fx,
       y: fy,
-      sizex: LOGO_SIZE / box.width,
-      sizey: LOGO_SIZE / box.height,
+      sizex: POINT_LOGO_SIZE / box.width,
+      sizey: POINT_LOGO_SIZE / box.height,
       xanchor: "center",
       yanchor: "middle",
       layer: "above",
