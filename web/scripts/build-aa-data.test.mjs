@@ -11,6 +11,22 @@ const [aa, pricing, rates, audit, weighting] = await Promise.all([
 ]);
 const reference = createAaData(aa, pricing, rates, audit, weighting);
 
+test('Основная вкладка получает обычные подписки, метод переноса и исходные числа замера', async () => {
+  const empirical = await read('pricing/empirical-evidence.json');
+  const data = createAaData(aa, pricing, rates, audit, weighting, empirical);
+  assert.equal(data.quota_scenario.metadata.included_plans, 64);
+  assert.equal(data.metadata.row_count, data.quota_scenario.rows.length);
+  const luna = data.quota_scenario.rows.find(row => row.pricing_id === 'chatgpt_plus::gpt-5.6-luna');
+  assert.equal(luna.method, 'empirical_api_calibration');
+  assert.equal(luna.empirical.calibration.quota_fraction, .06);
+  assert.equal(luna.empirical.calibration.sample_components.length, 3);
+  const claude = data.quota_scenario.rows.find(row => row.pricing_id === 'claude_max_20x::claude-opus-5');
+  assert.equal(claude.method, 'empirical_token_proxy');
+  assert.equal(claude.empirical.observed_monthly_tokens, 15_700_000_000);
+  assert.deepEqual(data.api_estimate, reference.api_estimate);
+  assert.deepEqual(data.token_scenario, reference.token_scenario);
+});
+
 for (const [name, mixture] of [['без смеси RAP', undefined], ['с неверной смесью RAP', { cache: -4, input: 20, output: 'неизвестно' }]]) {
   test(`Новая сборка ${name} сохраняет квоты и инверсию AA`, () => {
     const changed = structuredClone(pricing);

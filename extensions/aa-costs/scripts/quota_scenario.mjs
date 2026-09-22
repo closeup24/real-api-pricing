@@ -185,6 +185,9 @@ export function buildQuotaScenario(aa, pricing, rates) {
       component_rate_status: rate?.component_rate_status ?? null,
       status: included ? rate.status : 'unavailable', included,
       confidence: rate?.status ?? 'unavailable',
+      method: rate?.method ?? METHOD,
+      evidence_method: rate?.evidence_method,
+      empirical: rate?.empirical,
       original_quota: rate?.original_quota ?? null, rate_basis: rate?.rate_basis ?? null,
       shared_pool_note: rate?.shared_pool_note ?? null,
       additional_limits: rate?.additional_limits ?? null,
@@ -227,6 +230,7 @@ export function buildQuotaScenario(aa, pricing, rates) {
       rows.push({
         ...common, id: `${variant.source_id}::quota::${plan.id}`, kind: 'subscription', plan: plan.plan, plan_id: plan.plan_id,
         pricing_id: plan.id, confidence: rate.status, monthly_usd: rate.monthly_usd, monthly_quota: rate.monthly_quota, quota_unit: rate.quota_unit,
+        method: rate.method ?? METHOD, evidence_method: rate.evidence_method, empirical: rate.empirical,
         original_quota: rate.original_quota ?? null, component_rates: { ...rate.component_rates }, rate_basis: rate.rate_basis,
         component_rate_status: rate.component_rate_status ?? null,
         shared_pool_note: rate.shared_pool_note ?? null,

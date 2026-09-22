@@ -1,0 +1,930 @@
+{
+  "schema_version": 1,
+  "metadata": {
+    "pricing_revision": "6489b60a14680a5ce848131d461a90eb054d03ac",
+    "pricing_retrieved_at_utc": "2026-09-22T10:53:17.553330+00:00",
+    "retrieved_at_utc": "2026-09-22T10:53:17.553330+00:00",
+    "pricing_rows_sha256": "c4a34f0db796d78eca7f6aa143f870415c8783fda5a6b91ae55c8f5a1d5192f5",
+    "source_revision": "b7d9efa1f6ac50a5dfe2f6bfddcab9edf0b36c71",
+    "source_sha256": {
+      "data/research/chatgpt-quotas-round5-2026-09.json": "7e5ca6ba31968e8edcc6dbf1c81ac5b4b2d58ff0afd47528950feed5a02c77db",
+      "data/research/chatgpt-pro20x-gateway-measurement-2026-09-06.json": "fd527dcea1438a77d3a2fb6938f0bc7dead9e590f23fc3eaaf5e46ecb21837a1",
+      "data/research/chatgpt-luna-adoption-round6-2026-09-08.json": "084179dd0f125227d2b99badc66556b5470a260729025218810850e6b29021fb",
+      "data/research/chatgpt-astra-adoption-round7-2026-09-11.json": "62e233aee7f609830e29666e23a5daee06bb85ad1d4c3fad87077f01b5d0025b",
+      "data/research/chatgpt-astra-round12-2026-09-16.json": "87031366641e93c7d1e7fba3566361a1765b3088b6bc5b002559f298e65aca2c",
+      "data/research/chatgpt-astra-sameframe-round13-2026-09-20.json": "e4ad6eb0ab490fa20970b1f31ab598a1496ddab58778cedea380dfce00079bc6",
+      "data/research/chatgpt-astra-round14-2026-09-21.json": "f9c4ee271d6b6d36b81dc228df5d9a90f27e9915436e0479bdbe901a5e7c6e78",
+      "data/research/claude-adoption-round8-2026-09-20.json": "af12f0302aba159d2f06e6f675078d3a234bd78bd9e44693d94a22457a442131",
+      "data/research/claude-adoption-round6-2026-09-06.json": "40408c121c5f9ac37bf28f858f30bbfe7a132f350d053953c2edb21287a72950",
+      "data/research/claude-adoption-round7-2026-09-14.json": "c5626a20d8c00582a53f19aa8976e26d1dd3a36ec8e8174642acfba89971f389",
+      "data/research/claude-adoption-round9-2026-09-21.json": "161ab0a0a91e2f10f3c29d78c5218a2d19e8a51cccf4f2413ff310ab389674e0",
+      "data/research/claude-fable51-round3-2026-09-20.json": "ae99b25e243bf6cb65416d90c7236422998cc93a19478bdf4375f3d934e18576",
+      "data/research/gemini-weekly-round7-2026-09-21.json": "c4b8acac6611935c67a33371f41d145cbeb9544c0bd7e0fbe1fb7e7a1518bb6d",
+      "data/research/devin-usage-round4-2026-09-14.json": "2dd32f9f4b60f36357c6802469c013c2e038631045ab2d8567b00915c8690fb1",
+      "data/research/quotas-web-round2-2026-09.json": "d1bb34a5ffe28caaa473338f31192e0d2866ece7ce853a2e5d924e14d73ed095",
+      "data/research/quotas-web-round3-2026-09.json": "46aaef2fa86edff73cc3b34c5c0c7d1576787a5699f4cc3b7417a24dacf3d216",
+      "data/research/cursor-adoption-round8-2026-09-06.json": "27740bb7845c29cd942d6f359b80d52dc67372277d2c51e1e90069167fe12d0f",
+      "data/research/cursor-user-screenshot-round7-2026-09-06.json": "d55886af83443061f7ae12deb71f9998c94662a1edc31cf3719feb96be7dff88",
+      "data/research/supergrok-grok47-round1-2026-09-22.json": "5953edd203508528fc22c70dafd532b15ba720498b9814c47045f223d5f8ac11",
+      "derived/points.json": "a5a3a3c8f3eb5cb660d77d32d710f09f3ab842fa5916b2c513338e82ec8f8e98"
+    },
+    "generated_by": "scripts/build_empirical_evidence.mjs",
+    "rows": 28,
+    "method_counts": {
+      "empirical_token_proxy": 18,
+      "empirical_api_calibration": 10
+    },
+    "method_ru": "Полные наблюдения стоимости и процента квоты дают условную API-калибровку; остальные практические измерения и явно отмеченные переносы дают token proxy. Фиксированная смесь RAP не используется.",
+    "period_note_ru": "Недельные наблюдения приводятся к четырём неделям; это не календарный месяц. Пулы общие для моделей одного тарифа: ёмкости нельзя складывать.",
+    "source_policy_ru": "Снимок pricing и его аудит сохранены. Research и три дополнительные пары Grok 4.7 прочитаны из закреплённого коммита; их точные байты проверяются SHA-256."
+  },
+  "rows": [
+    {
+      "id": "chatgpt_plus::gpt-5.6-sol",
+      "model_id": "gpt-5.6-sol",
+      "monthly_usd": 20,
+      "monthly_tokens": 616000000,
+      "method": "empirical_token_proxy",
+      "evidence_method": "direct_measurement",
+      "basis_label": "Наблюдённая ёмкость подписки",
+      "reason_ru": "RAP принимает отдельный замер ChatGPT Plus для Sol из awesome-coding-plan от 2026-07-30; фиксированная смесь в расчёте этой строки не используется.",
+      "confidence": "medium",
+      "token_limit_kind": "observed_workload",
+      "notes_ru": [
+        "Используется наблюдённая raw-token ёмкость. Цена задачи AA = месячная плата × токены AA / наблюдённые токены в месяц; равное списание всех категорий и перенос на другую смесь не подтверждены.",
+        "Перенос принятой raw-token ёмкости на смесь AA не подтверждён; это условие сценария, а не гарантия провайдера.",
+        "В adopted отсутствуют исходные счётчики, доля израсходованной квоты и состав токенов; аудит опирается на атрибуцию замера и confidence=medium в RAP."
+      ],
+      "source_urls": [
+        "https://github.com/FeiZhuLulu/real-api-pricing/blob/6489b60a14680a5ce848131d461a90eb054d03ac/data/adopted.csv",
+        "https://github.com/FeiZhuLulu/real-api-pricing/blob/6489b60a14680a5ce848131d461a90eb054d03ac/scripts/build_adopted.py",
+        "https://github.com/FeiZhuLulu/real-api-pricing/blob/b7d9efa1f6ac50a5dfe2f6bfddcab9edf0b36c71/data/research/chatgpt-quotas-round5-2026-09.json",
+        "https://github.com/FeiZhuLulu/real-api-pricing/blob/b7d9efa1f6ac50a5dfe2f6bfddcab9edf0b36c71/data/research/chatgpt-pro20x-gateway-measurement-2026-09-06.json",
+        "https://github.com/mahonzhan/awesome-coding-plan",
+        "https://codex-quota.manetli.com/api/public-stats"
+      ]
+    },
+    {
+      "id": "chatgpt_pro_5x::gpt-5.6-sol",
+      "model_id": "gpt-5.6-sol",
+      "monthly_usd": 100,
+      "monthly_tokens": 3080000000,
+      "method": "empirical_token_proxy",
+      "evidence_method": "plan_extrapolation",
+      "basis_label": "Перенос практического измерения между тарифами",
+      "reason_ru": "Ёмкость Plus умножена на официальный коэффициент тарифа 5x; независимого замера Sol на Pro 5x нет.",
+      "confidence": "medium",
+      "token_limit_kind": "observed_workload",
+      "notes_ru": [
+        "Используется наблюдённая raw-token ёмкость. Цена задачи AA = месячная плата × токены AA / наблюдённые токены в месяц; равное списание всех категорий и перенос на другую смесь не подтверждены.",
+        "Перенос принятой raw-token ёмкости на смесь AA не подтверждён; это условие сценария, а не гарантия провайдера."
+      ],
+      "source_urls": [
+        "https://github.com/FeiZhuLulu/real-api-pricing/blob/6489b60a14680a5ce848131d461a90eb054d03ac/data/adopted.csv",
+        "https://github.com/FeiZhuLulu/real-api-pricing/blob/6489b60a14680a5ce848131d461a90eb054d03ac/scripts/build_adopted.py",
+        "https://github.com/FeiZhuLulu/real-api-pricing/blob/b7d9efa1f6ac50a5dfe2f6bfddcab9edf0b36c71/data/research/chatgpt-quotas-round5-2026-09.json",
+        "https://github.com/FeiZhuLulu/real-api-pricing/blob/b7d9efa1f6ac50a5dfe2f6bfddcab9edf0b36c71/data/research/chatgpt-pro20x-gateway-measurement-2026-09-06.json",
+        "https://github.com/mahonzhan/awesome-coding-plan",
+        "https://codex-quota.manetli.com/api/public-stats"
+      ]
+    },
+    {
+      "id": "chatgpt_pro_20x::gpt-5.6-sol",
+      "model_id": "gpt-5.6-sol",
+      "monthly_usd": 200,
+      "monthly_tokens": 12902000000,
+      "method": "empirical_token_proxy",
+      "evidence_method": "pooled_measurements",
+      "basis_label": "Несколько практических измерений",
+      "reason_ru": "Средневзвешенная оценка пяти источников включает шлюзовые сегменты с Astra; это не чистый замер Sol.",
+      "confidence": "high",
+      "token_limit_kind": "observed_workload",
+      "notes_ru": [
+        "Используется наблюдённая raw-token ёмкость. Цена задачи AA = месячная плата × токены AA / наблюдённые токены в месяц; равное списание всех категорий и перенос на другую смесь не подтверждены.",
+        "Перенос принятой raw-token ёмкости на смесь AA не подтверждён; это условие сценария, а не гарантия провайдера.",
+        "RAP уменьшает вес смешанных сегментов, но не исключает их из принятого значения."
+      ],
+      "source_urls": [
+        "https://github.com/FeiZhuLulu/real-api-pricing/blob/6489b60a14680a5ce848131d461a90eb054d03ac/data/adopted.csv",
+        "https://github.com/FeiZhuLulu/real-api-pricing/blob/6489b60a14680a5ce848131d461a90eb054d03ac/scripts/build_adopted.py",
+        "https://github.com/FeiZhuLulu/real-api-pricing/blob/b7d9efa1f6ac50a5dfe2f6bfddcab9edf0b36c71/data/research/chatgpt-quotas-round5-2026-09.json",
+        "https://github.com/FeiZhuLulu/real-api-pricing/blob/b7d9efa1f6ac50a5dfe2f6bfddcab9edf0b36c71/data/research/chatgpt-pro20x-gateway-measurement-2026-09-06.json",
+        "https://github.com/mahonzhan/awesome-coding-plan",
+        "https://codex-quota.manetli.com/api/public-stats"
+      ]
+    },
+    {
+      "id": "chatgpt_plus::gpt-5.6-luna",
+      "model_id": "gpt-5.6-luna",
+      "monthly_usd": 20,
+      "monthly_tokens": 7511000000,
+      "method": "empirical_api_calibration",
+      "evidence_method": "direct_measurement",
+      "basis_label": "API-калибровка практического замера",
+      "reason_ru": "Полный срез Luna на Plus: 112 666 769 токенов и 6% недельной квоты; стоимость восстановлена по фактическим категориям, без фиксированной смеси.",
+      "confidence": "high",
+      "token_limit_kind": "observed_workload",
+      "notes_ru": [
+        "API-эквивалент наблюдения делится на долю квоты и приводится к месяцу. Перенос на AA предполагает пропорциональность списания квоты API-стоимости; отдельные внутренние веса подписки этим не доказаны.",
+        "Reasoning входит в output и повторно не прибавляется. Процент 6% округлён; один аккаунт и один срез.",
+        "Прямой замер Plus от 2026-09-08.",
+        "API-эквивалент Luna не переносится на другие модели: их внутренние веса могут отличаться."
+      ],
+      "source_urls": [
+        "https://github.com/FeiZhuLulu/real-api-pricing/blob/6489b60a14680a5ce848131d461a90eb054d03ac/data/adopted.csv",
+        "https://github.com/FeiZhuLulu/real-api-pricing/blob/6489b60a14680a5ce848131d461a90eb054d03ac/scripts/build_adopted.py",
+        "https://github.com/FeiZhuLulu/real-api-pricing/blob/b7d9efa1f6ac50a5dfe2f6bfddcab9edf0b36c71/data/research/chatgpt-luna-adoption-round6-2026-09-08.json",
+        "https://github.com/FeiZhuLulu/real-api-pricing/issues/10#issuecomment-5576865371",
+        "https://github.com/FeiZhuLulu/real-api-pricing/issues/8#issuecomment-5573605351"
+      ],
+      "calibration": {
+        "observed_api_usd": 3.21851192,
+        "quota_fraction": 0.06,
+        "periods_per_month": 4,
+        "plan_multiplier": 1,
+        "sample_components": [
+          {
+            "label": "Обычный вход",
+            "tokens": 2941040,
+            "rate_usd_per_million": 0.2
+          },
+          {
+            "label": "Чтение кэша",
+            "tokens": 109356416,
+            "rate_usd_per_million": 0.02
+          },
+          {
+            "label": "Выход, включая reasoning",
+            "tokens": 369313,
+            "rate_usd_per_million": 1.2
+          }
+        ]
+      }
+    },
+    {
+      "id": "chatgpt_pro_5x::gpt-5.6-luna",
+      "model_id": "gpt-5.6-luna",
+      "monthly_usd": 100,
+      "monthly_tokens": 37556000000,
+      "method": "empirical_api_calibration",
+      "evidence_method": "plan_extrapolation",
+      "basis_label": "API-калибровка замера с переносом тарифа",
+      "reason_ru": "Полный срез Luna на Plus: 112 666 769 токенов и 6% недельной квоты; стоимость восстановлена по фактическим категориям, без фиксированной смеси.",
+      "confidence": "medium",
+      "token_limit_kind": "observed_workload",
+      "notes_ru": [
+        "API-эквивалент наблюдения делится на долю квоты и приводится к месяцу. Перенос на AA предполагает пропорциональность списания квоты API-стоимости; отдельные внутренние веса подписки этим не доказаны.",
+        "Reasoning входит в output и повторно не прибавляется. Процент 6% округлён; один аккаунт и один срез.",
+        "Пул Plus умножается на 5; это перенос между тарифами, а не независимый замер Pro.",
+        "API-эквивалент Luna не переносится на другие модели: их внутренние веса могут отличаться."
+      ],
+      "source_urls": [
+        "https://github.com/FeiZhuLulu/real-api-pricing/blob/6489b60a14680a5ce848131d461a90eb054d03ac/data/adopted.csv",
+        "https://github.com/FeiZhuLulu/real-api-pricing/blob/6489b60a14680a5ce848131d461a90eb054d03ac/scripts/build_adopted.py",
+        "https://github.com/FeiZhuLulu/real-api-pricing/blob/b7d9efa1f6ac50a5dfe2f6bfddcab9edf0b36c71/data/research/chatgpt-luna-adoption-round6-2026-09-08.json",
+        "https://github.com/FeiZhuLulu/real-api-pricing/issues/10#issuecomment-5576865371",
+        "https://github.com/FeiZhuLulu/real-api-pricing/issues/8#issuecomment-5573605351"
+      ],
+      "calibration": {
+        "observed_api_usd": 3.21851192,
+        "quota_fraction": 0.06,
+        "periods_per_month": 4,
+        "plan_multiplier": 5,
+        "sample_components": [
+          {
+            "label": "Обычный вход",
+            "tokens": 2941040,
+            "rate_usd_per_million": 0.2
+          },
+          {
+            "label": "Чтение кэша",
+            "tokens": 109356416,
+            "rate_usd_per_million": 0.02
+          },
+          {
+            "label": "Выход, включая reasoning",
+            "tokens": 369313,
+            "rate_usd_per_million": 1.2
+          }
+        ]
+      }
+    },
+    {
+      "id": "chatgpt_pro_20x::gpt-5.6-luna",
+      "model_id": "gpt-5.6-luna",
+      "monthly_usd": 200,
+      "monthly_tokens": 150222000000,
+      "method": "empirical_api_calibration",
+      "evidence_method": "plan_extrapolation",
+      "basis_label": "API-калибровка замера с переносом тарифа",
+      "reason_ru": "Полный срез Luna на Plus: 112 666 769 токенов и 6% недельной квоты; стоимость восстановлена по фактическим категориям, без фиксированной смеси.",
+      "confidence": "medium",
+      "token_limit_kind": "observed_workload",
+      "notes_ru": [
+        "API-эквивалент наблюдения делится на долю квоты и приводится к месяцу. Перенос на AA предполагает пропорциональность списания квоты API-стоимости; отдельные внутренние веса подписки этим не доказаны.",
+        "Reasoning входит в output и повторно не прибавляется. Процент 6% округлён; один аккаунт и один срез.",
+        "Пул Plus умножается на 20; это перенос между тарифами, а не независимый замер Pro.",
+        "API-эквивалент Luna не переносится на другие модели: их внутренние веса могут отличаться."
+      ],
+      "source_urls": [
+        "https://github.com/FeiZhuLulu/real-api-pricing/blob/6489b60a14680a5ce848131d461a90eb054d03ac/data/adopted.csv",
+        "https://github.com/FeiZhuLulu/real-api-pricing/blob/6489b60a14680a5ce848131d461a90eb054d03ac/scripts/build_adopted.py",
+        "https://github.com/FeiZhuLulu/real-api-pricing/blob/b7d9efa1f6ac50a5dfe2f6bfddcab9edf0b36c71/data/research/chatgpt-luna-adoption-round6-2026-09-08.json",
+        "https://github.com/FeiZhuLulu/real-api-pricing/issues/10#issuecomment-5576865371",
+        "https://github.com/FeiZhuLulu/real-api-pricing/issues/8#issuecomment-5573605351"
+      ],
+      "calibration": {
+        "observed_api_usd": 3.21851192,
+        "quota_fraction": 0.06,
+        "periods_per_month": 4,
+        "plan_multiplier": 20,
+        "sample_components": [
+          {
+            "label": "Обычный вход",
+            "tokens": 2941040,
+            "rate_usd_per_million": 0.2
+          },
+          {
+            "label": "Чтение кэша",
+            "tokens": 109356416,
+            "rate_usd_per_million": 0.02
+          },
+          {
+            "label": "Выход, включая reasoning",
+            "tokens": 369313,
+            "rate_usd_per_million": 1.2
+          }
+        ]
+      }
+    },
+    {
+      "id": "chatgpt_plus::gpt-6-astra",
+      "model_id": "gpt-6-astra",
+      "monthly_usd": 20,
+      "monthly_tokens": 159000000,
+      "method": "empirical_token_proxy",
+      "evidence_method": "direct_measurement",
+      "basis_label": "Наблюдённая ёмкость подписки",
+      "reason_ru": "В счётчике 10 336 745 токенов учтены input и cache read, но отсутствует output; это не полный raw-token total.",
+      "confidence": "high",
+      "token_limit_kind": "observed_workload",
+      "notes_ru": [
+        "Используется наблюдённая raw-token ёмкость. Цена задачи AA = месячная плата × токены AA / наблюдённые токены в месяц; равное списание всех категорий и перенос на другую смесь не подтверждены.",
+        "Перенос принятой raw-token ёмкости на смесь AA не подтверждён; это условие сценария, а не гарантия провайдера.",
+        "RAP оценивает влияние пропуска по другой модели Luna; такая оценка не восстанавливает выходные токены Astra."
+      ],
+      "source_urls": [
+        "https://github.com/FeiZhuLulu/real-api-pricing/blob/6489b60a14680a5ce848131d461a90eb054d03ac/data/adopted.csv",
+        "https://github.com/FeiZhuLulu/real-api-pricing/blob/6489b60a14680a5ce848131d461a90eb054d03ac/scripts/build_adopted.py",
+        "https://github.com/FeiZhuLulu/real-api-pricing/blob/b7d9efa1f6ac50a5dfe2f6bfddcab9edf0b36c71/data/research/chatgpt-astra-adoption-round7-2026-09-11.json",
+        "https://github.com/FeiZhuLulu/real-api-pricing/blob/b7d9efa1f6ac50a5dfe2f6bfddcab9edf0b36c71/data/research/chatgpt-astra-round12-2026-09-16.json",
+        "https://github.com/FeiZhuLulu/real-api-pricing/blob/b7d9efa1f6ac50a5dfe2f6bfddcab9edf0b36c71/data/research/chatgpt-astra-sameframe-round13-2026-09-20.json",
+        "https://github.com/FeiZhuLulu/real-api-pricing/blob/b7d9efa1f6ac50a5dfe2f6bfddcab9edf0b36c71/data/research/chatgpt-astra-round14-2026-09-21.json"
+      ]
+    },
+    {
+      "id": "chatgpt_pro_20x::gpt-6-astra",
+      "model_id": "gpt-6-astra",
+      "monthly_usd": 200,
+      "monthly_tokens": 3812000000,
+      "method": "empirical_api_calibration",
+      "evidence_method": "direct_measurement",
+      "basis_label": "API-калибровка практического замера",
+      "reason_ru": "V2EX: полный срез Astra 605 074 493 токена при заявленных 75% недельной квоты Pro 20x.",
+      "confidence": "medium",
+      "token_limit_kind": "observed_workload",
+      "notes_ru": [
+        "API-эквивалент наблюдения делится на долю квоты и приводится к месяцу. Перенос на AA предполагает пропорциональность списания квоты API-стоимости; отдельные внутренние веса подписки этим не доказаны.",
+        "Lightweight/medium, без Fast, контекст <272K. Cache write проверен автором и равен нулю; соответствие окна 75% заявлено автором.",
+        "monthly_tokens сохраняет принятый RAP агрегат для справки; API-калибровка использует этот конкретный срез, а не агрегированный token proxy.",
+        "Astra Plus имеет отдельные условия limited-доступа; этот пул не получен умножением Plus на 5 или 20."
+      ],
+      "source_urls": [
+        "https://github.com/FeiZhuLulu/real-api-pricing/blob/6489b60a14680a5ce848131d461a90eb054d03ac/data/adopted.csv",
+        "https://github.com/FeiZhuLulu/real-api-pricing/blob/6489b60a14680a5ce848131d461a90eb054d03ac/scripts/build_adopted.py",
+        "https://github.com/FeiZhuLulu/real-api-pricing/blob/b7d9efa1f6ac50a5dfe2f6bfddcab9edf0b36c71/data/research/chatgpt-astra-adoption-round7-2026-09-11.json",
+        "https://github.com/FeiZhuLulu/real-api-pricing/blob/b7d9efa1f6ac50a5dfe2f6bfddcab9edf0b36c71/data/research/chatgpt-astra-round12-2026-09-16.json",
+        "https://github.com/FeiZhuLulu/real-api-pricing/blob/b7d9efa1f6ac50a5dfe2f6bfddcab9edf0b36c71/data/research/chatgpt-astra-sameframe-round13-2026-09-20.json",
+        "https://github.com/FeiZhuLulu/real-api-pricing/blob/b7d9efa1f6ac50a5dfe2f6bfddcab9edf0b36c71/data/research/chatgpt-astra-round14-2026-09-21.json",
+        "https://www.v2ex.com/t/1241470"
+      ],
+      "calibration": {
+        "observed_api_usd": 921.96613,
+        "quota_fraction": 0.75,
+        "periods_per_month": 4,
+        "plan_multiplier": 1,
+        "sample_components": [
+          {
+            "label": "Обычный вход",
+            "tokens": 16835563,
+            "rate_usd_per_million": 10
+          },
+          {
+            "label": "Чтение кэша",
+            "tokens": 584864000,
+            "rate_usd_per_million": 1
+          },
+          {
+            "label": "Выход, включая reasoning",
+            "tokens": 3374930,
+            "rate_usd_per_million": 50
+          }
+        ]
+      }
+    },
+    {
+      "id": "devin_max::gpt-6-astra",
+      "model_id": "gpt-6-astra",
+      "monthly_usd": 200,
+      "monthly_tokens": 1402000000,
+      "method": "empirical_token_proxy",
+      "evidence_method": "direct_measurement",
+      "basis_label": "Наблюдённая ёмкость подписки",
+      "reason_ru": "305 025 580 полных токенов Astra High / 87% недельной квоты × 4; все четыре категории указаны и точно сходятся с total.",
+      "confidence": "high",
+      "token_limit_kind": "observed_workload",
+      "notes_ru": [
+        "Используется наблюдённая raw-token ёмкость. Цена задачи AA = месячная плата × токены AA / наблюдённые токены в месяц; равное списание всех категорий и перенос на другую смесь не подтверждены.",
+        "Перенос принятой raw-token ёмкости на смесь AA не подтверждён; это условие сценария, а не гарантия провайдера.",
+        "Это замер Astra High при очень большой доле кэша; перенос на другие effort и нагрузки отдельно не проверен.",
+        "Процент расхода округлён; RAP указывает месячный диапазон примерно 1.394–1.411 млрд токенов."
+      ],
+      "source_urls": [
+        "https://github.com/FeiZhuLulu/real-api-pricing/blob/6489b60a14680a5ce848131d461a90eb054d03ac/data/adopted.csv",
+        "https://github.com/FeiZhuLulu/real-api-pricing/blob/6489b60a14680a5ce848131d461a90eb054d03ac/scripts/build_adopted.py",
+        "https://github.com/FeiZhuLulu/real-api-pricing/blob/b7d9efa1f6ac50a5dfe2f6bfddcab9edf0b36c71/data/research/devin-usage-round4-2026-09-14.json"
+      ]
+    },
+    {
+      "id": "google_ai_pro_us::gemini-3.8-flash",
+      "model_id": "gemini-3.8-flash",
+      "monthly_usd": 19.99,
+      "monthly_tokens": 2241000000,
+      "method": "empirical_api_calibration",
+      "evidence_method": "direct_measurement",
+      "basis_label": "API-калибровка практического замера",
+      "reason_ru": "Gemini 3.8 Flash: наблюдённые $11.86 token worth соответствуют 9.88% недельной квоты Google AI Pro.",
+      "confidence": "high",
+      "token_limit_kind": "observed_workload",
+      "notes_ru": [
+        "API-эквивалент наблюдения делится на долю квоты и приводится к месяцу. Перенос на AA предполагает пропорциональность списания квоты API-стоимости; отдельные внутренние веса подписки этим не доказаны.",
+        "Использованы $11.86 / 9.88% напрямую; округлённая производная $120.1 в расчёт не подставляется.",
+        "Категории и стоимость в источнике округлены; недельная трактовка полосы сообщена пользователем, второго аккаунта нет.",
+        "Прямой замер Google AI Pro в Antigravity.",
+        "API-цены в наблюдении относятся к вводному тарифу до 2026-12-31; одинаковое списание новых условий не гарантируется."
+      ],
+      "source_urls": [
+        "https://github.com/FeiZhuLulu/real-api-pricing/blob/6489b60a14680a5ce848131d461a90eb054d03ac/data/adopted.csv",
+        "https://github.com/FeiZhuLulu/real-api-pricing/blob/6489b60a14680a5ce848131d461a90eb054d03ac/scripts/build_adopted.py",
+        "https://github.com/FeiZhuLulu/real-api-pricing/blob/b7d9efa1f6ac50a5dfe2f6bfddcab9edf0b36c71/data/research/gemini-weekly-round7-2026-09-21.json",
+        "https://antigravity.google/docs/plans"
+      ],
+      "calibration": {
+        "observed_api_usd": 11.86,
+        "quota_fraction": 0.09880000000000001,
+        "periods_per_month": 4,
+        "plan_multiplier": 1
+      }
+    },
+    {
+      "id": "google_ai_ultra_5x_us::gemini-3.8-flash",
+      "model_id": "gemini-3.8-flash",
+      "monthly_usd": 99.99,
+      "monthly_tokens": 11205000000,
+      "method": "empirical_api_calibration",
+      "evidence_method": "plan_extrapolation",
+      "basis_label": "API-калибровка замера с переносом тарифа",
+      "reason_ru": "Gemini 3.8 Flash: наблюдённые $11.86 token worth соответствуют 9.88% недельной квоты Google AI Pro.",
+      "confidence": "low",
+      "token_limit_kind": "observed_workload",
+      "notes_ru": [
+        "API-эквивалент наблюдения делится на долю квоты и приводится к месяцу. Перенос на AA предполагает пропорциональность списания квоты API-стоимости; отдельные внутренние веса подписки этим не доказаны.",
+        "Использованы $11.86 / 9.88% напрямую; округлённая производная $120.1 в расчёт не подставляется.",
+        "Категории и стоимость в источнике округлены; недельная трактовка полосы сообщена пользователем, второго аккаунта нет.",
+        "Официальный коэффициент token worth 5× переносит замер Pro на Ultra; независимого замера Ultra нет.",
+        "API-цены в наблюдении относятся к вводному тарифу до 2026-12-31; одинаковое списание новых условий не гарантируется."
+      ],
+      "source_urls": [
+        "https://github.com/FeiZhuLulu/real-api-pricing/blob/6489b60a14680a5ce848131d461a90eb054d03ac/data/adopted.csv",
+        "https://github.com/FeiZhuLulu/real-api-pricing/blob/6489b60a14680a5ce848131d461a90eb054d03ac/scripts/build_adopted.py",
+        "https://github.com/FeiZhuLulu/real-api-pricing/blob/b7d9efa1f6ac50a5dfe2f6bfddcab9edf0b36c71/data/research/gemini-weekly-round7-2026-09-21.json",
+        "https://antigravity.google/docs/plans"
+      ],
+      "calibration": {
+        "observed_api_usd": 11.86,
+        "quota_fraction": 0.09880000000000001,
+        "periods_per_month": 4,
+        "plan_multiplier": 5
+      }
+    },
+    {
+      "id": "google_ai_ultra_20x_us::gemini-3.8-flash",
+      "model_id": "gemini-3.8-flash",
+      "monthly_usd": 199.99,
+      "monthly_tokens": 44820000000,
+      "method": "empirical_api_calibration",
+      "evidence_method": "plan_extrapolation",
+      "basis_label": "API-калибровка замера с переносом тарифа",
+      "reason_ru": "Gemini 3.8 Flash: наблюдённые $11.86 token worth соответствуют 9.88% недельной квоты Google AI Pro.",
+      "confidence": "low",
+      "token_limit_kind": "observed_workload",
+      "notes_ru": [
+        "API-эквивалент наблюдения делится на долю квоты и приводится к месяцу. Перенос на AA предполагает пропорциональность списания квоты API-стоимости; отдельные внутренние веса подписки этим не доказаны.",
+        "Использованы $11.86 / 9.88% напрямую; округлённая производная $120.1 в расчёт не подставляется.",
+        "Категории и стоимость в источнике округлены; недельная трактовка полосы сообщена пользователем, второго аккаунта нет.",
+        "Официальный коэффициент token worth 20× переносит замер Pro на Ultra; независимого замера Ultra нет.",
+        "API-цены в наблюдении относятся к вводному тарифу до 2026-12-31; одинаковое списание новых условий не гарантируется."
+      ],
+      "source_urls": [
+        "https://github.com/FeiZhuLulu/real-api-pricing/blob/6489b60a14680a5ce848131d461a90eb054d03ac/data/adopted.csv",
+        "https://github.com/FeiZhuLulu/real-api-pricing/blob/6489b60a14680a5ce848131d461a90eb054d03ac/scripts/build_adopted.py",
+        "https://github.com/FeiZhuLulu/real-api-pricing/blob/b7d9efa1f6ac50a5dfe2f6bfddcab9edf0b36c71/data/research/gemini-weekly-round7-2026-09-21.json",
+        "https://antigravity.google/docs/plans"
+      ],
+      "calibration": {
+        "observed_api_usd": 11.86,
+        "quota_fraction": 0.09880000000000001,
+        "periods_per_month": 4,
+        "plan_multiplier": 20
+      }
+    },
+    {
+      "id": "claude_pro::claude-opus-5",
+      "model_id": "claude-opus-5",
+      "monthly_usd": 20,
+      "monthly_tokens": 1878000000,
+      "method": "empirical_api_calibration",
+      "evidence_method": "direct_measurement",
+      "basis_label": "API-калибровка практического замера",
+      "reason_ru": "Панель Claude Pro: $25.72 API-эквивалента сеанса и 7% общей недельной квоты.",
+      "confidence": "high",
+      "token_limit_kind": "observed_workload",
+      "notes_ru": [
+        "API-эквивалент наблюдения делится на долю квоты и приводится к месяцу. Перенос на AA предполагает пропорциональность списания квоты API-стоимости; отдельные внутренние веса подписки этим не доказаны.",
+        "Один MED-сеанс; 7% взято из текста автора, недельная полоса на кадре обрезана. Это округлённое наблюдение, не официальный лимит.",
+        "Сумма включает Opus 5, небольшую примесь Haiku и web search; их стоимость не вычитается из общего расхода общей квоты.",
+        "В исходном сеансе cache write имеет TTL 1 час ($10/M); AA может использовать другой TTL. Полная сумма панели округлена до центов."
+      ],
+      "source_urls": [
+        "https://github.com/FeiZhuLulu/real-api-pricing/blob/6489b60a14680a5ce848131d461a90eb054d03ac/data/adopted.csv",
+        "https://github.com/FeiZhuLulu/real-api-pricing/blob/6489b60a14680a5ce848131d461a90eb054d03ac/scripts/build_adopted.py",
+        "https://github.com/FeiZhuLulu/real-api-pricing/blob/b7d9efa1f6ac50a5dfe2f6bfddcab9edf0b36c71/data/research/claude-adoption-round8-2026-09-20.json"
+      ],
+      "calibration": {
+        "observed_api_usd": 25.72,
+        "quota_fraction": 0.07,
+        "periods_per_month": 4,
+        "plan_multiplier": 1
+      }
+    },
+    {
+      "id": "claude_max_20x::claude-opus-5",
+      "model_id": "claude-opus-5",
+      "monthly_usd": 200,
+      "monthly_tokens": 15700000000,
+      "method": "empirical_token_proxy",
+      "evidence_method": "calibrated_measurement",
+      "basis_label": "Измерение с поправками",
+      "reason_ru": "Наблюдённая смешанная нагрузка скорректирована на акцию и последующие условия: 4.72 млрд/неделю × 4 / 1.5 × 1.25; это калибровка, а не чистая raw-token квота Opus 5.",
+      "confidence": "medium",
+      "token_limit_kind": "observed_workload",
+      "notes_ru": [
+        "Используется наблюдённая raw-token ёмкость. Цена задачи AA = месячная плата × токены AA / наблюдённые токены в месяц; равное списание всех категорий и перенос на другую смесь не подтверждены.",
+        "Перенос принятой raw-token ёмкости на смесь AA не подтверждён; это условие сценария, а не гарантия провайдера.",
+        "RAP прямо отмечает смешанные модели и не полностью совпадающие окна замера.",
+        "Более поздний чистый замер Opus служит подтверждением порядка величины, но не заменяет принятую формулу."
+      ],
+      "source_urls": [
+        "https://github.com/FeiZhuLulu/real-api-pricing/blob/6489b60a14680a5ce848131d461a90eb054d03ac/data/adopted.csv",
+        "https://github.com/FeiZhuLulu/real-api-pricing/blob/6489b60a14680a5ce848131d461a90eb054d03ac/scripts/build_adopted.py",
+        "https://github.com/FeiZhuLulu/real-api-pricing/blob/b7d9efa1f6ac50a5dfe2f6bfddcab9edf0b36c71/data/research/claude-adoption-round6-2026-09-06.json",
+        "https://github.com/FeiZhuLulu/real-api-pricing/blob/b7d9efa1f6ac50a5dfe2f6bfddcab9edf0b36c71/data/research/claude-adoption-round7-2026-09-14.json",
+        "https://github.com/FeiZhuLulu/real-api-pricing/blob/b7d9efa1f6ac50a5dfe2f6bfddcab9edf0b36c71/data/research/claude-adoption-round9-2026-09-21.json"
+      ]
+    },
+    {
+      "id": "claude_max_5x::claude-opus-5",
+      "model_id": "claude-opus-5",
+      "monthly_usd": 100,
+      "monthly_tokens": 7850000000,
+      "method": "empirical_token_proxy",
+      "evidence_method": "plan_extrapolation",
+      "basis_label": "Перенос практического измерения между тарифами",
+      "reason_ru": "Ёмкость Max 20x разделена на 2 по принятому соотношению недельных квот; независимого замера Max 5x нет.",
+      "confidence": "medium",
+      "token_limit_kind": "observed_workload",
+      "notes_ru": [
+        "Используется наблюдённая raw-token ёмкость. Цена задачи AA = месячная плата × токены AA / наблюдённые токены в месяц; равное списание всех категорий и перенос на другую смесь не подтверждены.",
+        "Перенос принятой raw-token ёмкости на смесь AA не подтверждён; это условие сценария, а не гарантия провайдера.",
+        "Базовая оценка Max 20x сама содержит калибровку смешанного замера."
+      ],
+      "source_urls": [
+        "https://github.com/FeiZhuLulu/real-api-pricing/blob/6489b60a14680a5ce848131d461a90eb054d03ac/data/adopted.csv",
+        "https://github.com/FeiZhuLulu/real-api-pricing/blob/6489b60a14680a5ce848131d461a90eb054d03ac/scripts/build_adopted.py",
+        "https://github.com/FeiZhuLulu/real-api-pricing/blob/b7d9efa1f6ac50a5dfe2f6bfddcab9edf0b36c71/data/research/claude-adoption-round6-2026-09-06.json",
+        "https://github.com/FeiZhuLulu/real-api-pricing/blob/b7d9efa1f6ac50a5dfe2f6bfddcab9edf0b36c71/data/research/claude-adoption-round7-2026-09-14.json",
+        "https://github.com/FeiZhuLulu/real-api-pricing/blob/b7d9efa1f6ac50a5dfe2f6bfddcab9edf0b36c71/data/research/claude-adoption-round9-2026-09-21.json"
+      ]
+    },
+    {
+      "id": "claude_max_20x::claude-fable-5.1",
+      "model_id": "claude-fable-5.1",
+      "monthly_usd": 200,
+      "monthly_tokens": 1728000000,
+      "method": "empirical_token_proxy",
+      "evidence_method": "calibrated_measurement",
+      "basis_label": "Измерение с поправками",
+      "reason_ru": "Из смешанного замера Opus/Fable восстановлен вес Fable около 4.54; ёмкость вычислена как оценка Opus × 50% / вес Fable.",
+      "confidence": "medium",
+      "token_limit_kind": "observed_workload",
+      "notes_ru": [
+        "Используется наблюдённая raw-token ёмкость. Цена задачи AA = месячная плата × токены AA / наблюдённые токены в месяц; равное списание всех категорий и перенос на другую смесь не подтверждены.",
+        "Перенос принятой raw-token ёмкости на смесь AA не подтверждён; это условие сценария, а не гарантия провайдера.",
+        "Используется поправка на акционный период и лимит 50% недельной квоты.",
+        "В части Opus отдельно не перечислены input и cache write; это дополнительно ограничивает полноту калибровки."
+      ],
+      "source_urls": [
+        "https://github.com/FeiZhuLulu/real-api-pricing/blob/6489b60a14680a5ce848131d461a90eb054d03ac/data/adopted.csv",
+        "https://github.com/FeiZhuLulu/real-api-pricing/blob/6489b60a14680a5ce848131d461a90eb054d03ac/scripts/build_adopted.py",
+        "https://github.com/FeiZhuLulu/real-api-pricing/blob/b7d9efa1f6ac50a5dfe2f6bfddcab9edf0b36c71/data/research/claude-fable51-round3-2026-09-20.json",
+        "https://github.com/FeiZhuLulu/real-api-pricing/blob/b7d9efa1f6ac50a5dfe2f6bfddcab9edf0b36c71/data/research/claude-adoption-round6-2026-09-06.json",
+        "https://github.com/FeiZhuLulu/real-api-pricing/blob/b7d9efa1f6ac50a5dfe2f6bfddcab9edf0b36c71/data/research/claude-adoption-round7-2026-09-14.json",
+        "https://github.com/FeiZhuLulu/real-api-pricing/blob/b7d9efa1f6ac50a5dfe2f6bfddcab9edf0b36c71/data/research/claude-adoption-round9-2026-09-21.json"
+      ]
+    },
+    {
+      "id": "supergrok::grok-4.6",
+      "model_id": "grok-4.6",
+      "monthly_usd": 30,
+      "monthly_tokens": 509000000,
+      "method": "empirical_token_proxy",
+      "evidence_method": "direct_measurement",
+      "basis_label": "Наблюдённая ёмкость подписки",
+      "reason_ru": "Контролируемое исчерпание обычной недельной квоты: 127 272 629 токенов × 4 недели; акционная удвоенная неделя не используется.",
+      "confidence": "high",
+      "token_limit_kind": "observed_workload",
+      "notes_ru": [
+        "Используется наблюдённая raw-token ёмкость. Цена задачи AA = месячная плата × токены AA / наблюдённые токены в месяц; равное списание всех категорий и перенос на другую смесь не подтверждены.",
+        "Перенос принятой raw-token ёмкости на смесь AA не подтверждён; это условие сценария, а не гарантия провайдера.",
+        "Состав токенов в принятой строке не указан; другой замер около 144 млн в неделю служит только проверкой порядка величины.",
+        "Доллары на панели подписки не тождественны долларовой стоимости публичного API."
+      ],
+      "source_urls": [
+        "https://github.com/FeiZhuLulu/real-api-pricing/blob/6489b60a14680a5ce848131d461a90eb054d03ac/data/adopted.csv",
+        "https://github.com/FeiZhuLulu/real-api-pricing/blob/6489b60a14680a5ce848131d461a90eb054d03ac/scripts/build_adopted.py",
+        "https://github.com/FeiZhuLulu/real-api-pricing/blob/b7d9efa1f6ac50a5dfe2f6bfddcab9edf0b36c71/data/research/quotas-web-round2-2026-09.json",
+        "https://github.com/FeiZhuLulu/real-api-pricing/blob/b7d9efa1f6ac50a5dfe2f6bfddcab9edf0b36c71/data/research/quotas-web-round3-2026-09.json"
+      ]
+    },
+    {
+      "id": "supergrok_plus::grok-4.6",
+      "model_id": "grok-4.6",
+      "monthly_usd": 100,
+      "monthly_tokens": 2040000000,
+      "method": "empirical_token_proxy",
+      "evidence_method": "plan_extrapolation",
+      "basis_label": "Перенос практического измерения между тарифами",
+      "reason_ru": "Замер базового SuperGrok умножен на отношение денежных квот панели 100/25; независимого raw-token замера Plus нет.",
+      "confidence": "medium",
+      "token_limit_kind": "observed_workload",
+      "notes_ru": [
+        "Используется наблюдённая raw-token ёмкость. Цена задачи AA = месячная плата × токены AA / наблюдённые токены в месяц; равное списание всех категорий и перенос на другую смесь не подтверждены.",
+        "Перенос принятой raw-token ёмкости на смесь AA не подтверждён; это условие сценария, а не гарантия провайдера."
+      ],
+      "source_urls": [
+        "https://github.com/FeiZhuLulu/real-api-pricing/blob/6489b60a14680a5ce848131d461a90eb054d03ac/data/adopted.csv",
+        "https://github.com/FeiZhuLulu/real-api-pricing/blob/6489b60a14680a5ce848131d461a90eb054d03ac/scripts/build_adopted.py",
+        "https://github.com/FeiZhuLulu/real-api-pricing/blob/b7d9efa1f6ac50a5dfe2f6bfddcab9edf0b36c71/data/research/quotas-web-round2-2026-09.json",
+        "https://github.com/FeiZhuLulu/real-api-pricing/blob/b7d9efa1f6ac50a5dfe2f6bfddcab9edf0b36c71/data/research/quotas-web-round3-2026-09.json"
+      ]
+    },
+    {
+      "id": "supergrok_heavy::grok-4.6",
+      "model_id": "grok-4.6",
+      "monthly_usd": 300,
+      "monthly_tokens": 5090000000,
+      "method": "empirical_token_proxy",
+      "evidence_method": "plan_extrapolation",
+      "basis_label": "Перенос практического измерения между тарифами",
+      "reason_ru": "Замер базового SuperGrok умножен на отношение денежных квот панели 250/25; независимого raw-token замера Heavy нет.",
+      "confidence": "medium",
+      "token_limit_kind": "observed_workload",
+      "notes_ru": [
+        "Используется наблюдённая raw-token ёмкость. Цена задачи AA = месячная плата × токены AA / наблюдённые токены в месяц; равное списание всех категорий и перенос на другую смесь не подтверждены.",
+        "Перенос принятой raw-token ёмкости на смесь AA не подтверждён; это условие сценария, а не гарантия провайдера."
+      ],
+      "source_urls": [
+        "https://github.com/FeiZhuLulu/real-api-pricing/blob/6489b60a14680a5ce848131d461a90eb054d03ac/data/adopted.csv",
+        "https://github.com/FeiZhuLulu/real-api-pricing/blob/6489b60a14680a5ce848131d461a90eb054d03ac/scripts/build_adopted.py",
+        "https://github.com/FeiZhuLulu/real-api-pricing/blob/b7d9efa1f6ac50a5dfe2f6bfddcab9edf0b36c71/data/research/quotas-web-round2-2026-09.json",
+        "https://github.com/FeiZhuLulu/real-api-pricing/blob/b7d9efa1f6ac50a5dfe2f6bfddcab9edf0b36c71/data/research/quotas-web-round3-2026-09.json"
+      ]
+    },
+    {
+      "id": "cursor_ultra::grok-4.6",
+      "model_id": "grok-4.6",
+      "monthly_usd": 200,
+      "monthly_tokens": 7737000000,
+      "method": "empirical_token_proxy",
+      "evidence_method": "pooled_measurements",
+      "basis_label": "Несколько практических измерений",
+      "reason_ru": "Среднее двух оценок по панелям: 61.0 млн / 0.9% и 1478.2 млн / 17%; стандартная смесь для получения raw-token ёмкости не применяется.",
+      "confidence": "medium",
+      "token_limit_kind": "observed_workload",
+      "notes_ru": [
+        "Используется наблюдённая raw-token ёмкость. Цена задачи AA = месячная плата × токены AA / наблюдённые токены в месяц; равное списание всех категорий и перенос на другую смесь не подтверждены.",
+        "Перенос принятой raw-token ёмкости на смесь AA не подтверждён; это условие сценария, а не гарантия провайдера.",
+        "Один образец может включать скидку 50% первой недели и завышать оценку ёмкости.",
+        "Нет единой разбивки токенов; результат является средним двух нагрузок, а не отдельным полным месячным замером.",
+        "Панель расходует денежную квоту; при другой смеси та же сумма покупает другое количество raw tokens."
+      ],
+      "source_urls": [
+        "https://github.com/FeiZhuLulu/real-api-pricing/blob/6489b60a14680a5ce848131d461a90eb054d03ac/data/adopted.csv",
+        "https://github.com/FeiZhuLulu/real-api-pricing/blob/6489b60a14680a5ce848131d461a90eb054d03ac/scripts/build_adopted.py",
+        "https://github.com/FeiZhuLulu/real-api-pricing/blob/b7d9efa1f6ac50a5dfe2f6bfddcab9edf0b36c71/data/research/cursor-adoption-round8-2026-09-06.json",
+        "https://github.com/FeiZhuLulu/real-api-pricing/blob/b7d9efa1f6ac50a5dfe2f6bfddcab9edf0b36c71/data/research/cursor-user-screenshot-round7-2026-09-06.json",
+        "https://github.com/FeiZhuLulu/real-api-pricing/blob/b7d9efa1f6ac50a5dfe2f6bfddcab9edf0b36c71/data/research/quotas-web-round3-2026-09.json"
+      ]
+    },
+    {
+      "id": "cursor_ultra_fast::grok-4.6",
+      "model_id": "grok-4.6",
+      "monthly_usd": 200,
+      "monthly_tokens": 3074000000,
+      "method": "empirical_token_proxy",
+      "evidence_method": "direct_measurement",
+      "basis_label": "Наблюдённая ёмкость подписки",
+      "reason_ru": "Принят отдельный образец xhigh-fast: 863.8 млн токенов / 28.1% квоты, с округлением до 3.074 млрд в месяц.",
+      "confidence": "high",
+      "token_limit_kind": "observed_workload",
+      "notes_ru": [
+        "Используется наблюдённая raw-token ёмкость. Цена задачи AA = месячная плата × токены AA / наблюдённые токены в месяц; равное списание всех категорий и перенос на другую смесь не подтверждены.",
+        "Перенос принятой raw-token ёмкости на смесь AA не подтверждён; это условие сценария, а не гарантия провайдера.",
+        "Меньший образец high-fast даёт другую оценку и не принят RAP.",
+        "Standard и Fast нельзя связывать обязательным отношением raw-token ёмкостей 2:1: расход зависит и от состава токенов.",
+        "Панель расходует денежную квоту; перенос на другую смесь и effort не проверен."
+      ],
+      "source_urls": [
+        "https://github.com/FeiZhuLulu/real-api-pricing/blob/6489b60a14680a5ce848131d461a90eb054d03ac/data/adopted.csv",
+        "https://github.com/FeiZhuLulu/real-api-pricing/blob/6489b60a14680a5ce848131d461a90eb054d03ac/scripts/build_adopted.py",
+        "https://github.com/FeiZhuLulu/real-api-pricing/blob/b7d9efa1f6ac50a5dfe2f6bfddcab9edf0b36c71/data/research/cursor-adoption-round8-2026-09-06.json",
+        "https://github.com/FeiZhuLulu/real-api-pricing/blob/b7d9efa1f6ac50a5dfe2f6bfddcab9edf0b36c71/data/research/cursor-user-screenshot-round7-2026-09-06.json",
+        "https://github.com/FeiZhuLulu/real-api-pricing/blob/b7d9efa1f6ac50a5dfe2f6bfddcab9edf0b36c71/data/research/quotas-web-round3-2026-09.json"
+      ]
+    },
+    {
+      "id": "cursor_pro::grok-4.6",
+      "model_id": "grok-4.6",
+      "monthly_usd": 20,
+      "monthly_tokens": 470000000,
+      "method": "empirical_token_proxy",
+      "evidence_method": "direct_measurement",
+      "basis_label": "Наблюдённая ёмкость подписки",
+      "reason_ru": "Независимая панель Cursor Pro: 303.9 млн токенов / 65% квоты; принято 470 млн в месяц.",
+      "confidence": "medium",
+      "token_limit_kind": "observed_workload",
+      "notes_ru": [
+        "Используется наблюдённая raw-token ёмкость. Цена задачи AA = месячная плата × токены AA / наблюдённые токены в месяц; равное списание всех категорий и перенос на другую смесь не подтверждены.",
+        "Перенос принятой raw-token ёмкости на смесь AA не подтверждён; это условие сценария, а не гарантия провайдера.",
+        "Состав токенов не указан; сообщения о 400–500 млн служат дополнительной проверкой масштаба.",
+        "RAP прямо отмечает учёт по compute cost, а не фиксированному числу raw tokens."
+      ],
+      "source_urls": [
+        "https://github.com/FeiZhuLulu/real-api-pricing/blob/6489b60a14680a5ce848131d461a90eb054d03ac/data/adopted.csv",
+        "https://github.com/FeiZhuLulu/real-api-pricing/blob/6489b60a14680a5ce848131d461a90eb054d03ac/scripts/build_adopted.py",
+        "https://github.com/FeiZhuLulu/real-api-pricing/blob/b7d9efa1f6ac50a5dfe2f6bfddcab9edf0b36c71/data/research/cursor-adoption-round8-2026-09-06.json",
+        "https://github.com/FeiZhuLulu/real-api-pricing/blob/b7d9efa1f6ac50a5dfe2f6bfddcab9edf0b36c71/data/research/cursor-user-screenshot-round7-2026-09-06.json",
+        "https://github.com/FeiZhuLulu/real-api-pricing/blob/b7d9efa1f6ac50a5dfe2f6bfddcab9edf0b36c71/data/research/quotas-web-round3-2026-09.json"
+      ]
+    },
+    {
+      "id": "cursor_pro_plus::grok-4.6",
+      "model_id": "grok-4.6",
+      "monthly_usd": 60,
+      "monthly_tokens": 2063200000,
+      "method": "empirical_api_calibration",
+      "evidence_method": "direct_measurement",
+      "basis_label": "API-калибровка практического замера",
+      "reason_ru": "Cursor Pro+: наблюдённые $214.74 compute cost составляют 26.8% месячного пула Cursor Models.",
+      "confidence": "medium",
+      "token_limit_kind": "observed_workload",
+      "notes_ru": [
+        "API-эквивалент наблюдения делится на долю квоты и приводится к месяцу. Перенос на AA предполагает пропорциональность списания квоты API-стоимости; отдельные внутренние веса подписки этим не доказаны.",
+        "Это внутренний compute-cost пул Cursor Models, измеренный по totalCents, а не доказанный эквивалент публичных долларов API xAI.",
+        "Пересчёт в задачи AA дополнительно предполагает сопоставимость Cursor compute cost и AA API-стоимости. Отдельных ставок Cursor по категориям нет.",
+        "Пул включает Grok 4.5/4.6 и Composer 2.5; показатель 26.8% округлён, доступный объём делится между моделями.",
+        "Не смешивать этот пул с Other Models и его отдельными условиями."
+      ],
+      "source_urls": [
+        "https://github.com/FeiZhuLulu/real-api-pricing/blob/6489b60a14680a5ce848131d461a90eb054d03ac/data/adopted.csv",
+        "https://github.com/FeiZhuLulu/real-api-pricing/blob/6489b60a14680a5ce848131d461a90eb054d03ac/scripts/build_adopted.py",
+        "https://github.com/FeiZhuLulu/real-api-pricing/blob/b7d9efa1f6ac50a5dfe2f6bfddcab9edf0b36c71/data/research/cursor-adoption-round8-2026-09-06.json",
+        "https://github.com/FeiZhuLulu/real-api-pricing/blob/b7d9efa1f6ac50a5dfe2f6bfddcab9edf0b36c71/data/research/cursor-user-screenshot-round7-2026-09-06.json",
+        "https://github.com/FeiZhuLulu/real-api-pricing/blob/b7d9efa1f6ac50a5dfe2f6bfddcab9edf0b36c71/data/research/quotas-web-round3-2026-09.json",
+        "https://linux.do/t/topic/2765049"
+      ],
+      "calibration": {
+        "observed_api_usd": 214.74,
+        "quota_fraction": 0.268,
+        "periods_per_month": 1,
+        "plan_multiplier": 1
+      }
+    },
+    {
+      "id": "claude_max_5x::claude-fable-5.1",
+      "model_id": "claude-fable-5.1",
+      "monthly_usd": 100,
+      "monthly_tokens": 863900000,
+      "method": "empirical_token_proxy",
+      "evidence_method": "plan_extrapolation",
+      "basis_label": "Перенос практического измерения между тарифами",
+      "reason_ru": "Ёмкость Opus Max 5x умножена на 50% и разделена на вес Fable, восстановленный для Max 20x; это перенос между тарифами и моделями.",
+      "confidence": "low",
+      "token_limit_kind": "observed_workload",
+      "notes_ru": [
+        "Используется наблюдённая raw-token ёмкость. Цена задачи AA = месячная плата × токены AA / наблюдённые токены в месяц; равное списание всех категорий и перенос на другую смесь не подтверждены.",
+        "Перенос принятой raw-token ёмкости на смесь AA не подтверждён; это условие сценария, а не гарантия провайдера.",
+        "Сам RAP отмечает, что одинаковый вес Fable между тарифами является допущением."
+      ],
+      "source_urls": [
+        "https://github.com/FeiZhuLulu/real-api-pricing/blob/6489b60a14680a5ce848131d461a90eb054d03ac/data/adopted.csv",
+        "https://github.com/FeiZhuLulu/real-api-pricing/blob/6489b60a14680a5ce848131d461a90eb054d03ac/scripts/build_adopted.py",
+        "https://github.com/FeiZhuLulu/real-api-pricing/blob/b7d9efa1f6ac50a5dfe2f6bfddcab9edf0b36c71/data/research/claude-fable51-round3-2026-09-20.json",
+        "https://github.com/FeiZhuLulu/real-api-pricing/blob/b7d9efa1f6ac50a5dfe2f6bfddcab9edf0b36c71/data/research/claude-adoption-round6-2026-09-06.json",
+        "https://github.com/FeiZhuLulu/real-api-pricing/blob/b7d9efa1f6ac50a5dfe2f6bfddcab9edf0b36c71/data/research/claude-adoption-round7-2026-09-14.json",
+        "https://github.com/FeiZhuLulu/real-api-pricing/blob/b7d9efa1f6ac50a5dfe2f6bfddcab9edf0b36c71/data/research/claude-adoption-round9-2026-09-21.json"
+      ]
+    },
+    {
+      "id": "chatgpt_pro_5x::gpt-6-astra",
+      "model_id": "gpt-6-astra",
+      "monthly_usd": 100,
+      "monthly_tokens": 910000000,
+      "method": "empirical_api_calibration",
+      "evidence_method": "direct_measurement",
+      "basis_label": "API-калибровка практического замера",
+      "reason_ru": "Prolite / Pro 5x: 198 428 302 токена при изменении недельного расхода 0% → 86%.",
+      "confidence": "low",
+      "token_limit_kind": "observed_workload",
+      "notes_ru": [
+        "API-эквивалент наблюдения делится на долю квоты и приводится к месяцу. Перенос на AA предполагает пропорциональность списания квоты API-стоимости; отдельные внутренние веса подписки этим не доказаны.",
+        "Срез включает основной агент, три дочерних агента и guardian (3.7% токенов). Чистота одной модели не полностью подтверждена; план в источнике стоит €100, здесь использован тариф снимка $100.",
+        "monthly_tokens сохраняет принятый RAP агрегат для справки; API-калибровка использует этот конкретный срез, а не агрегированный token proxy.",
+        "Astra Plus имеет отдельные условия limited-доступа; этот пул не получен умножением Plus на 5 или 20."
+      ],
+      "source_urls": [
+        "https://github.com/FeiZhuLulu/real-api-pricing/blob/6489b60a14680a5ce848131d461a90eb054d03ac/data/adopted.csv",
+        "https://github.com/FeiZhuLulu/real-api-pricing/blob/6489b60a14680a5ce848131d461a90eb054d03ac/scripts/build_adopted.py",
+        "https://github.com/FeiZhuLulu/real-api-pricing/blob/b7d9efa1f6ac50a5dfe2f6bfddcab9edf0b36c71/data/research/chatgpt-astra-adoption-round7-2026-09-11.json",
+        "https://github.com/FeiZhuLulu/real-api-pricing/blob/b7d9efa1f6ac50a5dfe2f6bfddcab9edf0b36c71/data/research/chatgpt-astra-round12-2026-09-16.json",
+        "https://github.com/FeiZhuLulu/real-api-pricing/blob/b7d9efa1f6ac50a5dfe2f6bfddcab9edf0b36c71/data/research/chatgpt-astra-sameframe-round13-2026-09-20.json",
+        "https://github.com/FeiZhuLulu/real-api-pricing/blob/b7d9efa1f6ac50a5dfe2f6bfddcab9edf0b36c71/data/research/chatgpt-astra-round14-2026-09-21.json",
+        "https://github.com/openai/codex/issues/45085"
+      ],
+      "calibration": {
+        "observed_api_usd": 287.607772,
+        "quota_fraction": 0.86,
+        "periods_per_month": 4,
+        "plan_multiplier": 1,
+        "sample_components": [
+          {
+            "label": "Обычный вход",
+            "tokens": 5178076,
+            "rate_usd_per_million": 10
+          },
+          {
+            "label": "Чтение кэша",
+            "tokens": 192381312,
+            "rate_usd_per_million": 1
+          },
+          {
+            "label": "Выход, включая reasoning",
+            "tokens": 868914,
+            "rate_usd_per_million": 50
+          }
+        ]
+      }
+    },
+    {
+      "id": "supergrok::grok-4.7",
+      "model_id": "grok-4.7",
+      "monthly_usd": 30,
+      "monthly_tokens": 672000000,
+      "method": "empirical_token_proxy",
+      "evidence_method": "calibrated_measurement",
+      "basis_label": "Измерение с неполным сеансом",
+      "reason_ru": "Известные 13 442 816 токенов двух сеансов отнесены к предполагаемым 8% недельной квоты; ещё один сеанс удалён.",
+      "confidence": "medium",
+      "token_limit_kind": "observed_workload",
+      "notes_ru": [
+        "Используется наблюдённая raw-token ёмкость. Цена задачи AA = месячная плата × токены AA / наблюдённые токены в месяц; равное списание всех категорий и перенос на другую смесь не подтверждены.",
+        "Общая полоса выросла с 19% до 28%; доля удалённого сеанса условно принята равной 1%, а двух известных — 8%. Это предположение, не полный контролируемый замер.",
+        "Принятый диапазон базы примерно 597–768 млн токенов за четыре недели; возможны смешанные вызовы/контекстные тарифы и вводная акция.",
+        "Доллары панели SuperGrok не тождественны долларам публичного API; поле CLI Cost противоречиво и для API-калибровки не используется.",
+        "Базовый план: одно наблюдение одного аккаунта."
+      ],
+      "source_urls": [
+        "https://github.com/FeiZhuLulu/real-api-pricing/blob/b7d9efa1f6ac50a5dfe2f6bfddcab9edf0b36c71/data/research/supergrok-grok47-round1-2026-09-22.json",
+        "https://github.com/FeiZhuLulu/real-api-pricing/blob/b7d9efa1f6ac50a5dfe2f6bfddcab9edf0b36c71/derived/points.json"
+      ]
+    },
+    {
+      "id": "supergrok_plus::grok-4.7",
+      "model_id": "grok-4.7",
+      "monthly_usd": 100,
+      "monthly_tokens": 2690000000,
+      "method": "empirical_token_proxy",
+      "evidence_method": "plan_extrapolation",
+      "basis_label": "Перенос измерения SuperGrok 4.7",
+      "reason_ru": "Известные 13 442 816 токенов двух сеансов отнесены к предполагаемым 8% недельной квоты; ещё один сеанс удалён.",
+      "confidence": "medium",
+      "token_limit_kind": "observed_workload",
+      "notes_ru": [
+        "Используется наблюдённая raw-token ёмкость. Цена задачи AA = месячная плата × токены AA / наблюдённые токены в месяц; равное списание всех категорий и перенос на другую смесь не подтверждены.",
+        "Общая полоса выросла с 19% до 28%; доля удалённого сеанса условно принята равной 1%, а двух известных — 8%. Это предположение, не полный контролируемый замер.",
+        "Принятый диапазон базы примерно 597–768 млн токенов за четыре недели; возможны смешанные вызовы/контекстные тарифы и вводная акция.",
+        "Доллары панели SuperGrok не тождественны долларам публичного API; поле CLI Cost противоречиво и для API-калибровки не используется.",
+        "Перенос на SuperGrok Plus по отношению номиналов квоты панели 100/25; независимого замера этого плана нет."
+      ],
+      "source_urls": [
+        "https://github.com/FeiZhuLulu/real-api-pricing/blob/b7d9efa1f6ac50a5dfe2f6bfddcab9edf0b36c71/data/research/supergrok-grok47-round1-2026-09-22.json",
+        "https://github.com/FeiZhuLulu/real-api-pricing/blob/b7d9efa1f6ac50a5dfe2f6bfddcab9edf0b36c71/derived/points.json"
+      ]
+    },
+    {
+      "id": "supergrok_heavy::grok-4.7",
+      "model_id": "grok-4.7",
+      "monthly_usd": 300,
+      "monthly_tokens": 6720000000,
+      "method": "empirical_token_proxy",
+      "evidence_method": "plan_extrapolation",
+      "basis_label": "Перенос измерения SuperGrok 4.7",
+      "reason_ru": "Известные 13 442 816 токенов двух сеансов отнесены к предполагаемым 8% недельной квоты; ещё один сеанс удалён.",
+      "confidence": "medium",
+      "token_limit_kind": "observed_workload",
+      "notes_ru": [
+        "Используется наблюдённая raw-token ёмкость. Цена задачи AA = месячная плата × токены AA / наблюдённые токены в месяц; равное списание всех категорий и перенос на другую смесь не подтверждены.",
+        "Общая полоса выросла с 19% до 28%; доля удалённого сеанса условно принята равной 1%, а двух известных — 8%. Это предположение, не полный контролируемый замер.",
+        "Принятый диапазон базы примерно 597–768 млн токенов за четыре недели; возможны смешанные вызовы/контекстные тарифы и вводная акция.",
+        "Доллары панели SuperGrok не тождественны долларам публичного API; поле CLI Cost противоречиво и для API-калибровки не используется.",
+        "Перенос на SuperGrok Heavy по отношению номиналов квоты панели 250/25; независимого замера этого плана нет."
+      ],
+      "source_urls": [
+        "https://github.com/FeiZhuLulu/real-api-pricing/blob/b7d9efa1f6ac50a5dfe2f6bfddcab9edf0b36c71/data/research/supergrok-grok47-round1-2026-09-22.json",
+        "https://github.com/FeiZhuLulu/real-api-pricing/blob/b7d9efa1f6ac50a5dfe2f6bfddcab9edf0b36c71/derived/points.json"
+      ]
+    }
+  ],
+  "additional_plans": [
+    {
+      "id": "supergrok::grok-4.7",
+      "model": "grok-4.7",
+      "model_display": "Grok 4.7",
+      "plan_id": "supergrok",
+      "plan": "SuperGrok",
+      "billing": "subscription",
+      "monthly_usd": 30,
+      "monthly_tokens": 672000000,
+      "confidence": "medium",
+      "workload": "measured",
+      "source_url": "https://github.com/FeiZhuLulu/real-api-pricing/blob/b7d9efa1f6ac50a5dfe2f6bfddcab9edf0b36c71/data/research/supergrok-grok47-round1-2026-09-22.json"
+    },
+    {
+      "id": "supergrok_plus::grok-4.7",
+      "model": "grok-4.7",
+      "model_display": "Grok 4.7",
+      "plan_id": "supergrok_plus",
+      "plan": "SuperGrok Plus",
+      "billing": "subscription",
+      "monthly_usd": 100,
+      "monthly_tokens": 2690000000,
+      "confidence": "medium",
+      "workload": "measured",
+      "source_url": "https://github.com/FeiZhuLulu/real-api-pricing/blob/b7d9efa1f6ac50a5dfe2f6bfddcab9edf0b36c71/data/research/supergrok-grok47-round1-2026-09-22.json"
+    },
+    {
+      "id": "supergrok_heavy::grok-4.7",
+      "model": "grok-4.7",
+      "model_display": "Grok 4.7",
+      "plan_id": "supergrok_heavy",
+      "plan": "SuperGrok Heavy",
+      "billing": "subscription",
+      "monthly_usd": 300,
+      "monthly_tokens": 6720000000,
+      "confidence": "medium",
+      "workload": "measured",
+      "source_url": "https://github.com/FeiZhuLulu/real-api-pricing/blob/b7d9efa1f6ac50a5dfe2f6bfddcab9edf0b36c71/data/research/supergrok-grok47-round1-2026-09-22.json"
+    }
+  ],
+  "excluded": [
+    {
+      "id": "supergrok_lite::grok-4.6",
+      "reason_ru": "Нет проверяемого измерения недельной квоты или исходного пула SuperGrok Lite; историческое число токенов не позволяет восстановить условия расчёта.",
+      "source_urls": [
+        "https://github.com/FeiZhuLulu/real-api-pricing/blob/6489b60a14680a5ce848131d461a90eb054d03ac/data/adopted.csv",
+        "https://github.com/FeiZhuLulu/real-api-pricing/blob/b7d9efa1f6ac50a5dfe2f6bfddcab9edf0b36c71/data/research/quotas-web-round2-2026-09.json",
+        "https://github.com/FeiZhuLulu/real-api-pricing/blob/b7d9efa1f6ac50a5dfe2f6bfddcab9edf0b36c71/data/research/supergrok-grok47-round1-2026-09-22.json"
+      ]
+    }
+  ]
+}

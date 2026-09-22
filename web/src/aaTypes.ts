@@ -4,6 +4,21 @@ export type Components = Partial<Record<ComponentKey, number | null>>;
 export type Scope = "task" | "suite";
 export type MetricStatus = "consistent" | "approximate" | "missing" | "unavailable";
 
+export interface EmpiricalBasis {
+  basis_label: string;
+  observed_monthly_tokens?: number;
+  calibration?: {
+    observed_api_usd: number;
+    quota_fraction: number;
+    periods_per_month: number;
+    plan_multiplier: number;
+    monthly_api_equivalent_usd: number;
+    sample_components?: { label: string; tokens: number; rate_usd_per_million: number }[];
+    extra_cost_usd?: number;
+  };
+  reason_ru: string;
+}
+
 export interface QuotaMetric {
   status?: MetricStatus;
   total_tokens?: number | null;
@@ -49,6 +64,8 @@ export interface QuotaRow {
   rate_basis?: unknown;
   shared_pool_note?: string | string[] | null;
   method?: string;
+  evidence_method?: string;
+  empirical?: EmpiricalBasis;
   status?: MetricStatus;
   notes?: string[];
   sources?: string[];

@@ -2,19 +2,20 @@
 import { mkdir, readFile, writeFile, copyFile } from 'node:fs/promises';
 import { pathToFileURL } from 'node:url';
 import { buildQuotaScenario } from '../../extensions/aa-costs/scripts/quota_scenario.mjs';
+import { buildExpandedQuotaScenario } from '../../extensions/aa-costs/scripts/empirical_scenario.mjs';
 import { buildTokenScenario } from '../../extensions/aa-costs/scripts/token_scenario.mjs';
 import { estimateVariant } from '../../extensions/aa-costs/scripts/estimate_api_price.mjs';
 
 /** Новый расчёт не требует смеси RAP или успешной сборки предыдущего отчёта. */
-export function createAaData(aa, pricing, rates, audit, taskWeighting) {
-  const quota = buildQuotaScenario(aa, pricing, rates);
+export function createAaData(aa, pricing, rates, audit, taskWeighting, empiricalEvidence = null) {
+  const quota = empiricalEvidence ? buildExpandedQuotaScenario(aa, pricing, rates, empiricalEvidence) : buildQuotaScenario(aa, pricing, rates);
   return {
     metadata: {
       aa_version: aa.metadata.intelligence_index_version,
       aa_retrieved_at: aa.metadata.retrieved_at,
       pricing_revision: pricing.revision,
       pricing_retrieved_at_utc: pricing.retrieved_at_utc,
-      methodology: 'Пять категорий токенов AA × ставки списания подписки; месячная плата делится на число доступных задач.',
+      methodology: 'Состав AA оценивается по известным ставкам, API-калибровке практического замера или условному переносу наблюдённой токенной ёмкости. Метод и происхождение указаны для каждого тарифа.',
       model_count: quota.metadata.model_count,
       variant_count: aa.rows.length,
       row_count: quota.rows.length,
@@ -55,13 +56,14 @@ async function readJson(path, optional = false) {
 }
 
 export async function buildAaData() {
-  const [aa, pricing, rates, audit, weighting] = await Promise.all([
+  const [aa, pricing, rates, audit, weighting, empiricalEvidence] = await Promise.all([
     readJson('data/aa/aa.json'), readJson('data/pricing/pricing.json'),
     readJson('data/pricing/quota-rates.json', true), readJson('data/pricing/quota-evidence.json', true),
     readJson('data/aa/task-weighting.json', true),
+    readJson('data/pricing/empirical-evidence.json', true),
   ]);
   // Ошибка нового расчёта прерывает сборку, без подстановки архивных результатов.
-  const data = createAaData(aa, pricing, rates, audit, weighting);
+  const data = createAaData(aa, pricing, rates, audit, weighting, empiricalEvidence);
   await mkdir(dataDirectory, { recursive: true });
   await mkdir(archiveDirectory, { recursive: true });
   try {
