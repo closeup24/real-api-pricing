@@ -31,6 +31,7 @@ function pinned(path) {
 }
 
 const paths = {
+  openaiPrices: 'data/chatgpt-pro-claims.json',
   sol: 'data/research/chatgpt-quotas-round5-2026-09.json',
   solGateway: 'data/research/chatgpt-pro20x-gateway-measurement-2026-09-06.json',
   luna: 'data/research/chatgpt-luna-adoption-round6-2026-09-08.json',
@@ -67,7 +68,7 @@ const methodLabels = {
   plan_extrapolation: 'Перенос практического измерения между тарифами',
 };
 const calibrationNote = 'API-эквивалент наблюдения делится на долю квоты и приводится к месяцу. Перенос на AA предполагает пропорциональность списания квоты API-стоимости; отдельные внутренние веса подписки этим не доказаны.';
-const proxyNote = 'Используется наблюдённая raw-token ёмкость. Цена задачи AA = месячная плата × токены AA / наблюдённые токены в месяц; равное списание всех категорий и перенос на другую смесь не подтверждены.';
+const missingWeightsNote = 'Наблюдённый общий объём токенов не задаёт расход квоты на другой смеси. Для цены задачи AA нужны ставки по категориям либо API-стоимость полного замера и соответствующая доля квоты.';
 
 function references(row) {
   if (row.model_id === 'gpt-5.6-sol') return [paths.sol, paths.solGateway];
@@ -91,6 +92,7 @@ function calibrate(row, observation, reason, notes, urls = []) {
   row.basis_label = row.evidence_method === 'plan_extrapolation' ? 'API-калибровка замера с переносом тарифа' : 'API-калибровка практического замера';
   row.reason_ru = reason;
   row.calibration = observation;
+  delete row.missing_data_ru;
   row.notes_ru = unique([calibrationNote, ...notes]);
   row.source_urls = unique([...row.source_urls, ...urls]);
 }
@@ -103,17 +105,72 @@ const rows = audit.rows.filter(row => !present.has(row.id) && auditedMethods.has
     model_id: evidence.model_id,
     monthly_usd: plan.monthly_usd,
     monthly_tokens: plan.monthly_tokens,
-    method: 'empirical_token_proxy',
+    method: 'unavailable_quota_weights',
     evidence_method: evidence.evidence_method,
     basis_label: methodLabels[evidence.evidence_method],
-    reason_ru: evidence.reason_ru,
+    reason_ru: `Историческая оценка RAP, не используемая как ёмкость для AA: ${evidence.reason_ru}`,
     confidence: evidence.confidence,
     token_limit_kind: 'observed_workload',
-    notes_ru: unique([proxyNote, ...evidence.caveats_ru]),
+    missing_data_ru: missingWeightsNote,
+    notes_ru: unique([missingWeightsNote, ...evidence.caveats_ru.map(note => `Ограничение исходной оценки RAP: ${note}`)]),
     source_urls: unique([evidence.source_url, evidence.calculation_source_url, ...references(evidence).map(sourceUrl)]),
   };
 
-  if (row.model_id === 'gpt-5.6-sol') row.source_urls.push('https://github.com/mahonzhan/awesome-coding-plan', 'https://codex-quota.manetli.com/api/public-stats');
+  if (row.model_id === 'gpt-5.6-sol') {
+    // Отбираем по составу моделей, а не по получившейся цене; общий pooled содержит также Astra.
+    const models = ['gpt-5.6-sol', 'gpt-5.6-luna'];
+    const selected = data.solGateway.segments.filter(segment => segment.includedInPooled
+      && segment.byModel?.['gpt-5.6-sol'] && Object.keys(segment.byModel).every(model => models.includes(model)));
+    assert.deepEqual(selected.map(segment => data.solGateway.segments.indexOf(segment)), [0, 1, 2, 9]);
+    for (const segment of selected) {
+      assert.equal(Object.values(segment.byModel).reduce((total, sample) => total + sample.promptTokens + sample.outputTokens, 0), segment.totalTokens);
+    }
+    const components = models.flatMap(model => {
+      const totals = selected.reduce((total, segment) => {
+        const sample = segment.byModel[model];
+        if (sample) {
+          assert.ok(sample.promptTokens >= sample.cacheReadTokens);
+          total.input += sample.promptTokens - sample.cacheReadTokens;
+          total.cache += sample.cacheReadTokens;
+          total.output += sample.outputTokens;
+        }
+        return total;
+      }, { input: 0, cache: 0, output: 0 });
+      const rates = data.openaiPrices.apiPrices[`${model}_short`];
+      return [component(`${model}: обычный вход`, totals.input, rates.input), component(`${model}: чтение кэша`, totals.cache, rates.cached), component(`${model}: выход`, totals.output, rates.output)];
+    });
+    const fraction = selected.reduce((total, segment) => total + segment.deltaPercent, 0) / 100;
+    assert.equal(fraction, .27);
+    const cost = components.reduce((total, item) => total + item.tokens * item.rate_usd_per_million / 1e6, 0);
+    assert.ok(Math.abs(cost - 582.41610292) < 1e-8);
+    const multiplier = { chatgpt_plus: 1 / 20, chatgpt_pro_5x: 1 / 4, chatgpt_pro_20x: 1 }[plan.plan_id];
+    assert.ok(multiplier);
+    row.evidence_method = multiplier === 1 ? 'pooled_measurements' : 'plan_extrapolation';
+    calibrate(row, { observed_api_usd: cost, quota_fraction: fraction, periods_per_month: 4, plan_multiplier: multiplier, sample_components: components },
+      'Четыре сегмента gateway Pro 20x с Sol и Luna: полные вход/cache/output и суммарный расход 27 процентных пунктов недельной квоты.', [
+        'Вход получен как promptTokens минус cacheReadTokens; выход не прибавляется к prompt повторно. Сегменты с Astra и другими моделями не используются.',
+        'Luna составляет около 3.1% токенов и 0.28% API-стоимости. Предполагается общая API-пропорциональность списания Sol и Luna; модельные внутренние веса не проверены.',
+        'Проценты округлены, синхронизация логов сдвинута примерно на пять минут; возможны накладные списания окна. Стандартные API-ставки применены без отдельной поправки на неизвестные Fast/длинный контекст.',
+        multiplier === 1 ? 'Практическое основание Pro 20x: сегменты 0, 1, 2, 9 из закреплённого источника, 21–31 августа.' : `Пул Pro 20x умножен на ${multiplier} по соотношению уровней тарифа; это явный перенос между подписками, не независимый полный замер ${plan.plan}.`,
+        'Отдельные сегменты дают примерно $8252–9065 API-эквивалента за четыре недели; разброс не является доверительным интервалом. Принята сумма расходов, делённая на сумму процентов.',
+      ], [sourceUrl(paths.solGateway), sourceUrl(paths.openaiPrices)]);
+  }
+
+  if (row.model_id === 'gpt-6-astra' && plan.plan_id === 'devin_max') {
+    const item = data.devin.items[0], sample = item.observedSegment.modelRow;
+    assert.equal(item.model, row.model_id);
+    assert.equal(sample.input + sample.cacheRead + sample.cacheCreate + sample.output, sample.total);
+    calibrate(row, {
+      observed_api_usd: (sample.input * 10 + sample.cacheRead + sample.cacheCreate * 12.5 + sample.output * 50) / 1e6,
+      quota_fraction: item.observedSegment.deltaPercentPoints / 100, periods_per_month: 4, plan_multiplier: 1,
+      sample_components: [component('Обычный вход', sample.input, 10), component('Чтение кэша', sample.cacheRead, 1), component('Запись кэша: сопоставление с AA', sample.cacheCreate, 12.5), component('Выход', sample.output, 50)],
+    }, 'Devin Max: 305 025 580 токенов Astra high с полной разбивкой четырёх категорий соответствуют 87% недельной квоты.', [
+      'API-стоимость восстановлена нами по ставкам AA; это не сумма, считанная с панели. CacheCreate сопоставлен с cache write AA по $12.5/M, TTL и режим контекста в источнике не указаны.',
+      'При цене cacheCreate $10/M или $20/M оценка пула была бы соответственно $1639.31 или $1809.84 вместо $1681.94 за четыре недели. Это чувствительность к ставке, не доверительный интервал.',
+      'Источник — пользовательская панель, сохранённая в RAP; другие модели исключены по сообщению автора, что они не расходовали эту квоту. Принято одно недельное окно без сброса и округлённые 87%.',
+      'Замер high переносится на другие effort при гипотезе одинаковых API-пропорциональных правил списания. Ранее принятые 1.402 млрд токенов в месяце не используются.',
+    ], [sourceUrl(paths.devin)]);
+  }
 
   if (row.model_id === 'gpt-5.6-luna') {
     const sample = data.luna.items[0].observed;
@@ -201,13 +258,26 @@ const rows = audit.rows.filter(row => !present.has(row.id) && auditedMethods.has
     const item = data.grokCheck.items[0];
     assert.equal(item.planId, 'cursor_pro_plus');
     row.evidence_method = 'direct_measurement';
-    calibrate(row, { observed_api_usd: 214.74, quota_fraction: 0.268, periods_per_month: 1, plan_multiplier: 1 },
-      'Cursor Pro+: наблюдённые $214.74 compute cost составляют 26.8% месячного пула Cursor Models.', [
+    row.reason_ru = 'Cursor Pro+: наблюдённые $214.74 compute cost составляют 26.8% месячного пула Cursor Models.';
+    row.missing_data_ru = 'Пул $214.74 / 26.8% измерен во внутренних единицах Cursor. Нет ставок списания категорий или коэффициента перевода в публичную API-стоимость Grok; подставлять его как API-бюджет нельзя.';
+    row.notes_ru = [missingWeightsNote,
         'Это внутренний compute-cost пул Cursor Models, измеренный по totalCents, а не доказанный эквивалент публичных долларов API xAI.',
-        'Пересчёт в задачи AA дополнительно предполагает сопоставимость Cursor compute cost и AA API-стоимости. Отдельных ставок Cursor по категориям нет.',
         'Пул включает Grok 4.5/4.6 и Composer 2.5; показатель 26.8% округлён, доступный объём делится между моделями.',
         'Не смешивать этот пул с Other Models и его отдельными условиями.',
-      ], [item.source]);
+      ];
+    row.source_urls.push(item.source);
+  }
+  if (row.method === 'unavailable_quota_weights') {
+    if (row.model_id === 'claude-opus-5') {
+      row.missing_data_ru = 'Для Claude Max нет полного замера Opus 5 с категориями токенов и соответствующим расходом недельной квоты. Позднее наблюдение 2.1 млрд cache read за 52% не содержит остальных категорий; модель полного месячного лимита из него не определяется.';
+      row.notes_ru.push('Частичное наблюдение round9 сохранено как свидетельство, а не точечный бюджет. Исторические сообщённые API-бюджеты имеют другую эпоху/неясную версию модели и не заменяют полный замер.');
+    } else if (row.model_id === 'claude-fable-5.1') {
+      row.missing_data_ru = 'Замер Claude Max смешивает Opus и Fable: 19% относятся к общему расходу, input/cache write отсутствуют, отдельная доля квоты Fable неизвестна. Разделить её через общий raw-token объём без дополнительных весов нельзя.';
+    } else if (plan.plan_id.startsWith('cursor_') && plan.plan_id !== 'cursor_pro_plus') {
+      row.missing_data_ru = 'Есть общее число токенов и процент пула Cursor, но нет полной разбивки и ставок внутреннего compute cost. Денежная реконструкция через фиксированную смесь RAP не используется.';
+    } else if (row.model_id === 'grok-4.6' && plan.plan_id.startsWith('supergrok')) {
+      row.missing_data_ru = 'Замер SuperGrok содержит общий raw-token объём без категорий. Номинальные доллары панели и сообщения о расходах не определяют проверенный публичный API-эквивалент; перенос на смесь AA пока недоступен.';
+    }
   }
   row.source_urls = unique(row.source_urls);
   return row;
@@ -228,12 +298,13 @@ const additionalPlans = ['supergrok', 'supergrok_plus', 'supergrok_heavy'].map(p
   };
   rows.push({
     id, model_id: plan.model, monthly_usd: plan.monthly_usd, monthly_tokens: monthlyTokens,
-    method: 'empirical_token_proxy',
+    method: 'unavailable_quota_weights',
     evidence_method: planId === 'supergrok' ? 'calibrated_measurement' : 'plan_extrapolation',
     basis_label: planId === 'supergrok' ? 'Измерение с неполным сеансом' : 'Перенос измерения SuperGrok 4.7',
     reason_ru: 'Известные 13 442 816 токенов двух сеансов отнесены к предполагаемым 8% недельной квоты; ещё один сеанс удалён.',
+    missing_data_ru: 'Для двух известных сеансов Grok 4.7 нет измеренной доли квоты: третья сессия удалена, её вклад неизвестен. Предполагаемые 8% и противоречивый CLI Cost не используются для API-калибровки.',
     confidence: adoption.confidence, token_limit_kind: 'observed_workload',
-    notes_ru: [proxyNote,
+    notes_ru: [missingWeightsNote,
       'Общая полоса выросла с 19% до 28%; доля удалённого сеанса условно принята равной 1%, а двух известных — 8%. Это предположение, не полный контролируемый замер.',
       'Принятый диапазон базы примерно 597–768 млн токенов за четыре недели; возможны смешанные вызовы/контекстные тарифы и вводная акция.',
       'Доллары панели SuperGrok не тождественны долларам публичного API; поле CLI Cost противоречиво и для API-калибровки не используется.',
@@ -259,7 +330,7 @@ const result = {
     generated_by: 'scripts/build_empirical_evidence.mjs',
     rows: rows.length,
     method_counts: counts,
-    method_ru: 'Полные наблюдения стоимости и процента квоты дают условную API-калибровку; остальные практические измерения и явно отмеченные переносы дают token proxy. Фиксированная смесь RAP не используется.',
+    method_ru: 'Объёмы для цены задачи берутся только из AA. Полные наблюдения API-стоимости и процента квоты дают условную калибровку ставок; остальные тарифы сохраняются без цены с перечислением недостающих данных. Общая токенная ёмкость RAP и фиксированная смесь не используются.',
     period_note_ru: 'Недельные наблюдения приводятся к четырём неделям; это не календарный месяц. Пулы общие для моделей одного тарифа: ёмкости нельзя складывать.',
     source_policy_ru: 'Снимок pricing и его аудит сохранены. Research и три дополнительные пары Grok 4.7 прочитаны из закреплённого коммита; их точные байты проверяются SHA-256.',
   },

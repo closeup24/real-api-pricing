@@ -6,7 +6,6 @@ export type MetricStatus = "consistent" | "approximate" | "missing" | "unavailab
 
 export interface EmpiricalBasis {
   basis_label: string;
-  observed_monthly_tokens?: number;
   calibration?: {
     observed_api_usd: number;
     quota_fraction: number;

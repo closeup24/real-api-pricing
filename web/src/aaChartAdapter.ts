@@ -3,20 +3,8 @@ import type { Point, Row, SiteData } from "./types";
 
 const finite = (value: unknown): value is number => typeof value === "number" && Number.isFinite(value);
 
-const methodNames: Record<string, string> = { aa_original_api: "API AA", aa_tokens_quota_rates: "Квота × ставки", empirical_api_calibration: "API-калибровка", empirical_token_proxy: "Токенная оценка" };
+const methodNames: Record<string, string> = { aa_original_api: "API AA", aa_tokens_quota_rates: "Квота × ставки", empirical_api_calibration: "API-калибровка", unavailable_quota_weights: "Нет ставок списания" };
 export const aaMethodLabel = (value?: string) => value ? methodNames[value] || value : "Метод не указан";
-export type EmpiricalMethod = "empirical_api_calibration" | "empirical_token_proxy";
-
-/** Проверяем всю видимую выборку: разные модели не делают допущения совместимыми. */
-export function hasMixedEmpiricalMethods(rows: readonly Pick<QuotaRow, "method">[]): boolean {
-  return rows.some(row => row.method === "empirical_api_calibration")
-    && rows.some(row => row.method === "empirical_token_proxy");
-}
-
-/** Быстрое сравнение сохраняет API и расчёты по квотам вместе с выбранной эмпирикой. */
-export function methodsWithEmpiricalChoice(available: readonly string[], chosen: EmpiricalMethod): string[] {
-  return available.filter(method => method === "aa_original_api" || method === "aa_tokens_quota_rates" || method === chosen);
-}
 
 /** Заимствуем только оформление и происхождение модели, а не цену смеси RAP. */
 export function aaReferencePoint(row: QuotaRow, data: SiteData): Point | undefined {
@@ -53,7 +41,7 @@ export function adaptAAChart(rows: readonly QuotaRow[], scope: Scope, data: Site
     const id = `aa::${row.id}`;
     sourceRows.set(id, row);
     const cost = row[scope]?.cost_usd;
-    if (!finite(cost) || cost < 0 || !finite(row.intelligence_index)) continue;
+    if (row.method === "unavailable_quota_weights" || row[scope]?.status === "unavailable" || !finite(cost) || cost < 0 || !finite(row.intelligence_index)) continue;
     const reference = aaReferencePoint(row, data);
     const vendor = reference?.vendor || vendorFor(row.model_id);
     const channel = reference?.channel || vendor;

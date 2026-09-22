@@ -14,17 +14,19 @@ const reference = createAaData(aa, pricing, rates, audit, weighting);
 test('Основная вкладка получает обычные подписки, метод переноса и исходные числа замера', async () => {
   const empirical = await read('pricing/empirical-evidence.json');
   const data = createAaData(aa, pricing, rates, audit, weighting, empirical);
-  assert.equal(data.quota_scenario.metadata.included_plans, 64);
+  assert.equal(data.quota_scenario.metadata.included_plans, 50);
   assert.equal(data.metadata.row_count, data.quota_scenario.rows.length);
   const luna = data.quota_scenario.rows.find(row => row.pricing_id === 'chatgpt_plus::gpt-5.6-luna');
   assert.equal(luna.method, 'empirical_api_calibration');
   assert.equal(luna.empirical.calibration.quota_fraction, .06);
   assert.equal(luna.empirical.calibration.sample_components.length, 3);
   const claude = data.quota_scenario.rows.find(row => row.pricing_id === 'claude_max_20x::claude-opus-5');
-  assert.equal(claude.method, 'empirical_token_proxy');
-  assert.equal(claude.empirical.observed_monthly_tokens, 15_700_000_000);
+  assert.equal(claude.method, 'unavailable_quota_weights');
+  assert.equal(claude.task.cost_usd, null);
+  assert.ok(claude.task.total_tokens > 0);
+  assert.ok(claude.sources.length > 0);
   assert.deepEqual(data.api_estimate, reference.api_estimate);
-  assert.deepEqual(data.token_scenario, reference.token_scenario);
+  assert.equal('token_scenario' in data, false);
 });
 
 for (const [name, mixture] of [['без смеси RAP', undefined], ['с неверной смесью RAP', { cache: -4, input: 20, output: 'неизвестно' }]]) {
@@ -33,11 +35,11 @@ for (const [name, mixture] of [['без смеси RAP', undefined], ['с нев
     if (mixture === undefined) delete changed.standard_token_mix;
     else changed.standard_token_mix = mixture;
     const actual = createAaData(aa, changed, rates, audit, weighting);
-    assert.equal(actual.quota_scenario.metadata.status, 'ok');
+    assert.equal(actual.quota_scenario.metadata.status, 'partial');
     assert.equal(actual.quota_scenario.metadata.included_plans, 36);
     assert.deepEqual(actual.quota_scenario, reference.quota_scenario);
     assert.deepEqual(actual.api_estimate, reference.api_estimate);
-    assert.deepEqual(actual.token_scenario, reference.token_scenario);
+    assert.equal('token_scenario' in actual, false);
   });
 }
 

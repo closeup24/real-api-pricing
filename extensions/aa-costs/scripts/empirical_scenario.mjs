@@ -15,7 +15,6 @@ function empiricalRate(evidence, plan, variants) {
   const empirical = {
     basis_label: evidence.basis_label,
     reason_ru: evidence.reason_ru,
-    observed_monthly_tokens: positive(evidence.monthly_tokens) ? evidence.monthly_tokens : null,
   };
   let monthlyQuota, quotaUnit, componentRates, assumption;
   if (evidence.method === 'empirical_api_calibration') {
@@ -33,13 +32,7 @@ function empiricalRate(evidence, plan, variants) {
     }
     empirical.calibration = { ...sample, monthly_api_equivalent_usd: monthlyQuota };
     assumption = 'API-калибровка: предполагается, что доля подписочной квоты пропорциональна API-стоимости нагрузки. Практический замер определяет коэффициент при этой гипотезе, но не доказывает её. Состав AA оплачивается по его категориям и ставкам; фиксированная смесь RAP не используется.';
-  } else if (evidence.method === 'empirical_token_proxy') {
-    if (!same(evidence.monthly_tokens, plan.monthly_tokens)) throw new Error('Наблюдённая ёмкость не совпадает с прошедшим аудит значением.');
-    monthlyQuota = evidence.monthly_tokens / 1e6;
-    quotaUnit = 'MTok';
-    componentRates = Object.fromEntries(QUOTA_COMPONENTS.map(key => [key, 1]));
-    assumption = 'Перенос наблюдённого объёма: условно сохраняем месячную токенную ёмкость замера и делим её на токены профиля AA. Равные веса категорий — условие этого сценария, а не тариф провайдера. Измеренная нагрузка может отличаться от AA; неизвестные cache/output-веса не восстановлены и не заменены смесью RAP.';
-  } else throw new Error('Неизвестный способ переноса измерения.');
+  } else throw new Error('Для пересчёта на состав AA нужны ставки списания либо API-калибровка полного замера. Общий токенный объём и равные веса категорий не используются.');
   return {
     id: plan.id, model_id: plan.model, plan: plan.plan, status: 'assumed', method: evidence.method,
     evidence_method: evidence.evidence_method, empirical,
@@ -55,6 +48,48 @@ function empiricalRate(evidence, plan, variants) {
   };
 }
 
+/** Сохраняет тарифы без ставок в основной таблице, не превращая неизвестную цену в ноль. */
+function retainUnavailablePlans(result) {
+  const apiRows = result.rows.filter(row => row.kind === 'api');
+  const unavailableMetric = (metric, notes) => ({
+    ...structuredClone(metric), status: 'unavailable', cost_usd: null,
+    effective_price_usd_per_million: null, quota_per_unit: null,
+    component_quota: Object.fromEntries(QUOTA_COMPONENTS.map(key => [key, null])),
+    units_per_month: null, units_per_100_usd: null,
+    notes: unique([...notes, ...(metric.notes || [])]),
+  });
+  for (const plan of result.plans.filter(plan => !plan.included)) {
+    for (const api of apiRows.filter(row => row.model_id === plan.model_id)) {
+      result.rows.push({
+        ...api, id: `${api.source_id}::quota::${plan.id}`, kind: 'subscription',
+        plan: plan.plan, plan_id: plan.plan_id, pricing_id: plan.id,
+        monthly_usd: plan.monthly_usd, monthly_quota: null, quota_unit: null,
+        component_rates: Object.fromEntries(QUOTA_COMPONENTS.map(key => [key, null])),
+        method: 'unavailable_quota_weights', confidence: 'unavailable', status: 'unavailable',
+        evidence_method: plan.evidence_method, empirical: plan.empirical,
+        notes: unique(plan.notes || []), sources: unique([...api.sources, ...plan.sources]),
+        task: unavailableMetric(api.task, plan.notes), suite: unavailableMetric(api.suite, plan.notes),
+      });
+    }
+  }
+  const subscriptions = result.rows.filter(row => row.kind === 'subscription');
+  Object.assign(result.metadata, {
+    subscription_rows: subscriptions.length,
+    priced_subscription_rows: subscriptions.filter(row => row.task.cost_usd !== null || row.suite.cost_usd !== null).length,
+    unavailable_subscription_rows: subscriptions.filter(row => row.task.cost_usd === null && row.suite.cost_usd === null).length,
+    unavailable_weight_plans: result.plans.filter(plan => !plan.included).length,
+    token_volume_source: 'aa_component_costs_divided_by_aa_rates',
+    uses_rap_monthly_tokens: false,
+    uses_equal_token_weights_fallback: false,
+  });
+  for (const coverage of result.coverage) {
+    const rows = subscriptions.filter(row => row.model_id === coverage.model_id);
+    coverage.subscription_rows = rows.length;
+    coverage.unavailable_subscription_rows = rows.filter(row => row.task.cost_usd === null && row.suite.cost_usd === null).length;
+  }
+  return result;
+}
+
 /** Расширяет известные ставки проверенными замерами, сохраняя отдельное происхождение каждого метода. */
 export function buildExpandedQuotaScenario(aa, pricing, rates, evidence) {
   const evidenceValid = auditMatchesPricing(pricing, evidence);
@@ -62,7 +97,9 @@ export function buildExpandedQuotaScenario(aa, pricing, rates, evidence) {
     const original = buildQuotaScenario(aa, pricing, rates);
     original.metadata.empirical_status = evidence ? 'stale_or_invalid' : 'missing';
     original.metadata.empirical_notes = ['Эмпирический аудит отсутствует или не соответствует исходному снимку. Подписки по проверенным ставкам сохранены.'];
-    return original;
+    if (original.metadata.status === 'ok') original.metadata.status = 'partial';
+    original.metadata.notes = unique([...original.metadata.notes, ...original.metadata.empirical_notes]);
+    return retainUnavailablePlans(original);
   }
   const added = evidence.additional_plans || [];
   if (!Array.isArray(added)) throw new Error('Неверный список дополнительных проверенных тарифов.');
@@ -77,10 +114,15 @@ export function buildExpandedQuotaScenario(aa, pricing, rates, evidence) {
   const mergedRates = nativeValid ? [...rates.rows] : [];
   const nativeIds = new Set(mergedRates.map(row => row.id));
   const failures = new Map();
+  const unavailable = new Map();
   for (const observation of evidence.rows) {
     if (nativeIds.has(observation.id)) continue;
     const plan = expandedPricing.rows.find(row => row.id === observation.id && row.billing === 'subscription');
     if (!plan) { failures.set(observation.id, 'В проверенном снимке нет соответствующего тарифа.'); continue; }
+    if (observation.method === 'unavailable_quota_weights') {
+      unavailable.set(observation.id, observation.missing_data_ru || 'Нет ставок списания или полного замера для API-калибровки; общий токенный объём не переносится на смесь AA.');
+      continue;
+    }
     try {
       mergedRates.push(empiricalRate(observation, plan, aa.rows.filter(row => row.model === plan.model)));
     } catch (error) { failures.set(observation.id, error.message); }
@@ -96,20 +138,25 @@ export function buildExpandedQuotaScenario(aa, pricing, rates, evidence) {
     rows: mergedRates,
   };
   const result = buildQuotaScenario(aa, expandedPricing, merged);
-  for (const plan of result.excluded) {
+  for (const plan of [...result.excluded, ...result.plans.filter(plan => !plan.included)]) {
     const failure = failures.get(plan.id);
+    const missing = unavailable.get(plan.id);
+    const observation = evidence.rows.find(row => row.id === plan.id);
     const explicit = evidence.excluded?.find(row => row.id === plan.id);
-    if (failure || explicit) {
-      plan.reasons = [failure || explicit.reason_ru];
-      plan.notes = [...plan.reasons];
-      if (explicit?.source_urls) plan.sources = [...explicit.source_urls];
+    plan.method = 'unavailable_quota_weights';
+    plan.confidence = 'unavailable';
+    if (failure || missing || explicit) {
+      plan.reasons = [failure || missing || explicit.reason_ru];
+      plan.notes = unique([...plan.reasons, observation?.reason_ru, ...(observation?.notes_ru || [])]);
+      plan.sources = unique([...(observation?.source_urls || []), ...(explicit?.source_urls || [])]);
+      plan.evidence_method = observation?.evidence_method;
     }
   }
   const empiricalPlans = result.plans.filter(plan => plan.included && plan.method?.startsWith('empirical_'));
   Object.assign(result.metadata, {
-    method: 'aa_rates_and_empirical_observations',
+    method: 'aa_tokens_times_quota_weights',
     status: nativeValid && failures.size === 0 ? 'ok' : 'partial',
-    notes: nativeValid ? [] : ['Исходный снимок ставок квоты не соответствует тарифам. Сохранены только отдельно проверенные практические наблюдения.'],
+    notes: [...(nativeValid ? [] : ['Исходный снимок ставок квоты не соответствует тарифам. Сохранены только отдельно проверенные практические наблюдения.']), ...[...failures].map(([id, reason]) => `${id}: ${reason}`)],
     empirical_status: failures.size ? 'partial' : 'ok',
     empirical_notes: [...failures].map(([id, reason]) => `${id}: ${reason}`),
     native_rates_status: nativeValid ? 'ok' : 'unavailable',
@@ -118,10 +165,8 @@ export function buildExpandedQuotaScenario(aa, pricing, rates, evidence) {
     supplemental_source_revision: evidence.metadata.source_revision,
     empirical_plans: empiricalPlans.length,
     empirical_api_calibration_plans: empiricalPlans.filter(plan => plan.method === 'empirical_api_calibration').length,
-    empirical_token_proxy_plans: empiricalPlans.filter(plan => plan.method === 'empirical_token_proxy').length,
-    uses_rap_monthly_tokens: empiricalPlans.some(plan => plan.method === 'empirical_token_proxy'),
-    uses_only_audited_observed_capacities: true,
+    empirical_token_proxy_plans: 0,
     independent_of_rap_token_mix: true,
   });
-  return result;
+  return retainUnavailablePlans(result);
 }

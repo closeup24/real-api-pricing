@@ -1,27 +1,24 @@
 // Строит вкладку AA из закреплённых снимков, без сетевых запросов.
-import { mkdir, readFile, writeFile, copyFile } from 'node:fs/promises';
+import { mkdir, readFile, writeFile } from 'node:fs/promises';
 import { pathToFileURL } from 'node:url';
-import { buildQuotaScenario } from '../../extensions/aa-costs/scripts/quota_scenario.mjs';
 import { buildExpandedQuotaScenario } from '../../extensions/aa-costs/scripts/empirical_scenario.mjs';
-import { buildTokenScenario } from '../../extensions/aa-costs/scripts/token_scenario.mjs';
 import { estimateVariant } from '../../extensions/aa-costs/scripts/estimate_api_price.mjs';
 
-/** Новый расчёт не требует смеси RAP или успешной сборки предыдущего отчёта. */
+/** Основная сборка использует только профиль AA и не запускает архивные сценарии. */
 export function createAaData(aa, pricing, rates, audit, taskWeighting, empiricalEvidence = null) {
-  const quota = empiricalEvidence ? buildExpandedQuotaScenario(aa, pricing, rates, empiricalEvidence) : buildQuotaScenario(aa, pricing, rates);
+  const quota = buildExpandedQuotaScenario(aa, pricing, rates, empiricalEvidence);
   return {
     metadata: {
       aa_version: aa.metadata.intelligence_index_version,
       aa_retrieved_at: aa.metadata.retrieved_at,
       pricing_revision: pricing.revision,
       pricing_retrieved_at_utc: pricing.retrieved_at_utc,
-      methodology: 'Состав AA оценивается по известным ставкам, API-калибровке практического замера или условному переносу наблюдённой токенной ёмкости. Метод и происхождение указаны для каждого тарифа.',
+      methodology: 'Единый профиль: объёмы пяти категорий AA для каждой модели и effort умножаются на ставки списания квоты. Веса берутся из условий тарифа либо условной API-калибровки практического замера. Без весов тариф остаётся в таблице без цены. Смесь RAP и её месячная токенная ёмкость не используются.',
       model_count: quota.metadata.model_count,
       variant_count: aa.rows.length,
       row_count: quota.rows.length,
     },
     quota_scenario: quota,
-    token_scenario: buildTokenScenario(aa, pricing, audit),
     api_estimate: {
       metadata: {
         source_version: aa.metadata.intelligence_index_version,
@@ -47,8 +44,6 @@ export function createAaData(aa, pricing, rates, audit, taskWeighting, empirical
 
 const extension = new URL('../../extensions/aa-costs/', import.meta.url);
 const dataDirectory = new URL('../public/data/', import.meta.url);
-const archiveDirectory = new URL('../public/aa-archive/', import.meta.url);
-const escapeHtml = value => String(value).replace(/[&<>"']/g, character => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' })[character]);
 
 async function readJson(path, optional = false) {
   try { return JSON.parse(await readFile(new URL(path, extension), 'utf8')); }
@@ -62,23 +57,11 @@ export async function buildAaData() {
     readJson('data/aa/task-weighting.json', true),
     readJson('data/pricing/empirical-evidence.json', true),
   ]);
-  // Ошибка нового расчёта прерывает сборку, без подстановки архивных результатов.
+  // Ошибка расчёта прерывает сборку, без подстановки архивных результатов.
   const data = createAaData(aa, pricing, rates, audit, weighting, empiricalEvidence);
   await mkdir(dataDirectory, { recursive: true });
-  await mkdir(archiveDirectory, { recursive: true });
-  try {
-    const { build } = await import('../../extensions/aa-costs/scripts/build_report.mjs');
-    await build();
-    await copyFile(new URL('output/report.html', extension), new URL('report.html', archiveDirectory));
-    data.archive_status = { status: 'ok', url: '/aa-archive/report.html', reason: null };
-  } catch (error) {
-    const reason = error instanceof Error ? error.message : String(error);
-    data.archive_status = { status: 'unavailable', url: '/aa-archive/report.html', reason };
-    console.warn(`Предыдущий отчёт не собран: ${reason}. Новая вкладка рассчитана независимо.`);
-    await writeFile(new URL('report.html', archiveDirectory), `<!doctype html><html lang="ru"><meta charset="utf-8"><title>Предыдущий отчёт недоступен</title><h1>Предыдущий отчёт не собран</h1><p>Архивный метод завершился ошибкой. Его данные не подставлены в новый расчёт.</p><pre>${escapeHtml(reason)}</pre><p><a href="/?view=aa">Открыть новый расчёт задач AA</a></p></html>`);
-  }
   await writeFile(new URL('aa-costs.json', dataDirectory), JSON.stringify(data));
-  console.log(`Вкладка AA: public/data/aa-costs.json; архив: ${data.archive_status.status}`);
+  console.log(`Вкладка AA: ${data.quota_scenario.metadata.included_plans} пар со ставками, ${data.quota_scenario.metadata.unavailable_weight_plans} без оценки; public/data/aa-costs.json.`);
   return data;
 }
 

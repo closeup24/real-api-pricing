@@ -86,20 +86,39 @@ test('API-калибровка: полный образец, доля квоты
   close(row.suite.cost_usd, row.task.cost_usd * 10);
 });
 
-test('Наблюдённая токенная ёмкость переносится без скрытых API-весов и применяется ко всем effort своей модели', () => {
+test('Равное число токенов при другом составе AA меняет цену по ставкам категорий', () => {
+  const data = fixture();
+  const second = data.aa.rows[1];
+  second.cost_per_task_components_usd = { nonCacheInput: .2, cacheRead: .08, cacheWrite: .25, answer: 1.1, reasoning: .4, input: .53, output: 1.5, total: 2.03 };
+  second.cost_per_task_usd = 2.03;
+  second.intelligence_index_output_tokens_per_task = { answer: 110_000, reasoning: 40_000, output: 150_000 };
+  const result = calculate(data), high = observedRow(result), max = observedRow(result, 'max');
+  close(high.task.total_tokens, max.task.total_tokens);
+  close(max.task.cost_usd / high.task.cost_usd, 2.03 / 1.05);
+  assert.notEqual(high.task.cache_read_share, max.task.cache_read_share);
+  assert.notEqual(high.task.effective_price_usd_per_million, max.task.effective_price_usd_per_million);
+});
+
+test('Старый token proxy не создаёт цену: каждый effort остаётся в таблице с профилем AA и причиной', () => {
   const result = calculate(fixture('empirical_token_proxy'));
-  const high = observedRow(result), max = observedRow(result, 'max');
-  assert.equal(empiricalRows(result).length, 2);
-  assert.ok(empiricalRows(result).every(row => row.model_id === 'sample'));
-  assert.equal(high.quota_unit, 'MTok');
-  assert.equal(high.monthly_quota, 2);
-  assert.deepEqual(high.component_rates, { non_cache_input: 1, cache_read: 1, cache_write: 1, answer: 1, reasoning: 1 });
-  close(high.task.cost_usd, 20 * 750_000 / 2_000_000);
-  close(high.task.units_per_month, 2_000_000 / 750_000);
-  close(max.task.cost_usd, high.task.cost_usd * 2);
-  close(max.task.units_per_month, high.task.units_per_month / 2);
-  close(max.task.effective_price_usd_per_million, high.task.effective_price_usd_per_million);
-  assert.equal(result.rows.filter(row => row.kind === 'api' && row.model_id === 'other').length, 1);
+  const rows = result.rows.filter(row => row.pricing_id === 'observed::sample');
+  assert.equal(rows.length, 2);
+  assert.equal(empiricalRows(result).length, 0);
+  for (const row of rows) {
+    assert.equal(row.method, 'unavailable_quota_weights');
+    assert.equal(row.monthly_usd, 20);
+    assert.equal(row.monthly_quota, null);
+    assert.ok(Object.values(row.component_rates).every(value => value === null));
+    assert.match(row.notes.join(' '), /равные веса категорий не используются/);
+    for (const scope of ['task', 'suite']) {
+      const api = result.rows.find(item => item.kind === 'api' && item.source_id === row.source_id);
+      assert.deepEqual(row[scope].component_tokens, api[scope].component_tokens);
+      assert.equal(row[scope].api_cost_usd, api[scope].cost_usd);
+      for (const field of ['cost_usd', 'effective_price_usd_per_million', 'quota_per_unit', 'units_per_month', 'units_per_100_usd']) assert.equal(row[scope][field], null);
+    }
+  }
+  assert.equal(result.metadata.uses_rap_monthly_tokens, false);
+  assert.equal(result.metadata.uses_equal_token_weights_fallback, false);
 });
 
 test('Калибровка берёт AA-ставки только своей модели; конфликт ставок между её effort запрещает перенос', () => {
@@ -112,6 +131,8 @@ test('Калибровка берёт AA-ставки только своей м
   assert.equal(empiricalRows(result).length, 0);
   assert.equal(result.plans.find(plan => plan.id === 'native::sample').included, true);
   assert.match(result.excluded.find(plan => plan.id === 'observed::sample').reasons.join(' '), /различаются/);
+  assert.equal(result.metadata.status, 'partial');
+  assert.match(result.metadata.notes.join(' '), /различаются/);
 });
 
 test('Синтетическая смесь и неизвестное происхождение запрещены даже при положительных числах и флаге usable', () => {
@@ -145,27 +166,28 @@ test('Неполная, отрицательная, бесконечная и н
   }
 });
 
-test('Чужая модель, несовпадающие плата или токенная ёмкость и отсутствие источника не проходят аудит', () => {
-  for (const change of [{ model_id: 'other' }, { monthly_usd: 21 }, { monthly_tokens: 1 }, { source_urls: [] }, { method: 'invented_method' }]) {
-    const data = fixture('empirical_token_proxy');
+test('Чужая модель, несовпадающая плата, отсутствие источника и неизвестный метод не проходят аудит', () => {
+  for (const change of [{ model_id: 'other' }, { monthly_usd: 21 }, { source_urls: [] }, { method: 'invented_method' }]) {
+    const data = fixture();
     Object.assign(data.evidence.rows[0], change);
     assert.equal(empiricalRows(calculate(data)).length, 0, JSON.stringify(change));
   }
 });
 
-test('Изменение выдуманной смеси и готовых смешанных цен не влияет на оба эмпирических метода', () => {
-  for (const method of ['empirical_api_calibration', 'empirical_token_proxy']) {
+test('Смесь RAP, её готовые цены и месячные токены не влияют на расчёт и не возвращают цену неподдержанного тарифа', () => {
+  for (const method of ['empirical_api_calibration', 'unavailable_quota_weights']) {
     const data = fixture(method);
-    const before = empiricalRows(calculate(data));
+    const before = calculate(data).rows;
     data.pricing.standard_token_mix = { cache: 0, input: 0, output: 1 };
     for (const plan of data.pricing.rows) {
       plan.real_price_usd_per_million = 99_999;
       plan.api_price_usd_per_million = 99_999;
       plan.api_price_components = { cache: 99_999, input: 99_999, output: 99_999 };
-      if (method === 'empirical_api_calibration') plan.monthly_tokens = 1;
+      plan.monthly_tokens = 1;
     }
+    data.evidence.rows[0].monthly_tokens = 999_999_999_999;
     rebind(data);
-    const after = empiricalRows(calculate(data));
+    const after = calculate(data).rows;
     assert.deepEqual(after.map(row => [row.task, row.suite]), before.map(row => [row.task, row.suite]));
   }
 });
@@ -177,9 +199,12 @@ test('Неактуальный или отсутствующий эмпирич�
     if (key) data.evidence.metadata[key] = 'stale';
     else data.evidence = null;
     const result = calculate(data);
-    assert.deepEqual(result.rows, baseline.rows);
+    assert.deepEqual(result.rows.filter(row => row.kind === 'api' || row.pricing_id === 'native::sample'), baseline.rows);
+    assert.equal(result.rows.filter(row => row.method === 'unavailable_quota_weights').length, 2);
     assert.deepEqual(result.plans, baseline.plans);
     assert.equal(result.metadata.empirical_status, key ? 'stale_or_invalid' : 'missing');
+    assert.equal(result.metadata.status, 'partial');
+    assert.match(result.metadata.notes.join(' '), /аудит отсутствует или не соответствует/);
   }
 });
 
@@ -208,19 +233,42 @@ async function snapshot() {
   return { aa, pricing, rates, evidence };
 }
 
-test('Реальный снимок: 36 native + 28 практических тарифов включены, исключён только неизвестный SuperGrok Lite', async () => {
+test('Sol и Devin используют категории практического замера, а не месячный total RAP', async () => {
+  const result = calculate(await snapshot());
+  const solCosts = (40_729_910 * 4 + 856_859_776 * .4 + 3_755_512 * 20
+    + 5_481_179 * .2 + 23_369_216 * .02 + 65_577 * 1.2) / 1e6;
+  for (const [plan, multiplier] of [['chatgpt_plus', 1 / 20], ['chatgpt_pro_5x', 1 / 4], ['chatgpt_pro_20x', 1]]) {
+    const row = result.rows.find(row => row.pricing_id === `${plan}::gpt-5.6-sol`);
+    assert.equal(row.method, 'empirical_api_calibration');
+    close(row.monthly_quota, solCosts / .27 * 4 * multiplier);
+    assert.equal(row.evidence_method, multiplier === 1 ? 'pooled_measurements' : 'plan_extrapolation');
+    assert.equal(row.empirical.calibration.sample_components.length, 6);
+    assert.match(row.notes.join(' '), /Luna составляет/);
+  }
+  const devin = result.rows.find(row => row.pricing_id === 'devin_max::gpt-6-astra');
+  assert.equal(devin.method, 'empirical_api_calibration');
+  close(devin.monthly_quota, (1998 * 10 + 300_944_710 + 3_708_954 * 12.5 + 369_918 * 50) / 1e6 / .87 * 4);
+  assert.match(devin.notes.join(' '), /CacheCreate сопоставлен/);
+  const cursor = result.rows.find(row => row.pricing_id === 'cursor_pro_plus::grok-4.6');
+  assert.equal(cursor.method, 'unavailable_quota_weights');
+  assert.equal(cursor.task.cost_usd, null);
+  assert.match(cursor.notes.join(' '), /внутренних единицах Cursor/);
+});
+
+test('Реальный снимок: 36 native + 14 калибровок, остальные 15 тарифов видны без оценки', async () => {
   const data = await snapshot();
   const result = calculate(data);
   assert.equal(result.metadata.status, 'ok');
   assert.equal(result.metadata.empirical_status, 'ok');
   assert.equal(result.metadata.native_rates_status, 'ok');
-  assert.equal(result.metadata.included_plans, 64);
+  assert.equal(result.metadata.included_plans, 50);
   assert.equal(result.plans.length, 65);
-  assert.equal(result.metadata.empirical_plans, 28);
-  assert.equal(result.metadata.empirical_api_calibration_plans, 11);
-  assert.equal(result.metadata.empirical_token_proxy_plans, 17);
-  assert.deepEqual(result.excluded.map(plan => plan.id), ['supergrok_lite::grok-4.6']);
-  assert.equal(result.rows.filter(row => row.pricing_id === 'supergrok_lite::grok-4.6').length, 0);
+  assert.equal(result.metadata.empirical_plans, 14);
+  assert.equal(result.metadata.empirical_api_calibration_plans, 14);
+  assert.equal(result.metadata.empirical_token_proxy_plans, 0);
+  assert.equal(result.excluded.length, 15);
+  assert.equal(result.rows.length, 231);
+  assert.ok(result.rows.filter(row => row.pricing_id === 'supergrok_lite::grok-4.6').length > 0);
   assert.equal(result.plans.filter(plan => plan.included && !plan.method.startsWith('empirical_')).length, 36);
 });
 
@@ -234,15 +282,16 @@ test('Реальный снимок: девять обычных OpenAI и пя�
   ];
   for (const id of expected) {
     const plan = result.plans.find(item => item.id === id);
-    assert.equal(plan?.included, true, id);
+    assert.ok(plan, id);
     const variants = data.aa.rows.filter(row => row.model === plan.model_id);
     const rows = result.rows.filter(row => row.pricing_id === id);
     assert.deepEqual(rows.map(row => [row.source_id, row.effort]), variants.map(row => [row.source_id, row.effort]), id);
-    assert.ok(rows.every(row => row.model_id === plan.model_id && row.confidence === 'assumed'), id);
+    assert.ok(rows.every(row => row.model_id === plan.model_id && row.confidence === (plan.included ? 'assumed' : 'unavailable')), id);
+    if (!plan.included) assert.ok(rows.every(row => row.task.cost_usd === null && row.suite.cost_usd === null && row.sources.length > 0), id);
   }
 });
 
-test('Реальный снимок: дополнительные Grok 4.7 имеют точные ID, отдельные квоты и свою модель', async () => {
+test('Реальный снимок: Grok 4.7 сохраняет ID и свою модель, но неполный замер не задаёт цену', async () => {
   const data = await snapshot();
   const result = calculate(data);
   const expected = ['supergrok::grok-4.7', 'supergrok_plus::grok-4.7', 'supergrok_heavy::grok-4.7'];
@@ -255,8 +304,9 @@ test('Реальный снимок: дополнительные Grok 4.7 им�
     const rows = result.rows.filter(row => row.pricing_id === id);
     assert.ok(rows.length > 0, id);
     assert.equal(rows.length, data.aa.rows.filter(row => row.model === 'grok-4.7').length);
-    assert.ok(rows.every(row => row.model_id === 'grok-4.7' && row.method === 'empirical_token_proxy'));
-    close(rows[0].monthly_quota, capacities[index] / 1e6);
+    assert.ok(rows.every(row => row.model_id === 'grok-4.7' && row.method === 'unavailable_quota_weights'));
+    assert.ok(rows.every(row => row.monthly_quota === null && row.task.cost_usd === null && row.suite.cost_usd === null));
+    assert.match(rows[0].notes.join(' '), /третья сессия удалена/);
   }
 });
 
