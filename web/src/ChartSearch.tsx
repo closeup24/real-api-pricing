@@ -28,6 +28,7 @@ export default function ChartSearch({
   candidates,
   hits,
   lang,
+  priceUnit = "MTok",
   onSearch,
 }: {
   query: string;
@@ -35,6 +36,8 @@ export default function ChartSearch({
   candidates: SearchCandidates;
   hits: SearchHits;
   lang: Lang;
+  /** Единица отображаемой цены без косой черты. */
+  priceUnit?: string;
   onSearch: (find: string, lock: Lock | null) => void;
 }) {
   const zh = lang === "zh";
@@ -164,8 +167,8 @@ export default function ChartSearch({
     const small =
       e.kind === "model"
         ? zh
-          ? `${c.points} 个套餐 · 最低 ${price(c.cheapest)}/MTok · 分数 ${number(c.score, lang)}`
-          : `${c.points} plans · from ${price(c.cheapest)}/MTok · score ${number(c.score, lang)}`
+          ? `${c.points} 个套餐 · 最低 ${price(c.cheapest)}/${priceUnit} · 分数 ${number(c.score, lang)}`
+          : `${c.points} plans · from ${price(c.cheapest)}/${priceUnit} · score ${number(c.score, lang)}`
         : (() => {
             const fee =
               c.row.point.billing === "metered"

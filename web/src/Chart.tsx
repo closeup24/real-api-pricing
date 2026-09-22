@@ -56,6 +56,13 @@ import ChartSearch from "./ChartSearch";
 export interface ChartHandle {
   download: (format: "png" | "svg") => Promise<void>;
 }
+/** Задаёт подписи и единицу отображаемой цены; значения строк передаёт вызывающий экран. */
+export interface ChartMetricLabels {
+  axisTitle: string;
+  priceLabel: string;
+  /** Знаменатель без косой черты, например «MTok», «задачу» или «набор». */
+  priceUnit: string;
+}
 const escape = (s: string) =>
   s.replace(
     /[&<>"']/g,
@@ -72,6 +79,7 @@ export default function Chart({
   onSelect,
   onSearch,
   handle,
+  metricLabels,
 }: {
   rows: Row[];
   state: State;
@@ -80,6 +88,7 @@ export default function Chart({
   onSelect: (rows: Row[]) => void;
   onSearch: (find: string, lock: Lock | null) => void;
   handle: React.RefObject<ChartHandle | null>;
+  metricLabels?: ChartMetricLabels;
 }) {
   const host = useRef<HTMLDivElement>(null);
   const selection = useRef(onSelect);
@@ -133,6 +142,11 @@ export default function Chart({
   }, []);
   const zh = state.lang === "zh";
   const dark = theme === "dark";
+  const priceUnit = metricLabels?.priceUnit ?? "MTok";
+  const priceLabel = metricLabels?.priceLabel ?? (zh ? "真实单价" : "Real price");
+  const axisTitle = metricLabels?.axisTitle ?? (zh
+    ? "真实单价 · USD / 百万 token     → 更便宜"
+    : "Real price · USD / million tokens     → Less expensive");
   // Search hits glow in their own channel colour; the ring alpha lifts in dark mode.
   const hitStyle = new Map<string, React.CSSProperties>(
     hitGroups.map((g) => [
@@ -264,9 +278,7 @@ export default function Chart({
             type: "log",
             range: [hi + pad, lo - pad],
             title: {
-              text: zh
-                ? "真实单价 · USD / 百万 token     → 更便宜"
-                : "Real price · USD / million tokens     → Less expensive",
+              text: escape(axisTitle),
               font: { size: 12 },
             },
             gridcolor: chartTheme.grid,
@@ -372,7 +384,7 @@ export default function Chart({
               cliponaxis: false,
               hovertemplate: sorted.map(
                 (r) =>
-                  `<b>${escape(r.point.model_display)}</b><br>${escape(displayPlan(r.point.plan, state.lang))}<br>${state.view === "price" ? price(r.point.real_usd_per_mtok) + " / MTok" : allowance(r.point, state.lang) + " tokens"}<extra></extra>`,
+                  `<b>${escape(r.point.model_display)}</b><br>${escape(displayPlan(r.point.plan, state.lang))}<br>${state.view === "price" ? price(r.point.real_usd_per_mtok) + " / " + escape(priceUnit) : allowance(r.point, state.lang) + " tokens"}<extra></extra>`,
               ),
             },
           ];
@@ -394,7 +406,7 @@ export default function Chart({
               title: {
                 text:
                   state.view === "price"
-                    ? "USD / MTok"
+                    ? "USD / " + escape(priceUnit)
                     : zh
                       ? "月额度 · 亿 token"
                       : "Monthly allowance · billion tokens",
@@ -660,7 +672,7 @@ export default function Chart({
               yanchor: "top" as const,
               showarrow: false,
               text: escape(
-                `${i + 1}. ${[...new Set(g.rows.map((r) => r.point.model_display))].join(" / ")} · ${price(g.price)} / MTok${g.price === 0 ? " · " + unmeteredNote(g.rows[0].point, state.lang) : ""} · ${number(g.score, state.lang)}${g.rows[0].mapping?.score_is_self_reported ? " · " + selfReportTag(state.lang) : ""}`,
+                `${i + 1}. ${[...new Set(g.rows.map((r) => r.point.model_display))].join(" / ")} · ${price(g.price)} / ${priceUnit}${g.price === 0 ? " · " + unmeteredNote(g.rows[0].point, state.lang) : ""} · ${number(g.score, state.lang)}${g.rows[0].mapping?.score_is_self_reported ? " · " + selfReportTag(state.lang) : ""}`,
               ),
               font: { size: 12, color: chartTheme.ink },
             }));
@@ -804,6 +816,8 @@ export default function Chart({
     handle,
     small,
     theme,
+    axisTitle,
+    priceUnit,
   ]);
   const hoverGroup = hover
     ? chartGroups.find((g) => g.key === hover.key)
@@ -866,6 +880,7 @@ export default function Chart({
               candidates={candidates}
               hits={hits}
               lang={state.lang}
+              priceUnit={priceUnit}
               onSearch={onSearch}
             />
           </div>
@@ -957,8 +972,8 @@ export default function Chart({
             )}
             <div className="hover-stats">
               <span>
-                <small>{zh ? "真实单价" : "Real price"}</small>
-                {price(hoverGroup.price)} <i>/ MTok</i>
+                <small>{priceLabel}</small>
+                {price(hoverGroup.price)} <i>/ {priceUnit}</i>
                 {hoverPoint && hoverGroup.price === 0 && (
                   <i> · {unmeteredNote(hoverPoint, state.lang)}</i>
                 )}
@@ -1018,7 +1033,7 @@ export default function Chart({
                     " / ",
                   )}
                   <small>
-                    {price(g.price)} / MTok
+                    {price(g.price)} / {priceUnit}
                     {g.price === 0 ? ` · ${unmeteredNote(g.rows[0].point, state.lang)}` : ""}
                     {" · "}
                     {number(g.score, state.lang)}

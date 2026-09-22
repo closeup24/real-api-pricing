@@ -8,7 +8,7 @@
     "dev": "npm run data && vite --host 0.0.0.0",
     "build": "npm run data && tsc -b && vite build",
     "preview": "vite preview --host 0.0.0.0",
-    "test": "npm run data && tsx --test src/domain.test.ts scripts/build-aa-data.test.mjs && node --test ../extensions/aa-costs/tests/*.test.mjs"
+    "test": "npm run data && tsx --test src/domain.test.ts src/aaChartAdapter.test.ts scripts/build-aa-data.test.mjs && node --test ../extensions/aa-costs/tests/*.test.mjs"
   },
   "dependencies": {
     "@fontsource-variable/dm-sans": "^5.3.0",

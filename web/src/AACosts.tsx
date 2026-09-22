@@ -1,6 +1,14 @@
 import { useEffect, useMemo, useRef, useState } from "react";
-import type { CSSProperties, ReactNode } from "react";
-import { Calculator, CaretDown, DownloadSimple, FunnelSimple } from "@phosphor-icons/react";
+import type { ReactNode } from "react";
+import { ArrowDown, ArrowUp, ArrowUpRight, Calculator, CaretDown, CheckSquare, DownloadSimple, FunnelSimple, Info, MagnifyingGlass, SlidersHorizontal, X } from "@phosphor-icons/react";
+import Chart from "./Chart";
+import type { ChartHandle } from "./Chart";
+import Modal from "./Modal";
+import ResizeHandle from "./ResizeHandle";
+import { BrandMarks } from "./ProviderLogo";
+import { color, defaultState, groups, pareto } from "./domain";
+import type { Lang, SiteData, State } from "./types";
+import { aaReferencePoint, adaptAAChart } from "./aaChartAdapter";
 import { componentKeys } from "./aaTypes";
 import type { AACostData, AATokenReconstruction, ComponentKey, QuotaMetric, QuotaPlan, QuotaRow, Scope } from "./aaTypes";
 
@@ -10,7 +18,6 @@ const componentNames: Record<ComponentKey, string> = {
 const confidenceNames: Record<string, string> = { documented: "Документировано", assumed: "С допущениями", source: "Исходные данные API", unavailable: "Недоступно" };
 const statusNames: Record<string, string> = { consistent: "Согласовано", approximate: "Приближённая оценка", missing: "Нет данных AA", unavailable: "Расчёт недоступен" };
 const finite = (value: unknown): value is number => typeof value === "number" && Number.isFinite(value);
-const positive = (value: unknown): value is number => finite(value) && value > 0;
 const number = (value: unknown, exact = false): string => !finite(value) ? "—" : exact ? String(value) : new Intl.NumberFormat("ru-RU", {
   maximumSignificantDigits: 6, ...(value !== 0 && Math.abs(value) < .00001 ? { notation: "scientific" as const } : {}),
 }).format(value);
@@ -41,58 +48,6 @@ function Sources({ urls }: { urls?: string[] }) {
   return <span className="aa-sources">{unique(texts(urls)).filter(url => sourceUrl(url)).map((url, index) => (
     <a key={url} href={sourceUrl(url)!} target="_blank" rel="noreferrer" title={url}>{new URL(url).hostname.replace(/^www\./, "")}{index ? ` · ${index + 1}` : ""} ↗</a>
   ))}</span>;
-}
-
-function MultiFilter({ title, options, selected, onChange }: {
-  title: string; options: { value: string; label: string }[]; selected: string[] | null; onChange: (value: string[] | null) => void;
-}) {
-  const [query, setQuery] = useState("");
-  const ref = useRef<HTMLDetailsElement>(null);
-  const checked = selected ?? options.map(option => option.value);
-  const matching = options.filter(option => option.label.toLocaleLowerCase("ru").includes(query.toLocaleLowerCase("ru")));
-  const isAll = selected === null || checked.length === options.length;
-  useEffect(() => {
-    const close = (event: PointerEvent) => { if (ref.current && !ref.current.contains(event.target as Node)) ref.current.open = false; };
-    document.addEventListener("pointerdown", close);
-    return () => document.removeEventListener("pointerdown", close);
-  }, []);
-  return <details ref={ref} className={`aa-filter ${isAll ? "" : "aa-filter-active"}`} onKeyDown={event => {
-    if (event.key === "Escape" && ref.current) { ref.current.open = false; ref.current.querySelector("summary")?.focus(); }
-  }}>
-    <summary><span>{title}</span><b>{isAll ? "Все" : checked.length === 0 ? "Ничего" : `${checked.length} из ${options.length}`}</b><CaretDown size={13} /></summary>
-    <div className="aa-filter-panel">
-      <input aria-label={`Поиск: ${title}`} placeholder="Найти вариант" value={query} onChange={event => setQuery(event.target.value)} />
-      <div className="aa-filter-actions"><button type="button" onClick={() => onChange(null)}>Все</button><button type="button" onClick={() => onChange([])}>Снять</button></div>
-      <div className="aa-filter-options">{matching.map(option => <label key={option.value}>
-        <input type="checkbox" checked={checked.includes(option.value)} onChange={event => onChange(event.target.checked ? unique([...checked, option.value]) : checked.filter(value => value !== option.value))} />
-        <span>{option.label}</span>
-      </label>)}{!matching.length && <small>Ничего не найдено.</small>}</div>
-    </div>
-  </details>;
-}
-
-function PriceChart({ rows, scope, selectedId, onSelect }: { rows: QuotaRow[]; scope: Scope; selectedId: string; onSelect: (row: QuotaRow) => void }) {
-  const priced = useMemo(() => rows.filter(row => positive(row[scope]?.cost_usd)).sort((a, b) => a[scope]!.cost_usd! - b[scope]!.cost_usd!), [rows, scope]);
-  if (!priced.length) return <div className="aa-empty">Нет положительных цен для графика. Пустые и нулевые значения остаются в таблице.</div>;
-  const minimum = Math.log10(priced[0][scope]!.cost_usd!), maximum = Math.log10(priced.at(-1)![scope]!.cost_usd!);
-  const padding = Math.max(.12, (maximum - minimum) * .05), lower = minimum - padding, upper = maximum + padding;
-  const position = (value: number) => 100 * (Math.log10(value) - lower) / (upper - lower);
-  const ticks = [0, .5, 1].map(fraction => 10 ** (lower + (upper - lower) * fraction));
-  return <>
-    <div className="aa-chart-axis"><span>Модель · effort · тариф</span><div>{ticks.map((value, index) => <span key={index} style={{ left: `${index * 50}%` }}>{money(value)}</span>)}</div><span>Стоимость</span></div>
-    <div className="aa-chart-list" role="list" aria-label={`Стоимость ${scope === "task" ? "задачи" : "набора"} по возрастанию`}>
-      {priced.map(row => {
-        const hash = [...row.model_id].reduce((sum, letter) => sum + letter.charCodeAt(0), 0);
-        return <button key={row.id} type="button" role="listitem" className={`aa-price-row ${selectedId === row.id ? "aa-price-selected" : ""}`}
-          onClick={() => onSelect(row)} title={`${row.model} · ${effortLabel(row)} · ${row.plan}: ${costLabel(row, scope)}. Нажмите для расчёта.`}>
-          <span className="aa-price-name"><strong>{row.model} <em>{effortLabel(row)}</em></strong><small>{row.plan}</small></span>
-          <span className="aa-price-track"><i className={row.kind === "api" ? "aa-dot-api" : "aa-dot-subscription"} style={{ left: `${position(row[scope]!.cost_usd!)}%`, "--aa-point": `hsl(${hash % 360} 48% 45%)` } as CSSProperties} /></span>
-          <span className="aa-price-value">{costLabel(row, scope)}</span>
-        </button>;
-      })}
-    </div>
-    <p className="aa-chart-note">Логарифмическая шкала · ● API · ◇ подписка. Нажмите строку для разбора. {rows.length - priced.length > 0 && `Без положительной цены: ${rows.length - priced.length}.`}</p>
-  </>;
 }
 
 function Equation({ label, children }: { label: string; children: ReactNode }) {
@@ -161,13 +116,44 @@ function downloadCsv(rows: QuotaRow[], scope: Scope) {
   const link = document.createElement("a"); link.href = url; link.download = `aa-quota-${scope}.csv`; link.click(); setTimeout(() => URL.revokeObjectURL(url), 1000);
 }
 
-export default function AACosts() {
+export interface AACostsProps {
+  navigation: ReactNode;
+  baseData: SiteData;
+  theme: "light" | "dark";
+  lang: Lang;
+}
+
+type SortKey = "model" | "plan" | "cost" | "score" | "fee" | "cache" | "input" | "output" | "api" | "subscription" | "quota" | "month" | "budget" | "confidence";
+const sortValue = (row: QuotaRow, scope: Scope, key: SortKey): number | string | null | undefined => {
+  const metric = row[scope] || {};
+  switch (key) {
+    case "model": return `${row.model} ${row.effort}`;
+    case "plan": return row.plan;
+    case "cost": return metric.cost_usd;
+    case "score": return row.intelligence_index;
+    case "fee": return row.monthly_usd;
+    case "cache": return metric.cache_read_share;
+    case "input": return metric.input_without_cache_read_share;
+    case "output": return metric.output_share;
+    case "api": return metric.api_price_usd_per_million;
+    case "subscription": return row.kind === "subscription" ? metric.effective_price_usd_per_million : null;
+    case "quota": return metric.quota_per_unit;
+    case "month": return metric.units_per_month;
+    case "budget": return metric.units_per_100_usd;
+    case "confidence": return confidenceLabel(row.confidence);
+  }
+};
+
+export default function AACosts({ navigation, baseData, theme, lang }: AACostsProps) {
   const [data, setData] = useState<AACostData | null>(null), [error, setError] = useState(""), [attempt, setAttempt] = useState(0);
   const [selection, setSelection] = useState<Selections>(allSelected), [query, setQuery] = useState(""), [scope, setScope] = useState<Scope>("task");
   const [selectedId, setSelectedId] = useState(""), [detailOpen, setDetailOpen] = useState(false), [exact, setExact] = useState(false);
-  const detailRef = useRef<HTMLDetailsElement>(null);
+  const [panel, setPanel] = useState<"models" | "filters" | "display" | "download" | null>(null), [filterSearch, setFilterSearch] = useState("");
+  const [chartState, setChartState] = useState(defaultState), [sort, setSort] = useState<SortKey>("cost"), [direction, setDirection] = useState<"asc" | "desc">("asc");
+  const [exportError, setExportError] = useState("");
+  const tableScroll = useRef<HTMLDivElement>(null), chart = useRef<ChartHandle | null>(null);
   useEffect(() => {
-    const abort = new AbortController();setError("");setData(null);
+    const abort = new AbortController(); setError(""); setData(null);
     fetch("/data/aa-costs.json", { signal: abort.signal }).then(response => {
       if (!response.ok) throw new Error(`HTTP ${response.status}`);
       return response.json();
@@ -179,54 +165,78 @@ export default function AACosts() {
     }).catch((reason: Error) => { if (reason.name !== "AbortError") setError(reason.message || String(reason)); });
     return () => abort.abort();
   }, [attempt]);
-  const rows = data?.quota_scenario.rows ?? [];
+  const rows = useMemo(() => data?.quota_scenario.rows ?? [], [data]);
   const options = useMemo(() => Object.fromEntries(filters.map(filter => [filter.key, unique(rows.map(filter.value)).map(value => ({
     value, label: filter.key === "model" ? rows.find(row => row.model_id === value)?.model || value : filter.key === "plan" ? rows.find(row => (row.plan_id || row.plan) === value)?.plan || value : filter.label ? filter.label(value) : value,
   })).sort((a, b) => a.label.localeCompare(b.label, "ru", { numeric: true }))])) as Record<FilterKey, { value: string; label: string }[]>, [rows]);
-  const visible = useMemo(() => {
+  const visible = useMemo(() => rows.filter(row => filters.every(filter => selection[filter.key] === null || selection[filter.key]!.includes(filter.value(row)))), [rows, selection]);
+  const sorted = useMemo(() => {
     const terms = query.toLocaleLowerCase("ru").trim().split(/\s+/).filter(Boolean);
-    return rows.filter(row => filters.every(filter => selection[filter.key] === null || selection[filter.key]!.includes(filter.value(row))) && terms.every(term => `${row.model} ${row.plan} ${row.effort}`.toLocaleLowerCase("ru").includes(term)));
-  }, [rows, selection, query]);
-  const sorted = useMemo(() => [...visible].sort((a, b) => {
-    const av = a[scope]?.cost_usd, bv = b[scope]?.cost_usd;
-    return !finite(av) ? finite(bv) ? 1 : 0 : !finite(bv) ? -1 : av - bv;
-  }), [visible, scope]);
-  useEffect(() => { if (!visible.some(row => row.id === selectedId)) setSelectedId((visible.find(row => row.kind === "subscription" && hasCost(row[scope])) || visible[0])?.id || ""); }, [visible, scope, selectedId]);
-  const example = visible.find(row => row.id === selectedId);
+    return visible.filter(row => terms.every(term => `${row.model} ${row.plan} ${row.effort}`.toLocaleLowerCase("ru").includes(term))).sort((a, b) => {
+      const av = sortValue(a, scope, sort), bv = sortValue(b, scope, sort);
+      if (av == null) return bv == null ? a.id.localeCompare(b.id) : 1;
+      if (bv == null) return -1;
+      const comparison = typeof av === "number" && typeof bv === "number" ? av - bv : String(av).localeCompare(String(bv), "ru", { numeric: true });
+      return (direction === "asc" ? comparison : -comparison) || a.id.localeCompare(b.id);
+    });
+  }, [visible, query, scope, sort, direction]);
+  const adapted = useMemo(() => adaptAAChart(visible, scope, baseData), [visible, scope, baseData]);
+  const state: State = { ...chartState, view: "pareto", board: "aa_combined", configuration: "all", lang };
+  const chartData = useMemo(() => ({ ...baseData, boards: { ...baseData.boards, aa_combined: {
+    name: "AA + подписки", metric: "Artificial Analysis Intelligence Index", url: "https://artificialanalysis.ai/#price-and-cost", snapshot: String(data?.quota_scenario.metadata?.aa_retrieved_at || "").slice(0, 10),
+  } } }), [baseData, data]);
+  const plotted = groups(adapted.rows), frontier = pareto(plotted);
+  const frontIds = new Set(frontier.flatMap(group => group.rows.map(row => row.point.id)));
+  const channels = unique(adapted.rows.map(row => row.point.channel)).sort();
+  const activeFilters = filters.filter(filter => selection[filter.key] !== null);
+  const example = rows.find(row => row.id === selectedId);
   const reconstruction = example?.source_id ? data?.api_estimate?.rows?.find(row => row.source_id === example.source_id)?.[scope] : undefined;
-  const chooseExample = (row: QuotaRow) => { setSelectedId(row.id);setDetailOpen(true);requestAnimationFrame(() => detailRef.current?.scrollIntoView({ behavior: "smooth", block: "start" })); };
-  if (error) return <main className="aa-page"><div className="aa-empty"><Calculator size={30} /><h1>Не удалось загрузить расчёты AA</h1><p>{error}</p><button onClick={() => setAttempt(value => value + 1)}>Повторить загрузку</button><a href="/aa-archive/report.html">Открыть предыдущий отчёт ↗</a></div></main>;
-  if (!data) return <main className="aa-page"><div className="aa-empty"><Calculator size={30} /><h1>Задачи AA</h1><p>Загружаем исходные данные и ставки квоты…</p></div></main>;
-  const metadata = data.quota_scenario.metadata || {};
-  const assumed = rows.filter(row => row.kind === "subscription").every(row => row.confidence === "assumed");
-  const countSubscriptions = visible.filter(row => row.kind === "subscription").length;
+  const chooseExample = (row: QuotaRow) => { setSelectedId(row.id); setDetailOpen(true); };
+  const reset = () => { setSelection(allSelected()); setQuery(""); setChartState(defaultState()); };
+  const setFilter = (key: FilterKey, value: string[] | null) => setSelection(previous => ({ ...previous, [key]: value }));
+  const toggleFilter = (key: FilterKey, value: string) => {
+    const checked = selection[key] ?? options[key].map(option => option.value);
+    const next = checked.includes(value) ? checked.filter(item => item !== value) : [...checked, value];
+    setFilter(key, next.length === options[key].length ? null : next);
+  };
+  const sortHead = (key: SortKey, label: string, title?: string) => <th key={key} aria-sort={sort === key ? direction === "asc" ? "ascending" : "descending" : "none"} title={title}><button onClick={() => { setSort(key); setDirection(sort === key && direction === "asc" ? "desc" : "asc"); }}>{label}{sort === key && (direction === "asc" ? <ArrowUp size={12} /> : <ArrowDown size={12} />)}</button></th>;
+  const renderFilters = (keys: FilterKey[]) => <div className="filter-grid aa-filter-fields">{filters.filter(filter => keys.includes(filter.key)).map(filter => {
+    const selected = selection[filter.key] ?? options[filter.key].map(option => option.value);
+    return <fieldset key={filter.key}><legend>{filter.title} <button onClick={() => setFilter(filter.key, null)}>Все</button><button onClick={() => setFilter(filter.key, [])}>Снять</button></legend><div className="filter-options">{options[filter.key].filter(option => !filterSearch || option.label.toLocaleLowerCase("ru").includes(filterSearch.toLocaleLowerCase("ru"))).map(option => <label key={option.value}><input type="checkbox" checked={selected.includes(option.value)} onChange={() => toggleFilter(filter.key, option.value)} />{option.label}</label>)}</div></fieldset>;
+  })}</div>;
   const unitName = scope === "task" ? "задача" : "набор";
-  return <main className="aa-page">
-    <header className="aa-heading"><div><div className="aa-kicker">Real API Pricing / Artificial Analysis</div><h1>Сколько стоит задача</h1><p>Токены AA → расход квоты тарифа → стоимость работы. Пять категорий учитываются по отдельным ставкам; фиксированная смесь RAP в расчёте не используется.</p></div><a className="aa-archive" href="/aa-archive/report.html">Предыдущие расчёты и оценка API ↗</a></header>
-    <div className="aa-meta"><span>{metadata.aa_version ? `AA ${metadata.aa_version}` : "Данные Artificial Analysis"}</span>{metadata.aa_retrieved_at && <span>Срез AA: {metadata.aa_retrieved_at}</span>}{metadata.pricing_retrieved_at_utc && <span>Срез тарифов: {metadata.pricing_retrieved_at_utc}</span>}{metadata.pricing_revision && /^[a-f0-9]{7,40}$/i.test(metadata.pricing_revision) && <a href={`https://github.com/FeiZhuLulu/real-api-pricing/tree/${metadata.pricing_revision}`} target="_blank" rel="noreferrer">RAP {metadata.pricing_revision.slice(0, 8)} ↗</a>}<span>Включено пар модель × тариф: {number(metadata.included_plans)}</span></div>
-    <div className="aa-notice"><b>Оценка при полном использовании месячной квоты.</b> {assumed && rows.some(row => row.kind === "subscription") ? "Все включённые подписки сейчас содержат допущения о ставках, в том числе для reasoning; они отмечены знаком ≈." : "Ставки с допущениями и приближённые профили AA отмечены знаком ≈."} Временные лимиты, общая квота и доступность effort могут уменьшить объём. Количество попыток не равно количеству успешно решённых задач.</div>
-    {metadata.status && metadata.status !== "ok" && <div className="aa-notice aa-notice-error"><b>Пересчёт подписок ограничен проверкой данных.</b> {texts(metadata.notes).join(" ")} Исходные API-стоимости остаются доступны.</div>}
-    <section className="aa-filters" aria-label="Фильтры задач AA">
-      <div className="aa-filter-grid">{filters.map(filter => <MultiFilter key={filter.key} title={filter.title} options={options[filter.key]} selected={selection[filter.key]} onChange={value => setSelection(previous => ({ ...previous, [filter.key]: value }))} />)}</div>
-      <div className="aa-toolbar"><label className="aa-search"><FunnelSimple size={16} /><input aria-label="Поиск модели, тарифа или effort" value={query} onChange={event => setQuery(event.target.value)} placeholder="Найти модель, тариф или effort" /></label><label className="aa-scope">Профиль<select id="aa-scope" value={scope} onChange={event => setScope(event.target.value as Scope)}><option value="task">Одна задача AA</option><option value="suite">Полный набор AA</option></select></label><button type="button" onClick={() => { setSelection(allSelected());setQuery("");setScope("task"); }}>Сбросить</button></div>
-      <small>Внутри фильтра — любой выбранный вариант; между фильтрами — все условия. «Снять» оставляет группу пустой.</small>
+  const exportChart = async (format: "png" | "svg") => { setExportError(""); try { await chart.current?.download(format); } catch (reason) { setExportError(reason instanceof Error ? reason.message : String(reason)); } };
+  if (!data) return <section className="workspace aa-combined">{navigation}<div className="empty"><Calculator size={35} /><h3>{error ? "Не удалось загрузить расчёты AA" : "Загружаем расчёты AA…"}</h3><p>{error || "Исходные профили токенов и ставки квоты."}</p>{error && <button onClick={() => setAttempt(value => value + 1)}>Повторить загрузку</button>}</div></section>;
+  const metadata = data.quota_scenario.metadata || {};
+  const countSubscriptions = visible.filter(row => row.kind === "subscription").length;
+  return <>
+    <section className="workspace aa-combined" aria-label="Совместная оценка AA и подписок">
+      {navigation}
+      <div className="chart-heading"><div><h2>Стоимость задачи и интеллект</h2><p>Artificial Analysis Intelligence Index · {scope === "task" ? "взвешенная задача AA" : "полный набор AA"} · <a href="https://artificialanalysis.ai/#price-and-cost" target="_blank" rel="noreferrer">Источник AA <ArrowUpRight size={14} /></a></p></div><div className="chart-actions"><button className="icon-button" title="Скачать график или данные" aria-label="Скачать график или данные" onClick={() => setPanel("download")}><DownloadSimple size={19} /></button><button className="icon-button" title="Настройки графика" aria-label="Настройки графика" onClick={() => setPanel("display")}><SlidersHorizontal size={19} /></button></div></div>
+      <div className="toolbar"><button className="select-models" onClick={() => { setFilterSearch(""); setPanel("models"); }}><CheckSquare size={18} /><span>Модели и тарифы</span><span className="count">{visible.length} / {rows.length}</span><CaretDown size={14} /></button><button className={activeFilters.some(filter => !["model", "plan"].includes(filter.key)) ? "filter-button has-filters" : "filter-button"} onClick={() => { setFilterSearch(""); setPanel("filters"); }}><FunnelSimple size={17} />Фильтры</button><label className="config-select"><span className="sr-only">Объём работы AA</span><select id="aa-scope" value={scope} onChange={event => { setScope(event.target.value as Scope); setChartState(previous => ({ ...previous, find: "", lock: null })); }}><option value="task">Одна задача AA</option><option value="suite">Полный набор AA</option></select></label><span className="toolbar-space" /><span className="results-count">{adapted.rows.length} точек · {countSubscriptions} подписок</span></div>
+      {activeFilters.length > 0 && <div className="chips">{activeFilters.map(filter => <button key={filter.key} onClick={() => setFilter(filter.key, null)}>{filter.title}: {selection[filter.key]!.length} из {options[filter.key].length}<X size={12} /></button>)}<button className="clear-all" onClick={reset}>Сбросить всё</button></div>}
+      <div className="legend">{channels.map(channel => <span key={channel}><i style={{ background: color(adapted.rows.find(row => row.point.channel === channel)!.point) }} />{channel}</span>)}{state.frontier && <span className="frontier-legend"><i />Граница текущей выборки</span>}</div>
+      {adapted.rows.length ? <Chart rows={adapted.rows} state={state} data={chartData} theme={theme} handle={chart} metricLabels={{ axisTitle: scope === "task" ? "Стоимость задачи AA · $ / задача" : "Стоимость полного набора AA · $ / набор", priceLabel: scope === "task" ? "Стоимость задачи AA" : "Стоимость набора AA", priceUnit: scope === "task" ? "задача" : "набор" }} onSearch={(find, lock) => setChartState(previous => ({ ...previous, find, lock }))} onSelect={selected => { const original = selected.map(row => adapted.sourceRows.get(row.point.id)).find(Boolean); if (original) chooseExample(original); }} /> : <div className="empty"><Calculator size={35} /><h3>Нет точек для графика</h3><p>Строки без стоимости или индекса сохраняются в таблице. Неизвестные значения не заменяются нулями.</p><button onClick={reset}>Сбросить фильтры</button></div>}
+      <div className="chart-foot"><div><Info size={15} /><span>Правее — дешевле. Выше — больше индекс AA. Нажмите точку для расчёта и источников.</span></div><span>{plotted.length} координат · {frontier.length} на границе</span></div>
+      {visible.length > adapted.rows.length && <details className="unscored"><summary>{visible.length - adapted.rows.length} строк без стоимости или индекса</summary><p>Все они остаются в таблице; цену и индекс не достраиваем.</p><div>{visible.filter(row => !adapted.rows.some(point => point.point.id === `aa::${row.id}`)).map(row => <button key={row.id} onClick={() => chooseExample(row)}>{row.model} · {effortLabel(row)} · {row.plan}<ArrowUpRight size={12} /></button>)}</div></details>}
     </section>
-    <div className="aa-section-heading"><div><h2>Стоимость: {scope === "task" ? "задача AA" : "полный набор AA"}</h2><p aria-live="polite">{visible.length} из {rows.length} вариантов · {countSubscriptions} подписок · {visible.length - countSubscriptions} API</p></div><button type="button" onClick={() => downloadCsv(sorted, scope)} disabled={!visible.length}><DownloadSimple size={17} />CSV выборки</button></div>
-    <section className="aa-chart" aria-label="График стоимости"><PriceChart rows={visible} scope={scope} selectedId={selectedId} onSelect={chooseExample} /></section>
-    <details ref={detailRef} className="aa-calculation" open={detailOpen} onToggle={event => setDetailOpen(event.currentTarget.open)}>
-      <summary><Calculator size={19} /><span>Пошаговый расчёт выбранного варианта</span><CaretDown size={16} /></summary>
-      <div className="aa-calculation-controls"><label>Модель · effort · тариф<select id="aa-example" value={selectedId} onChange={event => setSelectedId(event.target.value)}>{visible.map(row => <option key={row.id} value={row.id}>{row.model} · {effortLabel(row)} · {row.plan}</option>)}</select></label><label className="aa-exact"><input type="checkbox" checked={exact} onChange={event => setExact(event.target.checked)} />Полная точность</label></div>
-      {example ? <Calculation row={example} scope={scope} exact={exact} estimate={reconstruction} /> : <p className="aa-empty">Нет варианта для расчёта. Измените фильтры.</p>}
-    </details>
-    <div className="aa-section-heading"><div><h2>Состав токенов и стоимость</h2><p>Доли и цены за миллион относятся к выбранному профилю: {scope === "task" ? "задача AA" : "полный набор AA"}.</p></div></div>
-    <div className="aa-scroll aa-data-scroll"><table className="aa-data-table"><thead><tr><th>Модель / effort</th><th>Тариф / достоверность</th><th>Чтение кэша</th><th>Вход + запись кэша</th><th>Выход</th><th>API, $/MTok</th><th>Подписка, $/MTok</th><th>Квота / {unitName}</th><th>$ / {unitName}</th><th>Единиц / мес.</th><th>Единиц / $100</th><th>Подробности</th></tr></thead><tbody>{sorted.map(row => {
-      const metric = row[scope] || {},approximate = metric.status === "approximate";
-      return <tr key={row.id} className={row.id === selectedId ? "aa-selected-row" : ""}><td><b>{row.model}</b><small>{effortLabel(row)}</small><small title="Балл интеллекта показан для сравнения качества и не входит в формулу стоимости">Индекс AA: {row.estimated ? "≈ " : ""}{number(row.intelligence_index)}</small></td><td className="aa-plan-cell"><b>{row.plan}</b><small>{confidenceLabel(row.confidence)}</small>{!hasCost(metric) && <small>{statusNames[metric.status || "missing"]}</small>}</td>
-        {[metric.cache_read_share, metric.input_without_cache_read_share, metric.output_share].map((value, index) => <td key={index} className="aa-numeric">{percent(value)}</td>)}
-        <td className="aa-numeric">{money(metric.api_price_usd_per_million)}</td><td className="aa-numeric">{row.kind === "subscription" ? (approximate && finite(metric.effective_price_usd_per_million) ? "≈ " : "") + money(metric.effective_price_usd_per_million) : "—"}</td><td className="aa-numeric">{number(metric.quota_per_unit)}{row.quota_unit && <small>{row.quota_unit}</small>}</td><td className="aa-numeric"><b>{costLabel(row, scope)}</b></td><td className="aa-numeric">{number(metric.units_per_month)}</td><td className="aa-numeric">{number(metric.units_per_100_usd)}</td><td><button type="button" className="aa-detail-button" onClick={() => chooseExample(row)}>Разбор ↗</button><Sources urls={row.sources} /></td></tr>;
-    })}{!sorted.length && <tr><td colSpan={12} className="aa-empty">Нет строк, соответствующих фильтрам.</td></tr>}</tbody></table></div>
-    <p className="aa-footnote">Вход без чтения кэша включает обычный вход и запись кэша; выход — ответ и reasoning. Три доли суммируются в 100% до округления. API-цена и цена подписки рассчитаны на одной смеси AA. «Единиц / $100» — нормированная оценка; для подписки с месячной оплатой она не означает покупку доли тарифа.</p>
-    <ExcludedPlans plans={data.quota_scenario.excluded || []} />
-    <footer className="aa-footer"><span>Исходные числа и операции доступны в каждом разборе. CSV сохраняет числовую точность.</span><a href="/aa-archive/report.html">Предыдущие расчёты и оценка API ↗</a></footer>
-  </main>;
+    <div className="method-note aa-method-note"><Info size={16} /><p>Пять категорий токенов AA × ставки расхода подписочной квоты. Стоимость распределена на полностью использованную месячную квоту; её общие пулы и временные лимиты могут уменьшить объём. Все включённые подписки содержат допущения, отмеченные ≈. «На $100» — нормировка, а оплаченная попытка не означает успешное решение. <button onClick={() => { const row = visible.find(item => item.kind === "subscription" && hasCost(item[scope])) || visible[0]; if (row) chooseExample(row); }}>Показать арифметику <ArrowUpRight size={13} /></button>{metadata.status && metadata.status !== "ok" && <span> Проверка данных: {texts(metadata.notes).join(" ")}</span>}</p></div>
+    <section className="data-section aa-data-section" id="all-data" tabIndex={-1}>
+      <div className="table-heading"><div><h2>Данные и расчёты.</h2><p>Каждый тариф и effort · {scope === "task" ? "одна взвешенная задача AA" : "полный набор AA"} · исходная точность доступна в разборе.</p></div><button className="text-button" onClick={() => downloadCsv(sorted, scope)} disabled={!sorted.length}><DownloadSimple size={16} />Экспорт CSV</button></div>
+      <div className="table-tools"><label className="search"><MagnifyingGlass size={17} /><input aria-label="Поиск в таблице AA" placeholder="Найти модель, тариф или effort…" value={query} onChange={event => setQuery(event.target.value)} />{query && <button className="icon-button" onClick={() => setQuery("")} aria-label="Очистить поиск"><X size={14} /></button>}</label><span>{sorted.length} строк</span></div>
+      <div className="table-scroll" ref={tableScroll} role="region" tabIndex={0} aria-label="Таблица стоимости задач AA"><table><thead><tr><th className="row-number">#</th>{sortHead("model", "Модель / effort")}{sortHead("plan", "Тариф / канал")}{sortHead("cost", `$ / ${unitName}`)}{sortHead("score", "Индекс AA", "Индекс показан для сравнения качества и не входит в формулу стоимости.")}{sortHead("fee", "$ / месяц")}{sortHead("cache", "Чтение кэша")}{sortHead("input", "Вход + запись кэша")}{sortHead("output", "Выход")}{sortHead("api", "API, $ / MTok")}{sortHead("subscription", "Подписка, $ / MTok")}{sortHead("quota", `Квота / ${unitName}`)}{sortHead("month", "Единиц / месяц")}{sortHead("budget", "Единиц / $100")}{sortHead("confidence", "Основание")}<th><span className="sr-only">Разбор</span></th></tr></thead><tbody>{sorted.map((row, index) => {
+        const metric = row[scope] || {}, point = aaReferencePoint(row, baseData), approximate = metric.status === "approximate";
+        return <tr key={row.id} onClick={() => chooseExample(row)} className={state.frontier && frontIds.has(`aa::${row.id}`) ? "frontier-row" : ""}><td className="row-number">{index + 1}</td><td><button className="model-cell" onClick={event => { event.stopPropagation(); chooseExample(row); }}><i className="vendor-dot" style={{ background: point ? color(point) : "var(--muted)" }} /><span><strong className="model-with-logo">{point && <BrandMarks point={point} />}{row.model}</strong><small>{effortLabel(row)}</small></span></button></td><td><strong className="plan-name">{row.plan}</strong><small>{point?.channel || "—"} · {row.kind === "api" ? "API" : "Подписка"}</small></td><td className="numeric real-price">{costLabel(row, scope)}{!hasCost(metric) && <small>{statusNames[metric.status || "missing"]}</small>}</td><td className="numeric">{row.estimated ? "≈ " : ""}{number(row.intelligence_index)}</td><td className="numeric">{money(row.monthly_usd)}</td>{[metric.cache_read_share, metric.input_without_cache_read_share, metric.output_share].map((value, item) => <td key={item} className="numeric">{percent(value)}</td>)}<td className="numeric">{money(metric.api_price_usd_per_million)}</td><td className="numeric">{row.kind === "subscription" ? (approximate && finite(metric.effective_price_usd_per_million) ? "≈ " : "") + money(metric.effective_price_usd_per_million) : "—"}</td><td className="numeric">{number(metric.quota_per_unit)}{row.quota_unit && <small>{row.quota_unit}</small>}</td><td className="numeric">{number(metric.units_per_month)}</td><td className="numeric">{number(metric.units_per_100_usd)}</td><td><span className={`confidence ${row.confidence === "source" || row.confidence === "documented" ? "high" : "medium"}`}><i />{confidenceLabel(row.confidence)}</span></td><td><ArrowUpRight size={15} /></td></tr>;
+      })}</tbody></table>{!sorted.length && <div className="empty table-empty">Нет строк, соответствующих фильтрам и поиску.</div>}</div>
+      <ResizeHandle target={tableScroll} label="Потяните для изменения высоты таблицы · двойной щелчок для сброса" /><p className="ranking-status">{sorted.length} строк · прокрутка внутри таблицы · три доли токенов суммируются в 100% до округления. Выход включает ответ и reasoning.</p>
+      <details className="aa-data-notes"><summary>Метод, срезы данных и ограничения</summary><p>Цена API и цена подписки за миллион относятся к одной смеси AA. Стоимость задачи — взвешенное среднее расходов по бенчмаркам, без деления на индекс интеллекта. Стоимость набора — суммарный расход полного прогона; пропорции между моделями могут отличаться.</p><p>AA {metadata.aa_version || "—"} · срез AA: {metadata.aa_retrieved_at || "—"} · срез тарифов: {metadata.pricing_retrieved_at_utc || "—"} · включено пар модель × тариф: {number(metadata.included_plans)}.</p>{metadata.pricing_revision && /^[a-f0-9]{7,40}$/i.test(metadata.pricing_revision) && <p><a href={`https://github.com/FeiZhuLulu/real-api-pricing/tree/${metadata.pricing_revision}`} target="_blank" rel="noreferrer">Исходный срез RAP {metadata.pricing_revision.slice(0, 8)} ↗</a></p>}<p><a href="/aa-archive/report.html">Предыдущие расчёты и оценка API ↗</a></p></details>
+      <ExcludedPlans plans={data.quota_scenario.excluded || []} />
+    </section>
+    {panel && <Modal title={panel === "models" ? "Выберите модели и тарифы" : panel === "filters" ? "Фильтры расчёта" : panel === "display" ? "Настройки графика" : "Скачать график и данные"} onClose={() => setPanel(null)} wide={panel === "models" || panel === "filters"} closeLabel="Закрыть">
+      {(panel === "models" || panel === "filters") && <><p className="panel-description">Выбор внутри группы объединяется; разные группы применяются совместно. Пустая группа исключает все строки. График и таблица обновляются сразу.</p><label className="search"><MagnifyingGlass size={18} /><input autoFocus aria-label="Поиск вариантов фильтра" placeholder="Найти вариант…" value={filterSearch} onChange={event => setFilterSearch(event.target.value)} /></label>{renderFilters(panel === "models" ? ["model", "plan"] : ["effort", "kind", "confidence"])}<div className="panel-bottom"><button onClick={() => { setSelection(allSelected()); setFilterSearch(""); }}>Сбросить фильтры</button><button className="primary" onClick={() => setPanel(null)}>Показать · {visible.length}<ArrowUpRight size={16} /></button></div></>}
+      {panel === "display" && <div className="settings"><label><span>Граница текущей выборки</span><input type="checkbox" checked={state.frontier} onChange={event => setChartState(previous => ({ ...previous, frontier: event.target.checked }))} /></label><label><span>Подписи точек</span><select value={state.labels} onChange={event => setChartState(previous => ({ ...previous, labels: event.target.value as State["labels"] }))}><option value="frontier">На границе</option><option value="all">Все</option><option value="none">Без подписей</option></select></label></div>}
+      {panel === "download" && <div className="download-list"><p className="panel-description">График использует текущие фильтры и единицы стоимости. CSV содержит строки таблицы с исходной числовой точностью.</p><button onClick={() => void exportChart("png")} disabled={!adapted.rows.length}><DownloadSimple size={17} />График PNG</button><button onClick={() => void exportChart("svg")} disabled={!adapted.rows.length}><DownloadSimple size={17} />График SVG</button><button onClick={() => downloadCsv(sorted, scope)} disabled={!sorted.length}><DownloadSimple size={17} />Таблица CSV</button>{exportError && <p role="alert">Не удалось экспортировать график: {exportError}</p>}</div>}
+    </Modal>}
+    {detailOpen && example && <Modal title="Пошаговый расчёт" onClose={() => setDetailOpen(false)} wide closeLabel="Закрыть"><div className="aa-calculation-controls"><label>Модель · effort · тариф<select id="aa-example" value={selectedId} onChange={event => setSelectedId(event.target.value)}>{rows.map(row => <option key={row.id} value={row.id}>{row.model} · {effortLabel(row)} · {row.plan}</option>)}</select></label><label className="aa-exact"><input type="checkbox" checked={exact} onChange={event => setExact(event.target.checked)} />Полная точность</label></div><Calculation row={example} scope={scope} exact={exact} estimate={reconstruction} /></Modal>}
+  </>;
 }

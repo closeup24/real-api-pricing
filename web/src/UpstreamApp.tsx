@@ -22,6 +22,7 @@ import {
   X,
 } from "@phosphor-icons/react";
 import Chart from "./Chart";
+import AACosts from "./AACosts";
 import HeaderActions from "./HeaderActions";
 import { unpackData } from "./loadData";
 import Ranking from "./Ranking";
@@ -67,6 +68,8 @@ import {
 } from "./domain";
 
 const REPO = "https://github.com/FeiZhuLulu/real-api-pricing";
+const FORK = "https://github.com/closeup24/real-api-pricing/tree/aa-task-costs";
+const AA_COMBINED_BOARD = "aa_combined";
 const boardLabels: Record<string, string> = {
   arena_code: "Code Arena",
   arena_agent_mode: "Agent Arena",
@@ -239,10 +242,17 @@ function Explorer({
   theme: Theme;
   onThemeChange: (theme: Theme) => void;
 }) {
-  const initial = useMemo(
-    () => restore(location.hash, data, localLanguage()),
-    [data],
-  );
+  // Дополнительный раздел участвует в ссылках, но не добавляет выдуманный бенчмарк в данные RAP.
+  const routingData = useMemo(() => ({ ...data, boards: { ...data.boards,
+    [AA_COMBINED_BOARD]: { ...data.boards.aa_intelligence_index, name: "AA + подписки" },
+  } }), [data]);
+  const initial = useMemo(() => {
+    const parsed = restore(location.hash, routingData, localLanguage());
+    if (new URLSearchParams(location.search).get("view") === "aa") {
+      parsed.state = { ...parsed.state, view: "pareto", board: AA_COMBINED_BOARD };
+    }
+    return parsed;
+  }, [routingData]);
   const [state, setState] = useState<State>(initial.state);
   const [warning, setWarning] = useState(initial.warning);
   const [panel, setPanel] = useState<
@@ -253,6 +263,7 @@ function Explorer({
   const tableScroll = useRef<HTMLDivElement>(null);
   const [toast, setToast] = useState("");
   const chart = useRef<ChartHandle | null>(null);
+  const combined = state.view === "pareto" && state.board === AA_COMBINED_BOARD;
   const zh = state.lang === "zh";
   const t = (en: string, cn: string) => (zh ? cn : en);
   const patch = (update: Partial<State>) =>
@@ -266,22 +277,30 @@ function Explorer({
   }, [state.lang, zh]);
   useEffect(() => {
     const hash = serialize(state);
-    if (location.hash !== hash)
+    const query = new URLSearchParams(location.search);
+    const legacy = query.get("view") === "aa";
+    if (legacy) query.delete("view");
+    const search = query.size ? `?${query.toString()}` : "";
+    if (location.hash !== hash || legacy)
       history.replaceState(
         null,
         "",
-        location.pathname + location.search + hash,
+        location.pathname + search + hash,
       );
   }, [state]);
   useEffect(() => {
     const change = () => {
-      const parsed = restore(location.hash, data, localLanguage());
+      const parsed = restore(location.hash, routingData, localLanguage());
       setState(parsed.state);
       setWarning(parsed.warning);
     };
     window.addEventListener("hashchange", change);
-    return () => window.removeEventListener("hashchange", change);
-  }, [data]);
+    window.addEventListener("popstate", change);
+    return () => {
+      window.removeEventListener("hashchange", change);
+      window.removeEventListener("popstate", change);
+    };
+  }, [routingData]);
   useEffect(() => {
     if (!toast) return;
     const timer = setTimeout(() => setToast(""), 5000);
@@ -363,7 +382,7 @@ function Explorer({
     <button
       className={state.view === view ? "view-tab active" : "view-tab"}
       aria-pressed={state.view === view}
-      onClick={() => patch({ view })}
+      onClick={() => patch({ view, ...(view !== "pareto" && state.board === AA_COMBINED_BOARD ? { board: "aa_intelligence_index" } : {}) })}
     >
       {view === "pareto" ? <ChartScatter size={17} /> : <ChartBar size={17} />}{" "}
       <span>
@@ -418,6 +437,14 @@ function Explorer({
   useEffect(() => {
     if (tableScroll.current) tableScroll.current.scrollTop = 0;
   }, [rowSignature]);
+  const boardTabs = <div className="board-tabs" aria-label={t("Leaderboards", "榜单")}>
+    {Object.keys(data.boards).flatMap(id => id === "aa_intelligence_index" ? [id, AA_COMBINED_BOARD] : [id]).map(id => <button key={id}
+      className={state.board === id ? "board-tab selected" : "board-tab"}
+      aria-pressed={state.board === id} onClick={() => patch({ board: id })}
+      title={id === AA_COMBINED_BOARD ? "Стоимость задач Artificial Analysis по API и квотам подписок" : undefined}>
+      {id === AA_COMBINED_BOARD ? "AA + подписки" : (zh ? boardZh : boardLabels)[id] || data.boards[id].name}
+    </button>)}
+  </div>;
   return (
     <>
       <header className="site-header">
@@ -478,11 +505,11 @@ function Explorer({
               <span>{zh ? "EN" : "中文"}</span>
             </button>
             <a
-              href={REPO}
+              href={FORK}
               className="icon-button github"
               target="_blank"
               rel="noreferrer"
-              aria-label="GitHub"
+              aria-label="GitHub — код форка"
             >
               <GithubLogo size={22} />
             </a>
@@ -576,29 +603,12 @@ function Explorer({
                 </span>
               </button>
             </div>
+            {combined ? <AACosts navigation={boardTabs} baseData={data} theme={theme} lang={state.lang} /> : <>
             <section
               className="workspace"
               aria-label={t("Data explorer", "数据浏览器")}
             >
-              {state.view === "pareto" && (
-                <div
-                  className="board-tabs"
-                  aria-label={t("Leaderboards", "榜单")}
-                >
-                  {Object.keys(data.boards).map((id) => (
-                    <button
-                      key={id}
-                      className={
-                        state.board === id ? "board-tab selected" : "board-tab"
-                      }
-                      aria-pressed={state.board === id}
-                      onClick={() => patch({ board: id })}
-                    >
-                      {(zh ? boardZh : boardLabels)[id] || data.boards[id].name}
-                    </button>
-                  ))}
-                </div>
-              )}
+              {state.view === "pareto" && boardTabs}
               <div className="chart-heading">
                 <div>
                   <h2>
@@ -1097,6 +1107,7 @@ function Explorer({
               />
               <p className="ranking-status">{shown.length} {t("rows · scroll inside the table · drag the grip below to make it taller", "行 · 在表格内滚动浏览 · 拖动下方把手可加高")}</p>
             </section>
+            </>}
           </>
         )}
       </main>
@@ -1118,6 +1129,10 @@ function Explorer({
         </a>
         <a href="/data/points.json" download>
           {t("Open data", "开放数据")}
+          <ArrowUpRight size={13} />
+        </a>
+        <a href={FORK} target="_blank" rel="noreferrer">
+          Код форка · AA + подписки
           <ArrowUpRight size={13} />
         </a>
       </footer>
