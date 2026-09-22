@@ -24,6 +24,7 @@ export interface EmpiricalBasis {
     confidence: "medium";
     source_empirical: EmpiricalBasis;
     source_method: string;
+    source_evidence_method?: string;
   };
   calibration?: {
     input_kind?: "reported_monthly_pool";

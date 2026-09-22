@@ -1,6 +1,6 @@
 import assert from "node:assert/strict";
 import test from "node:test";
-import { aaIsApproximate, aaMethodLabel, aaQuality, aaQualityLabel, aaReferencePoint, aaTransferLabel, adaptAAChart, displayAAPlan } from "./aaChartAdapter";
+import { aaIsApproximate, aaMethodLabel, aaQuality, aaQualityLabel, aaReferencePoint, adaptAAChart, displayAAPlan } from "./aaChartAdapter";
 import type { QuotaRow } from "./aaTypes";
 import type { Point, SiteData } from "./types";
 
@@ -110,11 +110,14 @@ test("недоступный статус защищает график даже
 });
 
 test("подсказка AA называет основание расчёта и сохраняет effort", () => {
-  const calibration = quota({ id: "calibration", method: "empirical_api_calibration" });
+  const calibration = quota({ id: "calibration", method: "empirical_api_calibration", evidence_method: "direct_measurement" });
   const native = quota({ id: "native", method: "aa_tokens_quota_rates" });
   const result = adaptAAChart([calibration, native], "task", site());
-  assert.equal(result.rows[0].mapping?.variant, "High · Метод: API-калибровка · Надёжность: Средняя");
-  assert.equal(result.rows[1].mapping?.variant, "High · Метод: Квота × ставки · Надёжность: Средняя");
+  assert.equal(result.rows[0].mapping?.variant, "High");
+  assert.equal(result.rows[0].point.cost_assessment?.category, "Калибровка по замеру");
+  assert.equal(result.rows[0].point.cost_assessment?.score, 65);
+  assert.equal(result.rows[1].point.cost_assessment?.category, "Квота и ставки списания");
+  assert.equal(result.rows[1].point.cost_assessment?.score, 70);
   assert.equal(result.rows[0].mapping?.reasoning_effort, "High");
   assert.equal(result.rows[0].point.real_usd_per_mtok, calibration.task?.cost_usd);
   assert.equal(result.rows[1].point.real_usd_per_mtok, native.task?.cost_usd);
@@ -127,7 +130,7 @@ test("явная надёжность AA имеет приоритет над и
   assert.equal(result.rows[0].point.confidence, "low");
   assert.equal(result.rows[0].mapping?.mapping_confidence, "low");
   assert.match(result.rows[0].point.note, /Неполный смешанный замер/);
-  assert.match(result.rows[0].mapping?.variant || "", /Надёжность: Низкая/);
+  assert.ok(result.rows[0].point.cost_assessment?.reasons.includes("Неполный смешанный замер."));
   assert.equal(row.confidence, "source");
 });
 
@@ -147,7 +150,8 @@ test("приблизительный сценарий с низкой надёж
     assert.equal(result.sourceRows.get(`aa::${row.id}`), row);
     assert.equal(result.rows[0].point.real_usd_per_mtok, row[scope]?.cost_usd);
     assert.match(result.rows[0].point.model_display, /^≈ /);
-    assert.match(result.rows[0].mapping?.variant || "", /≈ Метод: Приблизительный API-сценарий · Надёжность: Низкая/);
+    assert.equal(result.rows[0].point.cost_assessment?.category, "Приблизительный сценарий");
+    assert.equal(result.rows[0].point.cost_assessment?.score, 35);
     assert.equal(aaIsApproximate(row, scope), true);
   }
   assert.equal(aaIsApproximate(quota({ task: { cost_usd: null }, quality: row.quality }), "task"), false);
@@ -170,10 +174,9 @@ const transferRow = (): QuotaRow => quota({
   },
 });
 
-test("перенос между моделями получает отдельную жёлтую метку и сохраняет собственную цену AA", () => {
+test("перенос между моделями получает общую метку надёжности и сохраняет собственную цену AA", () => {
   const row = transferRow(), before = JSON.stringify(row);
   assert.equal(aaMethodLabel(row.method), "Перенос квоты между моделями");
-  assert.equal(aaTransferLabel, "Гипотеза переноса");
   assert.equal(row.empirical?.calibration, undefined);
   for (const scope of ["task", "suite"] as const) {
     const result = adaptAAChart([row], scope, site([]));
@@ -181,7 +184,9 @@ test("перенос между моделями получает отдельн
     assert.equal(result.rows[0].point.real_usd_per_mtok, row[scope]?.cost_usd);
     assert.equal(result.rows[0].point.vendor, "Anthropic");
     assert.equal(result.rows[0].point.confidence, "low");
-    assert.match(result.rows[0].mapping?.variant || "", /🟡 Гипотеза переноса · Надёжность: Низкая/);
+    assert.equal(result.rows[0].point.cost_assessment?.category, "Перенос между моделями");
+    assert.equal(result.rows[0].point.cost_assessment?.score, 25);
+    assert.equal(result.rows[0].mapping?.variant, "Max");
     assert.match(result.rows[0].point.model_display, /^≈ Claude Opus 5\.5 · Max$/);
     assert.equal(result.sourceRows.get(`aa::${row.id}`), row);
   }

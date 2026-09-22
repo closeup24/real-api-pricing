@@ -23,6 +23,14 @@ export interface Point {
   monthly_yi: number | null;
   monthly_tokens: number | null;
   real_usd_per_mtok: number;
+  /** Оценка надёжности расчёта; score — редакционная шкала 0–100, не вероятность. */
+  cost_assessment?: {
+    category: string;
+    score: number | null;
+    color: string;
+    description: string;
+    reasons: string[];
+  };
   /** Bundled model that draws no quota: real price is $0 with no token denominator. */
   unmetered?: boolean;
   /** ISO date when a promotional unmetered period ends, if any. */

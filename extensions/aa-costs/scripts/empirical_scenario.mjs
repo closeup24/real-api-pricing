@@ -46,6 +46,7 @@ function modelTransferRate(evidence, plan, variants, sourceRate, sourcePlan) {
       monthly_api_equivalent_usd: sourceRate.monthly_quota,
       source_quality: structuredClone(sourceQuality),
       source_empirical: structuredClone(sourceRate.empirical), source_method: sourceRate.method,
+      source_evidence_method: sourceRate.evidence_method,
     },
   };
   return {

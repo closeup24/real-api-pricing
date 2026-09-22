@@ -1,4 +1,4 @@
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useLayoutEffect, useRef, useState } from "react";
 import type {
   Data,
   Layout,
@@ -52,6 +52,7 @@ import {
   clearLabelSizeCache,
 } from "./chartLabels";
 import ChartSearch from "./ChartSearch";
+import { assessmentDetails, assessmentHeading, assessmentTooltip, summarizeCostAssessment, type ChartAssessment } from "./chartAssessment";
 
 export interface ChartHandle {
   download: (format: "png" | "svg") => Promise<void>;
@@ -71,6 +72,15 @@ const escape = (s: string) =>
         c
       ]!,
   );
+function AssessmentMark({ summary }: { summary: ChartAssessment | undefined }) {
+  if (!summary) return null;
+  return <span
+    className="cost-assessment-mark"
+    style={{ "--assessment-color": summary.assessment.color } as React.CSSProperties}
+    role="img"
+    aria-label={assessmentTooltip(summary)}
+  />;
+}
 export default function Chart({
   rows,
   state,
@@ -95,6 +105,25 @@ export default function Chart({
   selection.current = onSelect;
   const [error, setError] = useState("");
   const [loading, setLoading] = useState(true);
+  const [cardAssessment, setCardAssessment] = useState<{
+    summary: ChartAssessment; left: number; top: number; anchorTop: number; anchorBottom: number;
+  } | null>(null);
+  const cardAssessmentRef = useRef<HTMLDivElement>(null);
+  const hoverCardRef = useRef<HTMLDivElement>(null);
+  const [hoverCardHeight, setHoverCardHeight] = useState(300);
+  useLayoutEffect(() => {
+    if (!cardAssessment || !cardAssessmentRef.current) return;
+    const height = cardAssessmentRef.current.getBoundingClientRect().height;
+    const top = Math.max(12, cardAssessment.anchorTop >= height + 20
+      ? cardAssessment.anchorTop - height - 8
+      : Math.min(cardAssessment.anchorBottom + 8, window.innerHeight - height - 12));
+    setCardAssessment(current => current && current.top !== top ? { ...current, top } : current);
+  }, [cardAssessment?.summary, cardAssessment?.anchorTop, cardAssessment?.anchorBottom]);
+  useEffect(() => {
+    const clear = () => setCardAssessment(null);
+    window.addEventListener("scroll", clear, true);
+    return () => window.removeEventListener("scroll", clear, true);
+  }, []);
   const controls = useRef<{
     mode: (mode: "pan" | "zoom") => void;
     reset: () => void;
@@ -110,6 +139,14 @@ export default function Chart({
     front: boolean;
   } | null>(null);
   const chartGroups = state.view === "pareto" ? groups(rows) : [];
+  const assessments = new Map(chartGroups.map(group => [group.key, summarizeCostAssessment(group.rows)]));
+  const showCardAssessment = (group: Group, element: HTMLElement) => {
+    const summary = assessments.get(group.key);
+    if (!summary) return;
+    const rect = element.getBoundingClientRect();
+    setCardAssessment({ summary, left: Math.max(12, Math.min(rect.left, window.innerWidth - 332)),
+      top: rect.top, anchorTop: rect.top, anchorBottom: rect.bottom });
+  };
   const frontGroups =
     state.view === "pareto" ? pareto(chartGroups) : [];
   // Computed every render (no memo): chartGroups is always a fresh array, so
@@ -183,6 +220,7 @@ export default function Chart({
     if (!el) return;
     setLoading(true);
     setError("");
+    setCardAssessment(null);
     setLogos([]);
     setLabels([]);
     setHover(null);
@@ -266,8 +304,8 @@ export default function Chart({
                 size: 8,
                 opacity: isFront ? 0 : 0.43,
                 line: {
-                  color: dark ? chartTheme.text : chartTheme.surface,
-                  width: dark ? 1.2 : isFront ? 0 : 1.4,
+                  color: selected.map(g => summarizeCostAssessment(g.rows)?.assessment.color ?? (dark ? chartTheme.text : chartTheme.surface)),
+                  width: selected.map(g => summarizeCostAssessment(g.rows) ? 2.2 : dark ? 1.2 : isFront ? 0 : 1.4),
                 },
               },
               // Hover text is our own card: keep the events, drop Plotly's label.
@@ -368,6 +406,10 @@ export default function Chart({
               marker: {
                 color: sorted.map((r) => color(r.point)),
                 opacity: 0.88,
+                line: {
+                  color: sorted.map(r => r.point.cost_assessment?.color ?? "rgba(0,0,0,0)"),
+                  width: sorted.map(r => r.point.cost_assessment ? 1.2 : 0),
+                },
               },
               text: sorted.map(
                 (r) =>
@@ -384,7 +426,7 @@ export default function Chart({
               cliponaxis: false,
               hovertemplate: sorted.map(
                 (r) =>
-                  `<b>${escape(r.point.model_display)}</b><br>${escape(displayPlan(r.point.plan, state.lang))}<br>${state.view === "price" ? price(r.point.real_usd_per_mtok) + " / " + escape(priceUnit) : allowance(r.point, state.lang) + " tokens"}<extra></extra>`,
+                  `<b>${escape(r.point.model_display)}</b><br>${escape(displayPlan(r.point.plan, state.lang))}<br>${state.view === "price" ? price(r.point.real_usd_per_mtok) + " / " + escape(priceUnit) : allowance(r.point, state.lang) + " tokens"}${r.point.cost_assessment ? "<br>" + escape(assessmentTooltip(summarizeCostAssessment([r])!)).replaceAll("\n", "<br>") : ""}<extra></extra>`,
               ),
             },
           ];
@@ -671,7 +713,8 @@ export default function Chart({
               xanchor: "left" as const,
               yanchor: "top" as const,
               showarrow: false,
-              text: escape(
+              text: (summarizeCostAssessment(g.rows)
+                ? `<span style="color:${escape(summarizeCostAssessment(g.rows)!.assessment.color)}">●</span> ` : "") + escape(
                 `${i + 1}. ${[...new Set(g.rows.map((r) => r.point.model_display))].join(" / ")} · ${price(g.price)} / ${priceUnit}${g.price === 0 ? " · " + unmeteredNote(g.rows[0].point, state.lang) : ""} · ${number(g.score, state.lang)}${g.rows[0].mapping?.score_is_self_reported ? " · " + selfReportTag(state.lang) : ""}`,
               ),
               font: { size: 12, color: chartTheme.ink },
@@ -747,6 +790,26 @@ export default function Chart({
                     },
                   )
                 : { annotations: [], images: [], shapes: [] };
+              // Экспорт сохраняет те же метки на логотипах, что и интерактивный график.
+              const exportBox = exportFull && plotBox(exportFull);
+              if (exportFull && exportBox) {
+                for (const group of badgeGroups(front, exportHitList)) {
+                  const assessment = summarizeCostAssessment(group.rows);
+                  const pt = dataToPixel(exportFull, group.plotPrice, group.score, exportBox);
+                  if (!assessment || !pt || pt.x < exportBox.left || pt.x > exportBox.right
+                      || pt.y < exportBox.top || pt.y > exportBox.bottom) continue;
+                  baked.images.push({
+                    source: `data:image/svg+xml;charset=utf-8,${encodeURIComponent(
+                      `<svg xmlns="http://www.w3.org/2000/svg" width="8" height="8"><circle cx="4" cy="4" r="3.5" fill="${escape(assessment.assessment.color)}" stroke="white"/></svg>`,
+                    )}`,
+                    xref: "paper", yref: "paper",
+                    x: (pt.x + 13 - exportBox.left) / exportBox.width,
+                    y: 1 - (pt.y + 13 - exportBox.top) / exportBox.height,
+                    sizex: 8 / exportBox.width, sizey: 8 / exportBox.height,
+                    xanchor: "center", yanchor: "middle", layer: "above", sizing: "contain", opacity: 0.9,
+                  });
+                }
+              }
               await Plotly.relayout(exportHost, {
                 annotations: [...baked.annotations, ...keyAnnotations],
                 images: baked.images,
@@ -823,9 +886,13 @@ export default function Chart({
     ? chartGroups.find((g) => g.key === hover.key)
     : undefined;
   const hoverPoint = hoverGroup?.rows[0]?.point;
-  // Approximate box used only to decide which side of the point the card opens.
+  const hoverAssessment = hoverGroup ? assessments.get(hoverGroup.key) : undefined;
+  useLayoutEffect(() => {
+    if (hoverAssessment && hoverCardRef.current) setHoverCardHeight(hoverCardRef.current.getBoundingClientRect().height);
+  }, [hover?.key, hoverAssessment?.assessment, hoverAssessment?.differs]);
+  // Для AA учитывается фактическая высота краткой подсказки, включая совпавшие варианты.
   const CARD_WIDTH = 246;
-  const CARD_HEIGHT = 146;
+  const CARD_HEIGHT = hoverAssessment ? hoverCardHeight : 146;
   const hoverCard =
     hover && area && hoverGroup
       ? (() => {
@@ -931,6 +998,7 @@ export default function Chart({
                   left: hover.x,
                   top: hover.y,
                   background: color(hoverPoint),
+                  borderColor: hoverAssessment?.assessment.color,
                 }}
               />
             )}
@@ -947,12 +1015,16 @@ export default function Chart({
                   ) : (
                     <span>{l.provider.slice(0, 2)}</span>
                   )}
+                  {assessments.get(l.key) && <i
+                    className="arena-assessment-dot"
+                    style={{ background: assessments.get(l.key)!.assessment.color }}
+                  />}
                 </span>
               ))}
           </div>
         )}
         {hoverCard && hoverGroup && hoverPoint && (
-          <div className="point-hover-card" style={hoverCard} aria-hidden="true">
+          <div ref={hoverCardRef} className="point-hover-card" style={hoverCard} aria-hidden="true">
             <div className="hover-title">
               <BrandMarks point={hoverPoint} />
               <b>
@@ -992,6 +1064,13 @@ export default function Chart({
                 : ""}
               {zh ? "点击查看来源" : "Click to inspect sources"}
             </div>
+            {hoverAssessment && <div className="hover-assessment">
+              <span className="hover-assessment-heading">
+                <AssessmentMark summary={hoverAssessment} />
+                {assessmentHeading(hoverAssessment)}
+              </span>
+              {assessmentDetails(hoverAssessment).map(line => <p key={line}>{line}</p>)}
+            </div>}
           </div>
         )}
         {loading && (
@@ -1025,8 +1104,13 @@ export default function Chart({
                 className={hits.keys.has(g.key) ? "is-hit" : undefined}
                 style={hitStyle.get(g.key)}
                 onClick={() => selection.current(g.rows)}
+                onMouseEnter={event => showCardAssessment(g, event.currentTarget)}
+                onMouseLeave={() => setCardAssessment(null)}
+                onFocus={event => showCardAssessment(g, event.currentTarget)}
+                onBlur={() => setCardAssessment(null)}
               >
                 <b style={{ background: color(g.rows[0].point) }}>{i + 1}</b>
+                <AssessmentMark summary={assessments.get(g.key)} />
                 <span>
                   <BrandMarks point={g.rows[0].point} />
                   {[...new Set(g.rows.map((r) => r.point.model_display))].join(
@@ -1047,6 +1131,11 @@ export default function Chart({
           </div>
         </div>
       )}
+      {cardAssessment && <div ref={cardAssessmentRef} className="cost-assessment-tooltip" role="tooltip"
+        style={{ left: cardAssessment.left, top: cardAssessment.top }}>
+        <strong><AssessmentMark summary={cardAssessment.summary} />{assessmentHeading(cardAssessment.summary)}</strong>
+        {assessmentDetails(cardAssessment.summary).map(line => <p key={line}>{line}</p>)}
+      </div>}
     </>
   );
 }

@@ -422,21 +422,21 @@ test('Sol и Devin используют категории практическ�
   close(cursor.monthly_quota, 214.74 / .268);
 });
 
-test('Реальный снимок: 27 native, 14 калибровок, 14 сценариев и 3 переноса; десять тарифов без цены', async () => {
+test('Реальный снимок: 27 native, 14 калибровок, 14 сценариев и 9 переносов; десять тарифов без цены', async () => {
   const data = await snapshot();
   const result = calculate(data);
   assert.equal(result.metadata.status, 'ok');
   assert.equal(result.metadata.empirical_status, 'ok');
   assert.equal(result.metadata.native_rates_status, 'ok');
-  assert.equal(result.metadata.included_plans, 58);
-  assert.equal(result.plans.length, 68);
-  assert.equal(result.metadata.empirical_plans, 31);
-  assert.equal(result.metadata.empirical_model_transfer_plans, 3);
+  assert.equal(result.metadata.included_plans, 64);
+  assert.equal(result.plans.length, 74);
+  assert.equal(result.metadata.empirical_plans, 37);
+  assert.equal(result.metadata.empirical_model_transfer_plans, 9);
   assert.equal(result.metadata.empirical_api_calibration_plans, 14);
   assert.equal(result.plans.filter(plan => plan.included && plan.method === 'empirical_api_scenario').length, 14);
   assert.equal(result.metadata.empirical_token_proxy_plans, 0);
   assert.equal(result.excluded.length, 10);
-  assert.equal(result.rows.length, 251);
+  assert.equal(result.rows.length, 299);
   assert.ok(result.rows.filter(row => row.pricing_id === 'supergrok_lite::grok-4.6').length > 0);
   assert.equal(result.plans.filter(plan => plan.included && !plan.method.startsWith('empirical_')).length, 27);
   const oldGlm = result.rows.filter(row => row.plan_id?.startsWith('glm_coding_') && row.plan_id.includes('_old_'));
@@ -476,7 +476,7 @@ test('Реальный снимок: Grok 4.7 сохраняет ID и свою 
   const result = calculate(data);
   const expected = ['supergrok::grok-4.7', 'supergrok_plus::grok-4.7', 'supergrok_heavy::grok-4.7'];
   assert.deepEqual(data.evidence.additional_plans.filter(plan => plan.model === 'grok-4.7').map(plan => plan.id).sort(), [...expected].sort());
-  assert.equal(result.metadata.additional_plans, 6);
+  assert.equal(result.metadata.additional_plans, 12);
   const capacities = [672_000_000, 2_690_000_000, 6_720_000_000];
   for (const [index, id] of expected.entries()) {
     const added = data.evidence.additional_plans.find(plan => plan.id === id);
@@ -536,6 +536,89 @@ test('Opus 5.5: пять effort и три тарифа получают преж
         assert.deepEqual(row[scope].component_tokens, api[scope].component_tokens);
         close(row[scope].cost_usd, row.monthly_usd * api[scope].cost_usd / source.monthly_quota);
       }
+    }
+  }
+});
+
+test('GPT-6 Sol/Luna: шесть родных тарифов наследуют пулы соответствующей GPT-5.6 и используют собственные шесть effort', async () => {
+  const data = await snapshot();
+  const result = calculate(data);
+  for (const family of ['sol', 'luna']) {
+    const model = `gpt-6-${family}`;
+    const sourceModel = `gpt-5.6-${family}`;
+    const variants = data.aa.rows.filter(row => row.model === model);
+    assert.deepEqual(variants.map(row => row.effort).sort(), ['non-reasoning', 'low', 'medium', 'high', 'xhigh', 'max'].sort());
+    for (const planId of ['chatgpt_plus', 'chatgpt_pro_5x', 'chatgpt_pro_20x']) {
+      const sourceId = `${planId}::${sourceModel}`;
+      const id = `${planId}::${model}`;
+      const sourcePlan = data.pricing.rows.find(row => row.id === sourceId);
+      const addedPlan = data.evidence.additional_plans.find(row => row.id === id);
+      const source = result.rows.find(row => row.pricing_id === sourceId);
+      const evidence = data.evidence.rows.find(row => row.id === id);
+      const targetRows = result.rows.filter(row => row.pricing_id === id);
+      assert.ok(sourcePlan && source && addedPlan && evidence, id);
+      for (const field of ['plan_id', 'plan', 'monthly_usd', 'billing', 'model_provider', 'access_channel']) {
+        assert.equal(addedPlan[field], sourcePlan[field], `${id}: ${field}`);
+      }
+      assert.equal(addedPlan.model, model);
+      assert.equal(Object.hasOwn(addedPlan, 'monthly_tokens'), false);
+      assert.equal(Object.hasOwn(evidence, 'calibration'), false);
+      assert.equal(Object.hasOwn(evidence, 'monthly_tokens'), false);
+      assert.match(evidence.reason_ru, /Гипотеза.*В используемом срезе нет прямых замеров/);
+      assert.ok(evidence.source_urls.includes(`https://artificialanalysis.ai/models/${model}`));
+      assert.deepEqual(targetRows.map(row => [row.source_id, row.effort]), variants.map(row => [row.source_id, row.effort]));
+      for (const row of targetRows) {
+        assert.equal(row.method, 'empirical_model_transfer');
+        assert.equal(row.model_id, model);
+        assert.equal(row.plan_id, planId);
+        assert.equal(row.monthly_usd, source.monthly_usd);
+        assert.equal(row.monthly_quota, source.monthly_quota);
+        assert.equal(row.quality.level, source.quality.level);
+        assert.equal(row.empirical.transfer.source_pricing_id, sourceId);
+        assert.equal(row.empirical.transfer.source_model_id, sourceModel);
+        assert.equal(row.empirical.transfer.source_evidence_method, source.evidence_method);
+        assert.deepEqual(row.empirical.transfer.source_quality, source.quality);
+        assert.deepEqual(row.empirical.transfer.source_empirical, source.empirical);
+        const aaVariant = variants.find(variant => variant.source_id === row.source_id);
+        close(row.component_rates.non_cache_input, aaVariant.api_price_input_usd_per_million);
+        close(row.component_rates.cache_read, aaVariant.api_price_cache_hit_usd_per_million);
+        close(row.component_rates.cache_write, aaVariant.api_price_cache_write_usd_per_million);
+        close(row.component_rates.answer, aaVariant.api_price_output_usd_per_million);
+        const api = result.rows.find(item => item.kind === 'api' && item.source_id === row.source_id);
+        for (const scope of ['task', 'suite']) {
+          assert.deepEqual(row[scope].component_tokens, api[scope].component_tokens);
+          close(row[scope].cost_usd, row.monthly_usd * api[scope].cost_usd / source.monthly_quota);
+        }
+      }
+    }
+  }
+});
+
+test('GPT-6: добавление гипотез не меняет прежние строки; пересмотр исходного замера обновляет только связанную пару', async () => {
+  const data = await snapshot();
+  const result = calculate(data);
+  const isNewModel = model => /^gpt-6-(sol|luna)$/.test(model);
+  const withoutNewTransfers = structuredClone(data);
+  withoutNewTransfers.evidence.rows = withoutNewTransfers.evidence.rows.filter(row => !isNewModel(row.model_id));
+  withoutNewTransfers.evidence.additional_plans = withoutNewTransfers.evidence.additional_plans.filter(row => !isNewModel(row.model));
+  assert.deepEqual(result.rows.filter(row => !isNewModel(row.model_id)), calculate(withoutNewTransfers).rows.filter(row => !isNewModel(row.model_id)));
+
+  for (const family of ['sol', 'luna']) {
+    for (const planId of ['chatgpt_plus', 'chatgpt_pro_5x', 'chatgpt_pro_20x']) {
+      const changed = structuredClone(data);
+      const sourceId = `${planId}::gpt-5.6-${family}`;
+      const targetId = `${planId}::gpt-6-${family}`;
+      changed.evidence.rows.find(row => row.id === sourceId).calibration.observed_api_usd *= 2;
+      const updated = calculate(changed);
+      for (const row of updated.rows.filter(row => row.pricing_id === targetId)) {
+        const previous = result.rows.find(item => item.id === row.id);
+        close(row.monthly_quota, previous.monthly_quota * 2);
+        for (const scope of ['task', 'suite']) {
+          close(row[scope].cost_usd, previous[scope].cost_usd / 2);
+          assert.deepEqual(row[scope].component_tokens, previous[scope].component_tokens);
+        }
+      }
+      assert.deepEqual(updated.rows.filter(row => ![sourceId, targetId].includes(row.pricing_id)), result.rows.filter(row => ![sourceId, targetId].includes(row.pricing_id)));
     }
   }
 });

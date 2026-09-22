@@ -1,35 +1,16 @@
-import type { QualityLevel, QuotaRow, RowQuality, Scope } from "./aaTypes";
+import type { QualityLevel, QuotaRow, Scope } from "./aaTypes";
 import type { Point, Row, SiteData } from "./types";
+import { aaAssessment, aaQuality } from "./aaAssessment";
+export { aaQuality } from "./aaAssessment";
 
 const finite = (value: unknown): value is number => typeof value === "number" && Number.isFinite(value);
 
 const methodNames: Record<string, string> = { aa_original_api: "API AA", aa_tokens_quota_rates: "Квота × ставки", empirical_api_calibration: "API-калибровка", empirical_api_scenario: "Приблизительный API-сценарий", empirical_model_transfer: "Перенос квоты между моделями", unavailable_quota_weights: "Нет ставок списания" };
 export const aaMethodLabel = (value?: string) => value ? methodNames[value] || value : "Метод не указан";
-export const aaTransferLabel = "Гипотеза переноса";
 export const displayAAPlan = (plan: string): string => plan.replace(/9\/14\+/g, "с 14 сентября 2026");
 const qualityNames: Record<QualityLevel, string> = { high: "Высокая", medium: "Средняя", low: "Низкая", unavailable: "Нет данных" };
 export const aaQualityLabel = (level: string): string => qualityNames[level as QualityLevel] || qualityNames.unavailable;
 export const aaQualityRank = (level: string): number => ["high", "medium", "low", "unavailable"].indexOf(level);
-
-/** Старые срезы без quality остаются совместимыми, новые используют явную оценку backend. */
-export function aaQuality(row: QuotaRow): RowQuality {
-  const explicit = row.quality && Object.hasOwn(qualityNames, row.quality.level) ? row.quality : undefined;
-  let level: QualityLevel;
-  if (explicit) level = explicit.level;
-  else if (row.method === "unavailable_quota_weights" || row.status === "unavailable" || row.confidence === "unavailable") level = "unavailable";
-  else if (row.method === "empirical_api_scenario" || row.confidence === "low") level = "low";
-  else if (["documented", "source", "high"].includes(row.confidence)) level = "high";
-  else if (["assumed", "medium"].includes(row.confidence)) level = "medium";
-  else level = "unavailable";
-  const quality = explicit || { level, reasons: ["В старом срезе нет отдельной оценки надёжности; использована исходная метка confidence."] };
-  if (row.method === "empirical_model_transfer") {
-    const source = row.empirical?.transfer?.source_quality;
-    const sourceLevel = source && Object.hasOwn(qualityNames, source.level) ? source.level : "unavailable";
-    const limitedLevel = [quality.level, "medium", sourceLevel].sort((a, b) => aaQualityRank(b) - aaQualityRank(a))[0] as QualityLevel;
-    if (limitedLevel !== quality.level) return { ...quality, level: limitedLevel, reasons: [...quality.reasons, "Надёжность переноса не выше средней и не выше надёжности исходной квоты.", ...(source?.reasons || [])] };
-  }
-  return quality;
-}
 
 export const aaIsApproximate = (row: QuotaRow, scope: Scope): boolean => finite(row[scope]?.cost_usd)
   && (row[scope]?.status === "approximate" || aaQuality(row).level === "low" || ["empirical_api_scenario", "empirical_model_transfer"].includes(row.method || ""));
@@ -86,12 +67,13 @@ export function adaptAAChart(rows: readonly QuotaRow[], scope: Scope, data: Site
     const point: Point = {
       ...reference, model_display: prefix + reference.model_display, label: prefix + reference.label,
       real_usd_per_mtok: cost,
+      cost_assessment: aaAssessment(row, scope),
     };
     chartRows.push({
       key: id, point, score: row.intelligence_index,
       mapping: {
         point_id: id, configuration_id: `${id}::${scope}`, board: "aa_combined",
-        variant: [row.effort_label || row.effort, `${prefix}Метод: ${aaMethodLabel(row.method)}`, row.method === "empirical_model_transfer" ? `🟡 ${aaTransferLabel}` : null, `Надёжность: ${aaQualityLabel(quality.level)}`].filter(Boolean).join(" · "), score: row.intelligence_index,
+        variant: row.effort_label || row.effort, score: row.intelligence_index,
         score_is_estimated: row.estimated ?? false,
         agent_harness: "Artificial Analysis", reasoning_effort: row.effort_label || row.effort,
         service_mode: null, score_low: null, score_high: null,

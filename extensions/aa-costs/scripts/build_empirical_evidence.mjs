@@ -426,12 +426,56 @@ for (const planId of ['claude_pro', 'claude_max_5x', 'claude_max_20x']) {
     transfer: {source_pricing_id: sourceId, source_model_id: 'claude-opus-5', confidence: 'medium', assumption_ru: assumption},
     source_urls: sourceUrls,
     notes_ru: [
-      'Перенос имеет среднюю уверенность как гипотеза, а итоговая надёжность не выше исходного замера Opus 5. Жёлтая метка не означает наличие измерения Opus 5.5.',
+      'Перенос имеет среднюю уверенность как гипотеза, а итоговая надёжность не выше исходного замера Opus 5. Эта оценка не подтверждает наличие прямого измерения Opus 5.5.',
       'Пул восстанавливается по старым ставкам и наблюдениям Opus 5; расходы новых задач — по собственным категориям и ставкам Opus 5.5 из AA.',
       'Общий бюджет считается доступным одной выбранной модели. Квоты двух Opus внутри одной подписки не суммируются; месячный эквивалент использует четыре недели.',
       'Изменения пятичасовых ограничений при релизе не считаются подтверждённым увеличением недельного денежного пула.',
     ],
   });
+}
+
+// Новое поколение GPT наследует денежное основание только своей модели и своего тарифа.
+for (const family of ['sol', 'luna']) {
+  const sourceModel = `gpt-5.6-${family}`;
+  const model = `gpt-6-${family}`;
+  const name = family === 'sol' ? 'Sol' : 'Luna';
+  for (const planId of ['chatgpt_plus', 'chatgpt_pro_5x', 'chatgpt_pro_20x']) {
+    const sourceId = `${planId}::${sourceModel}`;
+    const sourcePlan = pricingById.get(sourceId);
+    const sourceEvidence = rows.find(row => row.id === sourceId);
+    assert.ok(sourcePlan && sourceEvidence, `Нет исходной квоты ${sourceId}`);
+    assert.equal(sourcePlan.model, sourceModel);
+    assert.equal(sourcePlan.plan_id, planId);
+    assert.equal(sourcePlan.billing, 'subscription');
+    assert.equal(sourcePlan.model_provider, 'OpenAI');
+    assert.equal(sourcePlan.access_channel, 'ChatGPT');
+    assert.equal(sourceEvidence.method, 'empirical_api_calibration');
+    const id = `${planId}::${model}`;
+    const assumption = `Гипотеза: для GPT-6 ${name} и GPT-5.6 ${name} на одном тарифе ChatGPT доступен одинаковый денежный API-эквивалент квоты. В используемом срезе нет прямых замеров GPT-6 ${name}.`;
+    const sourceUrls = unique([...sourceEvidence.source_urls, `https://artificialanalysis.ai/models/${model}`]);
+    additionalPlans.push({
+      id, model, model_display: `GPT-6 ${name}`,
+      plan_id: sourcePlan.plan_id, plan: sourcePlan.plan,
+      billing: sourcePlan.billing, monthly_usd: sourcePlan.monthly_usd,
+      model_provider: sourcePlan.model_provider, access_channel: sourcePlan.access_channel, workload: 'model_transfer',
+      source_url: sourceUrls[0],
+    });
+    rows.push({
+      id, model_id: model, monthly_usd: sourcePlan.monthly_usd,
+      method: 'empirical_model_transfer', evidence_method: 'model_transfer',
+      basis_label: `Гипотеза переноса денежной квоты GPT-5.6 ${name} → GPT-6 ${name}`,
+      reason_ru: assumption,
+      transfer: {source_pricing_id: sourceId, source_model_id: sourceModel, confidence: 'medium', assumption_ru: assumption},
+      source_urls: sourceUrls,
+      notes_ru: [
+        `Перенос имеет среднюю уверенность как гипотеза, а итоговая надёжность не выше исходного основания GPT-5.6 ${name}. В используемых данных нет прямого измерения GPT-6 ${name}.`,
+        `Пул восстанавливается по исходным ставкам и наблюдениям GPT-5.6 ${name}; расходы новых задач — по собственным категориям и ставкам GPT-6 ${name} из AA. Старые токены не переоцениваются по новым ставкам.`,
+        'Тариф, месячная плата и канал сохраняются от исходной пары. Уже имеющийся перенос между тарифами остаётся ограничением источника и не становится независимым замером.',
+        'Общий бюджет выделяется одной выбранной модели; ёмкости старой и новой моделей в одной подписке нельзя складывать. Недельные замеры приводятся к четырём неделям.',
+        'Страница AA подтверждает профиль новой модели, но не равенство лимитов или правил списания подписки. Это равенство принято только как явно обозначенная гипотеза.',
+      ],
+    });
+  }
 }
 
 assert.equal(new Set(rows.map(row => row.id)).size, rows.length, 'Повторная пара тариф/модель.');
@@ -452,7 +496,7 @@ const result = {
     method_ru: 'Объёмы для цены задачи берутся только из AA. Связанные замеры дают условную API-калибровку, неполные замеры и сообщения о пулах — отдельные сценарии низкой надёжности с явными допущениями. Общая токенная ёмкость RAP и фиксированная смесь не используются.',
     quality_policy_ru: 'Надёжность оценивается для переноса квоты на нагрузку AA: средняя — связанный замер с API-гипотезой, низкая — неполный/смешанный образец, внутренние денежные единицы, сообщённый пул или перенос между тарифами. Оценка RAP сохраняется отдельно и автоматически не наследуется.',
     period_note_ru: 'Недельные наблюдения приводятся к четырём неделям; это не календарный месяц. Пулы общие для моделей одного тарифа: ёмкости нельзя складывать.',
-    source_policy_ru: 'Снимок pricing и его аудит сохранены. Research и три дополнительные пары Grok 4.7 прочитаны из закреплённого коммита; их точные байты проверяются SHA-256. Три пары Opus 5.5 добавлены отдельно как гипотеза переноса денежного пула Opus 5, без выдуманного токенного лимита.',
+    source_policy_ru: 'Снимок pricing и его аудит сохранены. Research и три дополнительные пары Grok 4.7 прочитаны из закреплённого коммита; их точные байты проверяются SHA-256. Три пары Opus 5.5 и шесть пар GPT-6 Sol/Luna добавлены отдельно как гипотезы переноса денежного пула Opus 5 и соответствующих GPT-5.6 Sol/Luna внутри того же тарифа, без выдуманного токенного лимита. Страницы AA новых моделей служат источниками профилей, а не доказательством одинаковых подписочных лимитов.',
   },
   rows,
   additional_plans: additionalPlans,

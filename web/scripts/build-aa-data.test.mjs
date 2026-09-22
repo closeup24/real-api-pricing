@@ -14,9 +14,9 @@ const reference = createAaData(aa, pricing, rates, audit, weighting);
 test('Основная вкладка получает обычные подписки, метод переноса и исходные числа замера', async () => {
   const empirical = await read('pricing/empirical-evidence.json');
   const data = createAaData(aa, pricing, rates, audit, weighting, empirical);
-  assert.equal(data.quota_scenario.metadata.included_plans, 58);
+  assert.equal(data.quota_scenario.metadata.included_plans, 64);
   assert.equal(data.quota_scenario.metadata.excluded_plans, 10);
-  assert.equal(data.quota_scenario.rows.length, 251);
+  assert.equal(data.quota_scenario.rows.length, 299);
   assert.equal(data.metadata.row_count, data.quota_scenario.rows.length);
   const luna = data.quota_scenario.rows.find(row => row.pricing_id === 'chatgpt_plus::gpt-5.6-luna');
   assert.equal(luna.method, 'empirical_api_calibration');
@@ -119,6 +119,32 @@ test('Каждый разбор сохраняет точный source_id, effor
       assert.deepEqual(row[scope].component_tokens, expected[scope].component_tokens);
       assert.deepEqual(row[scope].component_costs_usd, expected[scope].component_costs_usd);
       assert.deepEqual(row[scope].rates_usd_per_million, expected[scope].rates_usd_per_million);
+    }
+  }
+});
+
+test('Новые Sol и Luna сохраняют собственные профили AA и отдельные три гипотезы подписок', async () => {
+  const data = createAaData(aa, pricing, rates, audit, weighting, await read('pricing/empirical-evidence.json'));
+  for (const [model, maxCost, index] of [
+    ['gpt-6-sol', 1.0564240894076389, 47.5276426437724],
+    ['gpt-6-luna', .06809498628701058, 37.2559686869738],
+  ]) {
+    const rows = data.quota_scenario.rows.filter(row => row.model_id === model);
+    assert.equal(rows.length, 24);
+    const api = rows.filter(row => row.kind === 'api');
+    assert.equal(api.length, 6);
+    assert.equal(new Set(api.map(row => row.effort)).size, 6);
+    const max = api.find(row => row.effort === 'max');
+    assert.ok(Math.abs(max.task.cost_usd - maxCost) < 1e-12);
+    assert.ok(Math.abs(max.intelligence_index - index) < 1e-12);
+    assert.ok(max.sources.includes(`https://artificialanalysis.ai/models/${model}`));
+    const subscriptions = rows.filter(row => row.kind === 'subscription');
+    assert.equal(subscriptions.length, 18);
+    assert.deepEqual(new Set(subscriptions.map(row => row.plan_id)), new Set(['chatgpt_plus', 'chatgpt_pro_5x', 'chatgpt_pro_20x']));
+    for (const row of subscriptions) {
+      assert.equal(row.method, 'empirical_model_transfer');
+      assert.equal(row.empirical.transfer.source_model_id, model.replace('gpt-6-', 'gpt-5.6-'));
+      assert.ok(api.some(item => item.source_id === row.source_id && item.effort === row.effort));
     }
   }
 });

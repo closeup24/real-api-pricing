@@ -33,16 +33,16 @@
       "derived/points.json": "a5a3a3c8f3eb5cb660d77d32d710f09f3ab842fa5916b2c513338e82ec8f8e98"
     },
     "generated_by": "scripts/build_empirical_evidence.mjs",
-    "rows": 31,
+    "rows": 37,
     "method_counts": {
       "empirical_api_calibration": 14,
       "empirical_api_scenario": 14,
-      "empirical_model_transfer": 3
+      "empirical_model_transfer": 9
     },
     "method_ru": "Объёмы для цены задачи берутся только из AA. Связанные замеры дают условную API-калибровку, неполные замеры и сообщения о пулах — отдельные сценарии низкой надёжности с явными допущениями. Общая токенная ёмкость RAP и фиксированная смесь не используются.",
     "quality_policy_ru": "Надёжность оценивается для переноса квоты на нагрузку AA: средняя — связанный замер с API-гипотезой, низкая — неполный/смешанный образец, внутренние денежные единицы, сообщённый пул или перенос между тарифами. Оценка RAP сохраняется отдельно и автоматически не наследуется.",
     "period_note_ru": "Недельные наблюдения приводятся к четырём неделям; это не календарный месяц. Пулы общие для моделей одного тарифа: ёмкости нельзя складывать.",
-    "source_policy_ru": "Снимок pricing и его аудит сохранены. Research и три дополнительные пары Grok 4.7 прочитаны из закреплённого коммита; их точные байты проверяются SHA-256. Три пары Opus 5.5 добавлены отдельно как гипотеза переноса денежного пула Opus 5, без выдуманного токенного лимита."
+    "source_policy_ru": "Снимок pricing и его аудит сохранены. Research и три дополнительные пары Grok 4.7 прочитаны из закреплённого коммита; их точные байты проверяются SHA-256. Три пары Opus 5.5 и шесть пар GPT-6 Sol/Luna добавлены отдельно как гипотезы переноса денежного пула Opus 5 и соответствующих GPT-5.6 Sol/Luna внутри того же тарифа, без выдуманного токенного лимита. Страницы AA новых моделей служат источниками профилей, а не доказательством одинаковых подписочных лимитов."
   },
   "rows": [
     {
@@ -1565,7 +1565,7 @@
         "https://artificialanalysis.ai/models/claude-opus-5-5"
       ],
       "notes_ru": [
-        "Перенос имеет среднюю уверенность как гипотеза, а итоговая надёжность не выше исходного замера Opus 5. Жёлтая метка не означает наличие измерения Opus 5.5.",
+        "Перенос имеет среднюю уверенность как гипотеза, а итоговая надёжность не выше исходного замера Opus 5. Эта оценка не подтверждает наличие прямого измерения Opus 5.5.",
         "Пул восстанавливается по старым ставкам и наблюдениям Opus 5; расходы новых задач — по собственным категориям и ставкам Opus 5.5 из AA.",
         "Общий бюджет считается доступным одной выбранной модели. Квоты двух Opus внутри одной подписки не суммируются; месячный эквивалент использует четыре недели.",
         "Изменения пятичасовых ограничений при релизе не считаются подтверждённым увеличением недельного денежного пула."
@@ -1595,7 +1595,7 @@
         "https://artificialanalysis.ai/models/claude-opus-5-5"
       ],
       "notes_ru": [
-        "Перенос имеет среднюю уверенность как гипотеза, а итоговая надёжность не выше исходного замера Opus 5. Жёлтая метка не означает наличие измерения Opus 5.5.",
+        "Перенос имеет среднюю уверенность как гипотеза, а итоговая надёжность не выше исходного замера Opus 5. Эта оценка не подтверждает наличие прямого измерения Opus 5.5.",
         "Пул восстанавливается по старым ставкам и наблюдениям Opus 5; расходы новых задач — по собственным категориям и ставкам Opus 5.5 из AA.",
         "Общий бюджет считается доступным одной выбранной модели. Квоты двух Opus внутри одной подписки не суммируются; месячный эквивалент использует четыре недели.",
         "Изменения пятичасовых ограничений при релизе не считаются подтверждённым увеличением недельного денежного пула."
@@ -1625,10 +1625,190 @@
         "https://artificialanalysis.ai/models/claude-opus-5-5"
       ],
       "notes_ru": [
-        "Перенос имеет среднюю уверенность как гипотеза, а итоговая надёжность не выше исходного замера Opus 5. Жёлтая метка не означает наличие измерения Opus 5.5.",
+        "Перенос имеет среднюю уверенность как гипотеза, а итоговая надёжность не выше исходного замера Opus 5. Эта оценка не подтверждает наличие прямого измерения Opus 5.5.",
         "Пул восстанавливается по старым ставкам и наблюдениям Opus 5; расходы новых задач — по собственным категориям и ставкам Opus 5.5 из AA.",
         "Общий бюджет считается доступным одной выбранной модели. Квоты двух Opus внутри одной подписки не суммируются; месячный эквивалент использует четыре недели.",
         "Изменения пятичасовых ограничений при релизе не считаются подтверждённым увеличением недельного денежного пула."
+      ]
+    },
+    {
+      "id": "chatgpt_plus::gpt-6-sol",
+      "model_id": "gpt-6-sol",
+      "monthly_usd": 20,
+      "method": "empirical_model_transfer",
+      "evidence_method": "model_transfer",
+      "basis_label": "Гипотеза переноса денежной квоты GPT-5.6 Sol → GPT-6 Sol",
+      "reason_ru": "Гипотеза: для GPT-6 Sol и GPT-5.6 Sol на одном тарифе ChatGPT доступен одинаковый денежный API-эквивалент квоты. В используемом срезе нет прямых замеров GPT-6 Sol.",
+      "transfer": {
+        "source_pricing_id": "chatgpt_plus::gpt-5.6-sol",
+        "source_model_id": "gpt-5.6-sol",
+        "confidence": "medium",
+        "assumption_ru": "Гипотеза: для GPT-6 Sol и GPT-5.6 Sol на одном тарифе ChatGPT доступен одинаковый денежный API-эквивалент квоты. В используемом срезе нет прямых замеров GPT-6 Sol."
+      },
+      "source_urls": [
+        "https://github.com/FeiZhuLulu/real-api-pricing/blob/6489b60a14680a5ce848131d461a90eb054d03ac/data/adopted.csv",
+        "https://github.com/FeiZhuLulu/real-api-pricing/blob/6489b60a14680a5ce848131d461a90eb054d03ac/scripts/build_adopted.py",
+        "https://github.com/FeiZhuLulu/real-api-pricing/blob/b7d9efa1f6ac50a5dfe2f6bfddcab9edf0b36c71/data/research/chatgpt-quotas-round5-2026-09.json",
+        "https://github.com/FeiZhuLulu/real-api-pricing/blob/b7d9efa1f6ac50a5dfe2f6bfddcab9edf0b36c71/data/research/chatgpt-pro20x-gateway-measurement-2026-09-06.json",
+        "https://github.com/FeiZhuLulu/real-api-pricing/blob/b7d9efa1f6ac50a5dfe2f6bfddcab9edf0b36c71/data/chatgpt-pro-claims.json",
+        "https://artificialanalysis.ai/models/gpt-6-sol"
+      ],
+      "notes_ru": [
+        "Перенос имеет среднюю уверенность как гипотеза, а итоговая надёжность не выше исходного основания GPT-5.6 Sol. В используемых данных нет прямого измерения GPT-6 Sol.",
+        "Пул восстанавливается по исходным ставкам и наблюдениям GPT-5.6 Sol; расходы новых задач — по собственным категориям и ставкам GPT-6 Sol из AA. Старые токены не переоцениваются по новым ставкам.",
+        "Тариф, месячная плата и канал сохраняются от исходной пары. Уже имеющийся перенос между тарифами остаётся ограничением источника и не становится независимым замером.",
+        "Общий бюджет выделяется одной выбранной модели; ёмкости старой и новой моделей в одной подписке нельзя складывать. Недельные замеры приводятся к четырём неделям.",
+        "Страница AA подтверждает профиль новой модели, но не равенство лимитов или правил списания подписки. Это равенство принято только как явно обозначенная гипотеза."
+      ]
+    },
+    {
+      "id": "chatgpt_pro_5x::gpt-6-sol",
+      "model_id": "gpt-6-sol",
+      "monthly_usd": 100,
+      "method": "empirical_model_transfer",
+      "evidence_method": "model_transfer",
+      "basis_label": "Гипотеза переноса денежной квоты GPT-5.6 Sol → GPT-6 Sol",
+      "reason_ru": "Гипотеза: для GPT-6 Sol и GPT-5.6 Sol на одном тарифе ChatGPT доступен одинаковый денежный API-эквивалент квоты. В используемом срезе нет прямых замеров GPT-6 Sol.",
+      "transfer": {
+        "source_pricing_id": "chatgpt_pro_5x::gpt-5.6-sol",
+        "source_model_id": "gpt-5.6-sol",
+        "confidence": "medium",
+        "assumption_ru": "Гипотеза: для GPT-6 Sol и GPT-5.6 Sol на одном тарифе ChatGPT доступен одинаковый денежный API-эквивалент квоты. В используемом срезе нет прямых замеров GPT-6 Sol."
+      },
+      "source_urls": [
+        "https://github.com/FeiZhuLulu/real-api-pricing/blob/6489b60a14680a5ce848131d461a90eb054d03ac/data/adopted.csv",
+        "https://github.com/FeiZhuLulu/real-api-pricing/blob/6489b60a14680a5ce848131d461a90eb054d03ac/scripts/build_adopted.py",
+        "https://github.com/FeiZhuLulu/real-api-pricing/blob/b7d9efa1f6ac50a5dfe2f6bfddcab9edf0b36c71/data/research/chatgpt-quotas-round5-2026-09.json",
+        "https://github.com/FeiZhuLulu/real-api-pricing/blob/b7d9efa1f6ac50a5dfe2f6bfddcab9edf0b36c71/data/research/chatgpt-pro20x-gateway-measurement-2026-09-06.json",
+        "https://github.com/FeiZhuLulu/real-api-pricing/blob/b7d9efa1f6ac50a5dfe2f6bfddcab9edf0b36c71/data/chatgpt-pro-claims.json",
+        "https://artificialanalysis.ai/models/gpt-6-sol"
+      ],
+      "notes_ru": [
+        "Перенос имеет среднюю уверенность как гипотеза, а итоговая надёжность не выше исходного основания GPT-5.6 Sol. В используемых данных нет прямого измерения GPT-6 Sol.",
+        "Пул восстанавливается по исходным ставкам и наблюдениям GPT-5.6 Sol; расходы новых задач — по собственным категориям и ставкам GPT-6 Sol из AA. Старые токены не переоцениваются по новым ставкам.",
+        "Тариф, месячная плата и канал сохраняются от исходной пары. Уже имеющийся перенос между тарифами остаётся ограничением источника и не становится независимым замером.",
+        "Общий бюджет выделяется одной выбранной модели; ёмкости старой и новой моделей в одной подписке нельзя складывать. Недельные замеры приводятся к четырём неделям.",
+        "Страница AA подтверждает профиль новой модели, но не равенство лимитов или правил списания подписки. Это равенство принято только как явно обозначенная гипотеза."
+      ]
+    },
+    {
+      "id": "chatgpt_pro_20x::gpt-6-sol",
+      "model_id": "gpt-6-sol",
+      "monthly_usd": 200,
+      "method": "empirical_model_transfer",
+      "evidence_method": "model_transfer",
+      "basis_label": "Гипотеза переноса денежной квоты GPT-5.6 Sol → GPT-6 Sol",
+      "reason_ru": "Гипотеза: для GPT-6 Sol и GPT-5.6 Sol на одном тарифе ChatGPT доступен одинаковый денежный API-эквивалент квоты. В используемом срезе нет прямых замеров GPT-6 Sol.",
+      "transfer": {
+        "source_pricing_id": "chatgpt_pro_20x::gpt-5.6-sol",
+        "source_model_id": "gpt-5.6-sol",
+        "confidence": "medium",
+        "assumption_ru": "Гипотеза: для GPT-6 Sol и GPT-5.6 Sol на одном тарифе ChatGPT доступен одинаковый денежный API-эквивалент квоты. В используемом срезе нет прямых замеров GPT-6 Sol."
+      },
+      "source_urls": [
+        "https://github.com/FeiZhuLulu/real-api-pricing/blob/6489b60a14680a5ce848131d461a90eb054d03ac/data/adopted.csv",
+        "https://github.com/FeiZhuLulu/real-api-pricing/blob/6489b60a14680a5ce848131d461a90eb054d03ac/scripts/build_adopted.py",
+        "https://github.com/FeiZhuLulu/real-api-pricing/blob/b7d9efa1f6ac50a5dfe2f6bfddcab9edf0b36c71/data/research/chatgpt-quotas-round5-2026-09.json",
+        "https://github.com/FeiZhuLulu/real-api-pricing/blob/b7d9efa1f6ac50a5dfe2f6bfddcab9edf0b36c71/data/research/chatgpt-pro20x-gateway-measurement-2026-09-06.json",
+        "https://github.com/FeiZhuLulu/real-api-pricing/blob/b7d9efa1f6ac50a5dfe2f6bfddcab9edf0b36c71/data/chatgpt-pro-claims.json",
+        "https://artificialanalysis.ai/models/gpt-6-sol"
+      ],
+      "notes_ru": [
+        "Перенос имеет среднюю уверенность как гипотеза, а итоговая надёжность не выше исходного основания GPT-5.6 Sol. В используемых данных нет прямого измерения GPT-6 Sol.",
+        "Пул восстанавливается по исходным ставкам и наблюдениям GPT-5.6 Sol; расходы новых задач — по собственным категориям и ставкам GPT-6 Sol из AA. Старые токены не переоцениваются по новым ставкам.",
+        "Тариф, месячная плата и канал сохраняются от исходной пары. Уже имеющийся перенос между тарифами остаётся ограничением источника и не становится независимым замером.",
+        "Общий бюджет выделяется одной выбранной модели; ёмкости старой и новой моделей в одной подписке нельзя складывать. Недельные замеры приводятся к четырём неделям.",
+        "Страница AA подтверждает профиль новой модели, но не равенство лимитов или правил списания подписки. Это равенство принято только как явно обозначенная гипотеза."
+      ]
+    },
+    {
+      "id": "chatgpt_plus::gpt-6-luna",
+      "model_id": "gpt-6-luna",
+      "monthly_usd": 20,
+      "method": "empirical_model_transfer",
+      "evidence_method": "model_transfer",
+      "basis_label": "Гипотеза переноса денежной квоты GPT-5.6 Luna → GPT-6 Luna",
+      "reason_ru": "Гипотеза: для GPT-6 Luna и GPT-5.6 Luna на одном тарифе ChatGPT доступен одинаковый денежный API-эквивалент квоты. В используемом срезе нет прямых замеров GPT-6 Luna.",
+      "transfer": {
+        "source_pricing_id": "chatgpt_plus::gpt-5.6-luna",
+        "source_model_id": "gpt-5.6-luna",
+        "confidence": "medium",
+        "assumption_ru": "Гипотеза: для GPT-6 Luna и GPT-5.6 Luna на одном тарифе ChatGPT доступен одинаковый денежный API-эквивалент квоты. В используемом срезе нет прямых замеров GPT-6 Luna."
+      },
+      "source_urls": [
+        "https://github.com/FeiZhuLulu/real-api-pricing/blob/6489b60a14680a5ce848131d461a90eb054d03ac/data/adopted.csv",
+        "https://github.com/FeiZhuLulu/real-api-pricing/blob/6489b60a14680a5ce848131d461a90eb054d03ac/scripts/build_adopted.py",
+        "https://github.com/FeiZhuLulu/real-api-pricing/blob/b7d9efa1f6ac50a5dfe2f6bfddcab9edf0b36c71/data/research/chatgpt-luna-adoption-round6-2026-09-08.json",
+        "https://github.com/FeiZhuLulu/real-api-pricing/issues/10#issuecomment-5576865371",
+        "https://github.com/FeiZhuLulu/real-api-pricing/issues/8#issuecomment-5573605351",
+        "https://artificialanalysis.ai/models/gpt-6-luna"
+      ],
+      "notes_ru": [
+        "Перенос имеет среднюю уверенность как гипотеза, а итоговая надёжность не выше исходного основания GPT-5.6 Luna. В используемых данных нет прямого измерения GPT-6 Luna.",
+        "Пул восстанавливается по исходным ставкам и наблюдениям GPT-5.6 Luna; расходы новых задач — по собственным категориям и ставкам GPT-6 Luna из AA. Старые токены не переоцениваются по новым ставкам.",
+        "Тариф, месячная плата и канал сохраняются от исходной пары. Уже имеющийся перенос между тарифами остаётся ограничением источника и не становится независимым замером.",
+        "Общий бюджет выделяется одной выбранной модели; ёмкости старой и новой моделей в одной подписке нельзя складывать. Недельные замеры приводятся к четырём неделям.",
+        "Страница AA подтверждает профиль новой модели, но не равенство лимитов или правил списания подписки. Это равенство принято только как явно обозначенная гипотеза."
+      ]
+    },
+    {
+      "id": "chatgpt_pro_5x::gpt-6-luna",
+      "model_id": "gpt-6-luna",
+      "monthly_usd": 100,
+      "method": "empirical_model_transfer",
+      "evidence_method": "model_transfer",
+      "basis_label": "Гипотеза переноса денежной квоты GPT-5.6 Luna → GPT-6 Luna",
+      "reason_ru": "Гипотеза: для GPT-6 Luna и GPT-5.6 Luna на одном тарифе ChatGPT доступен одинаковый денежный API-эквивалент квоты. В используемом срезе нет прямых замеров GPT-6 Luna.",
+      "transfer": {
+        "source_pricing_id": "chatgpt_pro_5x::gpt-5.6-luna",
+        "source_model_id": "gpt-5.6-luna",
+        "confidence": "medium",
+        "assumption_ru": "Гипотеза: для GPT-6 Luna и GPT-5.6 Luna на одном тарифе ChatGPT доступен одинаковый денежный API-эквивалент квоты. В используемом срезе нет прямых замеров GPT-6 Luna."
+      },
+      "source_urls": [
+        "https://github.com/FeiZhuLulu/real-api-pricing/blob/6489b60a14680a5ce848131d461a90eb054d03ac/data/adopted.csv",
+        "https://github.com/FeiZhuLulu/real-api-pricing/blob/6489b60a14680a5ce848131d461a90eb054d03ac/scripts/build_adopted.py",
+        "https://github.com/FeiZhuLulu/real-api-pricing/blob/b7d9efa1f6ac50a5dfe2f6bfddcab9edf0b36c71/data/research/chatgpt-luna-adoption-round6-2026-09-08.json",
+        "https://github.com/FeiZhuLulu/real-api-pricing/issues/10#issuecomment-5576865371",
+        "https://github.com/FeiZhuLulu/real-api-pricing/issues/8#issuecomment-5573605351",
+        "https://artificialanalysis.ai/models/gpt-6-luna"
+      ],
+      "notes_ru": [
+        "Перенос имеет среднюю уверенность как гипотеза, а итоговая надёжность не выше исходного основания GPT-5.6 Luna. В используемых данных нет прямого измерения GPT-6 Luna.",
+        "Пул восстанавливается по исходным ставкам и наблюдениям GPT-5.6 Luna; расходы новых задач — по собственным категориям и ставкам GPT-6 Luna из AA. Старые токены не переоцениваются по новым ставкам.",
+        "Тариф, месячная плата и канал сохраняются от исходной пары. Уже имеющийся перенос между тарифами остаётся ограничением источника и не становится независимым замером.",
+        "Общий бюджет выделяется одной выбранной модели; ёмкости старой и новой моделей в одной подписке нельзя складывать. Недельные замеры приводятся к четырём неделям.",
+        "Страница AA подтверждает профиль новой модели, но не равенство лимитов или правил списания подписки. Это равенство принято только как явно обозначенная гипотеза."
+      ]
+    },
+    {
+      "id": "chatgpt_pro_20x::gpt-6-luna",
+      "model_id": "gpt-6-luna",
+      "monthly_usd": 200,
+      "method": "empirical_model_transfer",
+      "evidence_method": "model_transfer",
+      "basis_label": "Гипотеза переноса денежной квоты GPT-5.6 Luna → GPT-6 Luna",
+      "reason_ru": "Гипотеза: для GPT-6 Luna и GPT-5.6 Luna на одном тарифе ChatGPT доступен одинаковый денежный API-эквивалент квоты. В используемом срезе нет прямых замеров GPT-6 Luna.",
+      "transfer": {
+        "source_pricing_id": "chatgpt_pro_20x::gpt-5.6-luna",
+        "source_model_id": "gpt-5.6-luna",
+        "confidence": "medium",
+        "assumption_ru": "Гипотеза: для GPT-6 Luna и GPT-5.6 Luna на одном тарифе ChatGPT доступен одинаковый денежный API-эквивалент квоты. В используемом срезе нет прямых замеров GPT-6 Luna."
+      },
+      "source_urls": [
+        "https://github.com/FeiZhuLulu/real-api-pricing/blob/6489b60a14680a5ce848131d461a90eb054d03ac/data/adopted.csv",
+        "https://github.com/FeiZhuLulu/real-api-pricing/blob/6489b60a14680a5ce848131d461a90eb054d03ac/scripts/build_adopted.py",
+        "https://github.com/FeiZhuLulu/real-api-pricing/blob/b7d9efa1f6ac50a5dfe2f6bfddcab9edf0b36c71/data/research/chatgpt-luna-adoption-round6-2026-09-08.json",
+        "https://github.com/FeiZhuLulu/real-api-pricing/issues/10#issuecomment-5576865371",
+        "https://github.com/FeiZhuLulu/real-api-pricing/issues/8#issuecomment-5573605351",
+        "https://artificialanalysis.ai/models/gpt-6-luna"
+      ],
+      "notes_ru": [
+        "Перенос имеет среднюю уверенность как гипотеза, а итоговая надёжность не выше исходного основания GPT-5.6 Luna. В используемых данных нет прямого измерения GPT-6 Luna.",
+        "Пул восстанавливается по исходным ставкам и наблюдениям GPT-5.6 Luna; расходы новых задач — по собственным категориям и ставкам GPT-6 Luna из AA. Старые токены не переоцениваются по новым ставкам.",
+        "Тариф, месячная плата и канал сохраняются от исходной пары. Уже имеющийся перенос между тарифами остаётся ограничением источника и не становится независимым замером.",
+        "Общий бюджет выделяется одной выбранной модели; ёмкости старой и новой моделей в одной подписке нельзя складывать. Недельные замеры приводятся к четырём неделям.",
+        "Страница AA подтверждает профиль новой модели, но не равенство лимитов или правил списания подписки. Это равенство принято только как явно обозначенная гипотеза."
       ]
     }
   ],
@@ -1708,6 +1888,84 @@
       "monthly_usd": 200,
       "model_provider": "Anthropic",
       "access_channel": "Claude",
+      "workload": "model_transfer",
+      "source_url": "https://github.com/FeiZhuLulu/real-api-pricing/blob/6489b60a14680a5ce848131d461a90eb054d03ac/data/adopted.csv"
+    },
+    {
+      "id": "chatgpt_plus::gpt-6-sol",
+      "model": "gpt-6-sol",
+      "model_display": "GPT-6 Sol",
+      "plan_id": "chatgpt_plus",
+      "plan": "ChatGPT Plus",
+      "billing": "subscription",
+      "monthly_usd": 20,
+      "model_provider": "OpenAI",
+      "access_channel": "ChatGPT",
+      "workload": "model_transfer",
+      "source_url": "https://github.com/FeiZhuLulu/real-api-pricing/blob/6489b60a14680a5ce848131d461a90eb054d03ac/data/adopted.csv"
+    },
+    {
+      "id": "chatgpt_pro_5x::gpt-6-sol",
+      "model": "gpt-6-sol",
+      "model_display": "GPT-6 Sol",
+      "plan_id": "chatgpt_pro_5x",
+      "plan": "ChatGPT Pro 5x",
+      "billing": "subscription",
+      "monthly_usd": 100,
+      "model_provider": "OpenAI",
+      "access_channel": "ChatGPT",
+      "workload": "model_transfer",
+      "source_url": "https://github.com/FeiZhuLulu/real-api-pricing/blob/6489b60a14680a5ce848131d461a90eb054d03ac/data/adopted.csv"
+    },
+    {
+      "id": "chatgpt_pro_20x::gpt-6-sol",
+      "model": "gpt-6-sol",
+      "model_display": "GPT-6 Sol",
+      "plan_id": "chatgpt_pro_20x",
+      "plan": "ChatGPT Pro 20x",
+      "billing": "subscription",
+      "monthly_usd": 200,
+      "model_provider": "OpenAI",
+      "access_channel": "ChatGPT",
+      "workload": "model_transfer",
+      "source_url": "https://github.com/FeiZhuLulu/real-api-pricing/blob/6489b60a14680a5ce848131d461a90eb054d03ac/data/adopted.csv"
+    },
+    {
+      "id": "chatgpt_plus::gpt-6-luna",
+      "model": "gpt-6-luna",
+      "model_display": "GPT-6 Luna",
+      "plan_id": "chatgpt_plus",
+      "plan": "ChatGPT Plus",
+      "billing": "subscription",
+      "monthly_usd": 20,
+      "model_provider": "OpenAI",
+      "access_channel": "ChatGPT",
+      "workload": "model_transfer",
+      "source_url": "https://github.com/FeiZhuLulu/real-api-pricing/blob/6489b60a14680a5ce848131d461a90eb054d03ac/data/adopted.csv"
+    },
+    {
+      "id": "chatgpt_pro_5x::gpt-6-luna",
+      "model": "gpt-6-luna",
+      "model_display": "GPT-6 Luna",
+      "plan_id": "chatgpt_pro_5x",
+      "plan": "ChatGPT Pro 5x",
+      "billing": "subscription",
+      "monthly_usd": 100,
+      "model_provider": "OpenAI",
+      "access_channel": "ChatGPT",
+      "workload": "model_transfer",
+      "source_url": "https://github.com/FeiZhuLulu/real-api-pricing/blob/6489b60a14680a5ce848131d461a90eb054d03ac/data/adopted.csv"
+    },
+    {
+      "id": "chatgpt_pro_20x::gpt-6-luna",
+      "model": "gpt-6-luna",
+      "model_display": "GPT-6 Luna",
+      "plan_id": "chatgpt_pro_20x",
+      "plan": "ChatGPT Pro 20x",
+      "billing": "subscription",
+      "monthly_usd": 200,
+      "model_provider": "OpenAI",
+      "access_channel": "ChatGPT",
       "workload": "model_transfer",
       "source_url": "https://github.com/FeiZhuLulu/real-api-pricing/blob/6489b60a14680a5ce848131d461a90eb054d03ac/data/adopted.csv"
     }
