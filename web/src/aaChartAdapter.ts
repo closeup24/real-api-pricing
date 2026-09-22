@@ -3,6 +3,21 @@ import type { Point, Row, SiteData } from "./types";
 
 const finite = (value: unknown): value is number => typeof value === "number" && Number.isFinite(value);
 
+const methodNames: Record<string, string> = { aa_original_api: "API AA", aa_tokens_quota_rates: "Квота × ставки", empirical_api_calibration: "API-калибровка", empirical_token_proxy: "Токенная оценка" };
+export const aaMethodLabel = (value?: string) => value ? methodNames[value] || value : "Метод не указан";
+export type EmpiricalMethod = "empirical_api_calibration" | "empirical_token_proxy";
+
+/** Проверяем всю видимую выборку: разные модели не делают допущения совместимыми. */
+export function hasMixedEmpiricalMethods(rows: readonly Pick<QuotaRow, "method">[]): boolean {
+  return rows.some(row => row.method === "empirical_api_calibration")
+    && rows.some(row => row.method === "empirical_token_proxy");
+}
+
+/** Быстрое сравнение сохраняет API и расчёты по квотам вместе с выбранной эмпирикой. */
+export function methodsWithEmpiricalChoice(available: readonly string[], chosen: EmpiricalMethod): string[] {
+  return available.filter(method => method === "aa_original_api" || method === "aa_tokens_quota_rates" || method === chosen);
+}
+
 /** Заимствуем только оформление и происхождение модели, а не цену смеси RAP. */
 export function aaReferencePoint(row: QuotaRow, data: SiteData): Point | undefined {
   const exact = row.pricing_id && data.points.find(point => point.id === row.pricing_id);
@@ -58,7 +73,7 @@ export function adaptAAChart(rows: readonly QuotaRow[], scope: Scope, data: Site
       key: id, point, score: row.intelligence_index,
       mapping: {
         point_id: id, configuration_id: `${id}::${scope}`, board: "aa_combined",
-        variant: row.effort_label || row.effort, score: row.intelligence_index,
+        variant: [row.effort_label || row.effort, `Метод: ${aaMethodLabel(row.method)}`].filter(Boolean).join(" · "), score: row.intelligence_index,
         score_is_estimated: row.estimated ?? false,
         agent_harness: "Artificial Analysis", reasoning_effort: row.effort_label || row.effort,
         service_mode: null, score_low: null, score_high: null,

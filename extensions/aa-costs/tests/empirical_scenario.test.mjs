@@ -217,8 +217,8 @@ test('Реальный снимок: 36 native + 28 практических т�
   assert.equal(result.metadata.included_plans, 64);
   assert.equal(result.plans.length, 65);
   assert.equal(result.metadata.empirical_plans, 28);
-  assert.equal(result.metadata.empirical_api_calibration_plans, 10);
-  assert.equal(result.metadata.empirical_token_proxy_plans, 18);
+  assert.equal(result.metadata.empirical_api_calibration_plans, 11);
+  assert.equal(result.metadata.empirical_token_proxy_plans, 17);
   assert.deepEqual(result.excluded.map(plan => plan.id), ['supergrok_lite::grok-4.6']);
   assert.equal(result.rows.filter(row => row.pricing_id === 'supergrok_lite::grok-4.6').length, 0);
   assert.equal(result.plans.filter(plan => plan.included && !plan.method.startsWith('empirical_')).length, 36);

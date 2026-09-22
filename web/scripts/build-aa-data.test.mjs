@@ -41,6 +41,35 @@ for (const [name, mixture] of [['без смеси RAP', undefined], ['с нев
   });
 }
 
+test('Astra: Plus и оба Pro сравниваются через API-калибровку, а неполный счётчик Plus не задаёт ёмкость', async () => {
+  const empirical = await read('pricing/empirical-evidence.json');
+  const data = createAaData(aa, pricing, rates, audit, weighting, empirical);
+  const observed = [
+    ['chatgpt_plus', 20, (514_000 * 10 + 3_948_000 + 16_000 * 50) / 1e6, .14],
+    ['chatgpt_pro_5x', 100, (5_178_076 * 10 + 192_381_312 + 868_914 * 50) / 1e6, .86],
+    ['chatgpt_pro_20x', 200, (16_835_563 * 10 + 584_864_000 + 3_374_930 * 50) / 1e6, .75],
+  ];
+  for (const [plan, fee, sampleCost, fraction] of observed) {
+    const rows = data.quota_scenario.rows.filter(row => row.pricing_id === `${plan}::gpt-6-astra`);
+    assert.equal(rows.length, 5);
+    for (const row of rows) {
+      assert.equal(row.method, 'empirical_api_calibration');
+      assert.equal(row.confidence, 'assumed');
+      const expectedPool = sampleCost / fraction * 4;
+      assert.ok(Math.abs(row.monthly_quota - expectedPool) < 1e-9);
+      for (const scope of ['task', 'suite']) {
+        const api = data.quota_scenario.rows.find(item => item.source_id === row.source_id && item.kind === 'api');
+        assert.ok(Math.abs(row[scope].cost_usd - fee * api[scope].cost_usd / expectedPool) < 1e-9);
+      }
+    }
+  }
+  const plus = data.quota_scenario.rows.find(row => row.pricing_id === 'chatgpt_plus::gpt-6-astra' && row.effort === 'max');
+  assert.ok(Math.abs(plus.task.cost_usd - .23060782963575968) < 1e-12);
+  assert.notEqual(plus.monthly_quota, 159);
+  assert.match(plus.notes.join(' '), /публичной ссылки на исходную панель нет/);
+  assert.match(plus.notes.join(' '), /не доверительный интервал/);
+});
+
 test('Каждый разбор сохраняет точный source_id, effort и пять исходных категорий', () => {
   assert.equal(reference.api_estimate.rows.length, aa.rows.length);
   for (const variant of aa.rows) {

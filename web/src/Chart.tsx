@@ -80,6 +80,7 @@ export default function Chart({
   onSearch,
   handle,
   metricLabels,
+  suppressFrontier = false,
 }: {
   rows: Row[];
   state: State;
@@ -89,6 +90,8 @@ export default function Chart({
   onSearch: (find: string, lock: Lock | null) => void;
   handle: React.RefObject<ChartHandle | null>;
   metricLabels?: ChartMetricLabels;
+  /** Выключает линию, отметки и карточки общей границы для несовместимых методов оценки. */
+  suppressFrontier?: boolean;
 }) {
   const host = useRef<HTMLDivElement>(null);
   const selection = useRef(onSelect);
@@ -111,7 +114,7 @@ export default function Chart({
   } | null>(null);
   const chartGroups = state.view === "pareto" ? groups(rows) : [];
   const frontGroups =
-    state.view === "pareto" ? pareto(chartGroups) : [];
+    state.view === "pareto" && !suppressFrontier ? pareto(chartGroups) : [];
   // Computed every render (no memo): chartGroups is always a fresh array, so
   // memoizing would only risk serving a stale match set to the overlay.
   const candidates: SearchCandidates =
@@ -221,7 +224,7 @@ export default function Chart({
         let frontKeys = new Set<string>();
         if (state.view === "pareto") {
           const gs = groups(rows);
-          front = pareto(gs);
+          front = suppressFrontier ? [] : pareto(gs);
           plotted = gs;
           frontKeys = new Set(front.map((g) => g.key));
           textGroups = textLabelGroups(gs, front, state.labels);
@@ -818,6 +821,7 @@ export default function Chart({
     theme,
     axisTitle,
     priceUnit,
+    suppressFrontier,
   ]);
   const hoverGroup = hover
     ? chartGroups.find((g) => g.key === hover.key)
@@ -1014,7 +1018,9 @@ export default function Chart({
           aria-label={zh ? "模型卡片" : "Model cards"}
         >
           <p>
-            {zh
+            {suppressFrontier
+              ? "Показаны выбранные подписи и результаты поиска. Общая граница отключена: в выборке разные методы оценки стоимости."
+              : zh
               ? "前沿点以厂商 Logo 标在坐标上；旁注为模型名。下方卡片可点开对应套餐与来源。"
               : "Frontier points are manufacturer logos on their coordinates; side notes are model names. Cards below open plans and sources."}
           </p>

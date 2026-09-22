@@ -31,8 +31,8 @@
     "generated_by": "scripts/build_empirical_evidence.mjs",
     "rows": 28,
     "method_counts": {
-      "empirical_token_proxy": 18,
-      "empirical_api_calibration": 10
+      "empirical_token_proxy": 17,
+      "empirical_api_calibration": 11
     },
     "method_ru": "Полные наблюдения стоимости и процента квоты дают условную API-калибровку; остальные практические измерения и явно отмеченные переносы дают token proxy. Фиксированная смесь RAP не используется.",
     "period_note_ru": "Недельные наблюдения приводятся к четырём неделям; это не календарный месяц. Пулы общие для моделей одного тарифа: ёмкости нельзя складывать.",
@@ -262,16 +262,20 @@
       "model_id": "gpt-6-astra",
       "monthly_usd": 20,
       "monthly_tokens": 159000000,
-      "method": "empirical_token_proxy",
+      "method": "empirical_api_calibration",
       "evidence_method": "direct_measurement",
-      "basis_label": "Наблюдённая ёмкость подписки",
-      "reason_ru": "В счётчике 10 336 745 токенов учтены input и cache read, но отсутствует output; это не полный raw-token total.",
-      "confidence": "high",
+      "basis_label": "API-калибровка практического замера",
+      "reason_ru": "Plus, round13 / g4: в RAP записаны 514 000 токенов входа, 3 948 000 чтения кэша и 16 000 выхода за 14% недельной квоты. Все три тарифа Astra теперь используют API-калибровку.",
+      "confidence": "medium",
       "token_limit_kind": "observed_workload",
       "notes_ru": [
-        "Используется наблюдённая raw-token ёмкость. Цена задачи AA = месячная плата × токены AA / наблюдённые токены в месяц; равное списание всех категорий и перенос на другую смесь не подтверждены.",
-        "Перенос принятой raw-token ёмкости на смесь AA не подтверждён; это условие сценария, а не гарантия провайдера.",
-        "RAP оценивает влияние пропуска по другой модели Luna; такая оценка не восстанавливает выходные токены Astra."
+        "API-эквивалент наблюдения делится на долю квоты и приводится к месяцу. Перенос на AA предполагает пропорциональность списания квоты API-стоимости; отдельные внутренние веса подписки этим не доказаны.",
+        "Источник — сохранённый в RAP пересказ пользовательского замера; публичной ссылки на исходную панель нет. Дата 2026-09-20 относится к сбору, а не обязательно к самому замеру.",
+        "Отдельный cache write, длина контекста, Fast и состав reasoning не раскрыты. Использование стандартных ставок $10/$1/$50 и трактовка 16 000 как совокупного выхода остаются допущениями.",
+        "Выбран g4 с 14% расхода и medium, а не g1 с 2% и low: округление малой доли сильнее влияет на результат. Это один замер, не установленный лимит подписки.",
+        "Чувствительность: другой замер g1 даёт (72 402 × 10 + 1 200 256 × 1 + (7 468 + 2 964) × 50) / 1 000 000 / 0.02 × 4 = $489.1752 API-эквивалента за четыре недели вместо $282.514286 у g4. Если reasoning уже входит в output, получится $459.5352. Расход задачи при таком замере составил бы примерно 58–61% основной оценки. Это альтернативные допущения, не доверительный интервал.",
+        "Прежние 159 млн токенов из round7 оставлены в исходном RAP для справки. В них отсутствовал output; перенос этой ёмкости без поправки на смесь давал другую модель расчёта и не применяется здесь.",
+        "Более высокая месячная плата не гарантирует меньшую цену задачи: при пропорциональном росте платы и ёмкости цена задачи одинакова. Для сравнения тарифов выбирайте одинаковые модель и effort."
       ],
       "source_urls": [
         "https://github.com/FeiZhuLulu/real-api-pricing/blob/6489b60a14680a5ce848131d461a90eb054d03ac/data/adopted.csv",
@@ -280,7 +284,30 @@
         "https://github.com/FeiZhuLulu/real-api-pricing/blob/b7d9efa1f6ac50a5dfe2f6bfddcab9edf0b36c71/data/research/chatgpt-astra-round12-2026-09-16.json",
         "https://github.com/FeiZhuLulu/real-api-pricing/blob/b7d9efa1f6ac50a5dfe2f6bfddcab9edf0b36c71/data/research/chatgpt-astra-sameframe-round13-2026-09-20.json",
         "https://github.com/FeiZhuLulu/real-api-pricing/blob/b7d9efa1f6ac50a5dfe2f6bfddcab9edf0b36c71/data/research/chatgpt-astra-round14-2026-09-21.json"
-      ]
+      ],
+      "calibration": {
+        "observed_api_usd": 9.888,
+        "quota_fraction": 0.14,
+        "periods_per_month": 4,
+        "plan_multiplier": 1,
+        "sample_components": [
+          {
+            "label": "Обычный вход",
+            "tokens": 514000,
+            "rate_usd_per_million": 10
+          },
+          {
+            "label": "Чтение кэша",
+            "tokens": 3948000,
+            "rate_usd_per_million": 1
+          },
+          {
+            "label": "Выход по записи источника",
+            "tokens": 16000,
+            "rate_usd_per_million": 50
+          }
+        ]
+      }
     },
     {
       "id": "chatgpt_pro_20x::gpt-6-astra",

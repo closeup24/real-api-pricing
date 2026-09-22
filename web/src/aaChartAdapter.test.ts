@@ -1,6 +1,6 @@
 import assert from "node:assert/strict";
 import test from "node:test";
-import { aaReferencePoint, adaptAAChart } from "./aaChartAdapter";
+import { aaReferencePoint, adaptAAChart, hasMixedEmpiricalMethods, methodsWithEmpiricalChoice } from "./aaChartAdapter";
 import type { QuotaRow } from "./aaTypes";
 import type { Point, SiteData } from "./types";
 
@@ -85,4 +85,35 @@ test("без точного pricing_id оформление канала бер�
   assert.equal(result.rows[0].point.channel, "OpenCode");
   assert.equal(result.rows[0].point.vendor, "OpenAI");
   assert.equal(aaReferencePoint(row, data)?.channel, "OpenCode");
+});
+
+test("несовместимые эмпирические допущения обнаруживаются даже у разных моделей", () => {
+  const calibration = quota({ method: "empirical_api_calibration" });
+  const proxy = quota({ model_id: "gpt-6-astra", method: "empirical_token_proxy" });
+  const api = quota({ kind: "api", method: "aa_original_api" });
+  const quotaRates = quota({ method: "aa_tokens_quota_rates" });
+  assert.equal(hasMixedEmpiricalMethods([calibration, proxy, api, quotaRates]), true);
+  assert.equal(hasMixedEmpiricalMethods([calibration, api, quotaRates]), false);
+  assert.equal(hasMixedEmpiricalMethods([proxy, api, quotaRates]), false);
+  assert.equal(hasMixedEmpiricalMethods([]), false);
+});
+
+test("быстрое переключение метода сохраняет API и известные квоты", () => {
+  const available = ["aa_original_api", "aa_tokens_quota_rates", "empirical_api_calibration", "empirical_token_proxy"];
+  const original = [...available];
+  assert.deepEqual(methodsWithEmpiricalChoice(available, "empirical_api_calibration"), ["aa_original_api", "aa_tokens_quota_rates", "empirical_api_calibration"]);
+  assert.deepEqual(methodsWithEmpiricalChoice(available, "empirical_token_proxy"), ["aa_original_api", "aa_tokens_quota_rates", "empirical_token_proxy"]);
+  assert.deepEqual(available, original);
+  assert.deepEqual(methodsWithEmpiricalChoice(["empirical_token_proxy"], "empirical_api_calibration"), []);
+});
+
+test("подсказка AA явно называет метод и сохраняет effort", () => {
+  const calibration = quota({ id: "calibration", method: "empirical_api_calibration" });
+  const proxy = quota({ id: "proxy", method: "empirical_token_proxy" });
+  const result = adaptAAChart([calibration, proxy], "task", site());
+  assert.equal(result.rows[0].mapping?.variant, "High · Метод: API-калибровка");
+  assert.equal(result.rows[1].mapping?.variant, "High · Метод: Токенная оценка");
+  assert.equal(result.rows[0].mapping?.reasoning_effort, "High");
+  assert.equal(result.rows[0].point.real_usd_per_mtok, calibration.task?.cost_usd);
+  assert.equal(result.rows[1].point.real_usd_per_mtok, proxy.task?.cost_usd);
 });
