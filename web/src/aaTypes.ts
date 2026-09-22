@@ -13,6 +13,18 @@ export interface RowQuality {
 export interface EmpiricalBasis {
   basis_label: string;
   quota_rate_multiplier?: number;
+  transfer?: {
+    source_pricing_id: string;
+    source_model_id: string;
+    source_model_name: string;
+    source_plan: string;
+    monthly_api_equivalent_usd: number;
+    source_quality: RowQuality;
+    assumption_ru: string;
+    confidence: "medium";
+    source_empirical: EmpiricalBasis;
+    source_method: string;
+  };
   calibration?: {
     input_kind?: "reported_monthly_pool";
     reported_monthly_pool_usd?: number;
@@ -84,6 +96,7 @@ export interface QuotaRow {
   intelligence_index?: number | null;
   estimated?: boolean;
   source_id?: string;
+  aa_retrieved_at?: string;
 }
 
 export interface AATokenReconstruction {

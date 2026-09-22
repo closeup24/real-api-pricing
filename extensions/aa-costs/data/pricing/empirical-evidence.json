@@ -33,15 +33,16 @@
       "derived/points.json": "a5a3a3c8f3eb5cb660d77d32d710f09f3ab842fa5916b2c513338e82ec8f8e98"
     },
     "generated_by": "scripts/build_empirical_evidence.mjs",
-    "rows": 28,
+    "rows": 31,
     "method_counts": {
       "empirical_api_calibration": 14,
-      "empirical_api_scenario": 14
+      "empirical_api_scenario": 14,
+      "empirical_model_transfer": 3
     },
     "method_ru": "Объёмы для цены задачи берутся только из AA. Связанные замеры дают условную API-калибровку, неполные замеры и сообщения о пулах — отдельные сценарии низкой надёжности с явными допущениями. Общая токенная ёмкость RAP и фиксированная смесь не используются.",
     "quality_policy_ru": "Надёжность оценивается для переноса квоты на нагрузку AA: средняя — связанный замер с API-гипотезой, низкая — неполный/смешанный образец, внутренние денежные единицы, сообщённый пул или перенос между тарифами. Оценка RAP сохраняется отдельно и автоматически не наследуется.",
     "period_note_ru": "Недельные наблюдения приводятся к четырём неделям; это не календарный месяц. Пулы общие для моделей одного тарифа: ёмкости нельзя складывать.",
-    "source_policy_ru": "Снимок pricing и его аудит сохранены. Research и три дополнительные пары Grok 4.7 прочитаны из закреплённого коммита; их точные байты проверяются SHA-256."
+    "source_policy_ru": "Снимок pricing и его аудит сохранены. Research и три дополнительные пары Grok 4.7 прочитаны из закреплённого коммита; их точные байты проверяются SHA-256. Три пары Opus 5.5 добавлены отдельно как гипотеза переноса денежного пула Opus 5, без выдуманного токенного лимита."
   },
   "rows": [
     {
@@ -1541,6 +1542,94 @@
           "Пул перенесён на SuperGrok Heavy с множителем 10 по номиналам панели; независимого замера нет."
         ]
       }
+    },
+    {
+      "id": "claude_pro::claude-opus-5.5",
+      "model_id": "claude-opus-5.5",
+      "monthly_usd": 20,
+      "method": "empirical_model_transfer",
+      "evidence_method": "model_transfer",
+      "basis_label": "Гипотеза переноса денежной квоты Opus 5 → Opus 5.5",
+      "reason_ru": "Гипотеза: для Opus 5.5 и Opus 5 на одном тарифе Claude доступен одинаковый денежный API-эквивалент квоты. Прямых замеров Opus 5.5 пока нет.",
+      "transfer": {
+        "source_pricing_id": "claude_pro::claude-opus-5",
+        "source_model_id": "claude-opus-5",
+        "confidence": "medium",
+        "assumption_ru": "Гипотеза: для Opus 5.5 и Opus 5 на одном тарифе Claude доступен одинаковый денежный API-эквивалент квоты. Прямых замеров Opus 5.5 пока нет."
+      },
+      "source_urls": [
+        "https://github.com/FeiZhuLulu/real-api-pricing/blob/6489b60a14680a5ce848131d461a90eb054d03ac/data/adopted.csv",
+        "https://github.com/FeiZhuLulu/real-api-pricing/blob/6489b60a14680a5ce848131d461a90eb054d03ac/scripts/build_adopted.py",
+        "https://github.com/FeiZhuLulu/real-api-pricing/blob/b7d9efa1f6ac50a5dfe2f6bfddcab9edf0b36c71/data/research/claude-adoption-round8-2026-09-20.json",
+        "https://platform.claude.com/docs/en/about-claude/pricing",
+        "https://artificialanalysis.ai/models/claude-opus-5-5"
+      ],
+      "notes_ru": [
+        "Перенос имеет среднюю уверенность как гипотеза, а итоговая надёжность не выше исходного замера Opus 5. Жёлтая метка не означает наличие измерения Opus 5.5.",
+        "Пул восстанавливается по старым ставкам и наблюдениям Opus 5; расходы новых задач — по собственным категориям и ставкам Opus 5.5 из AA.",
+        "Общий бюджет считается доступным одной выбранной модели. Квоты двух Opus внутри одной подписки не суммируются; месячный эквивалент использует четыре недели.",
+        "Изменения пятичасовых ограничений при релизе не считаются подтверждённым увеличением недельного денежного пула."
+      ]
+    },
+    {
+      "id": "claude_max_5x::claude-opus-5.5",
+      "model_id": "claude-opus-5.5",
+      "monthly_usd": 100,
+      "method": "empirical_model_transfer",
+      "evidence_method": "model_transfer",
+      "basis_label": "Гипотеза переноса денежной квоты Opus 5 → Opus 5.5",
+      "reason_ru": "Гипотеза: для Opus 5.5 и Opus 5 на одном тарифе Claude доступен одинаковый денежный API-эквивалент квоты. Прямых замеров Opus 5.5 пока нет.",
+      "transfer": {
+        "source_pricing_id": "claude_max_5x::claude-opus-5",
+        "source_model_id": "claude-opus-5",
+        "confidence": "medium",
+        "assumption_ru": "Гипотеза: для Opus 5.5 и Opus 5 на одном тарифе Claude доступен одинаковый денежный API-эквивалент квоты. Прямых замеров Opus 5.5 пока нет."
+      },
+      "source_urls": [
+        "https://github.com/FeiZhuLulu/real-api-pricing/blob/6489b60a14680a5ce848131d461a90eb054d03ac/data/adopted.csv",
+        "https://github.com/FeiZhuLulu/real-api-pricing/blob/6489b60a14680a5ce848131d461a90eb054d03ac/scripts/build_adopted.py",
+        "https://github.com/FeiZhuLulu/real-api-pricing/blob/b7d9efa1f6ac50a5dfe2f6bfddcab9edf0b36c71/data/research/claude-adoption-round6-2026-09-06.json",
+        "https://github.com/FeiZhuLulu/real-api-pricing/blob/b7d9efa1f6ac50a5dfe2f6bfddcab9edf0b36c71/data/research/claude-adoption-round7-2026-09-14.json",
+        "https://github.com/FeiZhuLulu/real-api-pricing/blob/b7d9efa1f6ac50a5dfe2f6bfddcab9edf0b36c71/data/research/claude-adoption-round9-2026-09-21.json",
+        "https://platform.claude.com/docs/en/about-claude/pricing",
+        "https://artificialanalysis.ai/models/claude-opus-5-5"
+      ],
+      "notes_ru": [
+        "Перенос имеет среднюю уверенность как гипотеза, а итоговая надёжность не выше исходного замера Opus 5. Жёлтая метка не означает наличие измерения Opus 5.5.",
+        "Пул восстанавливается по старым ставкам и наблюдениям Opus 5; расходы новых задач — по собственным категориям и ставкам Opus 5.5 из AA.",
+        "Общий бюджет считается доступным одной выбранной модели. Квоты двух Opus внутри одной подписки не суммируются; месячный эквивалент использует четыре недели.",
+        "Изменения пятичасовых ограничений при релизе не считаются подтверждённым увеличением недельного денежного пула."
+      ]
+    },
+    {
+      "id": "claude_max_20x::claude-opus-5.5",
+      "model_id": "claude-opus-5.5",
+      "monthly_usd": 200,
+      "method": "empirical_model_transfer",
+      "evidence_method": "model_transfer",
+      "basis_label": "Гипотеза переноса денежной квоты Opus 5 → Opus 5.5",
+      "reason_ru": "Гипотеза: для Opus 5.5 и Opus 5 на одном тарифе Claude доступен одинаковый денежный API-эквивалент квоты. Прямых замеров Opus 5.5 пока нет.",
+      "transfer": {
+        "source_pricing_id": "claude_max_20x::claude-opus-5",
+        "source_model_id": "claude-opus-5",
+        "confidence": "medium",
+        "assumption_ru": "Гипотеза: для Opus 5.5 и Opus 5 на одном тарифе Claude доступен одинаковый денежный API-эквивалент квоты. Прямых замеров Opus 5.5 пока нет."
+      },
+      "source_urls": [
+        "https://github.com/FeiZhuLulu/real-api-pricing/blob/6489b60a14680a5ce848131d461a90eb054d03ac/data/adopted.csv",
+        "https://github.com/FeiZhuLulu/real-api-pricing/blob/6489b60a14680a5ce848131d461a90eb054d03ac/scripts/build_adopted.py",
+        "https://github.com/FeiZhuLulu/real-api-pricing/blob/b7d9efa1f6ac50a5dfe2f6bfddcab9edf0b36c71/data/research/claude-adoption-round6-2026-09-06.json",
+        "https://github.com/FeiZhuLulu/real-api-pricing/blob/b7d9efa1f6ac50a5dfe2f6bfddcab9edf0b36c71/data/research/claude-adoption-round7-2026-09-14.json",
+        "https://github.com/FeiZhuLulu/real-api-pricing/blob/b7d9efa1f6ac50a5dfe2f6bfddcab9edf0b36c71/data/research/claude-adoption-round9-2026-09-21.json",
+        "https://platform.claude.com/docs/en/about-claude/pricing",
+        "https://artificialanalysis.ai/models/claude-opus-5-5"
+      ],
+      "notes_ru": [
+        "Перенос имеет среднюю уверенность как гипотеза, а итоговая надёжность не выше исходного замера Opus 5. Жёлтая метка не означает наличие измерения Opus 5.5.",
+        "Пул восстанавливается по старым ставкам и наблюдениям Opus 5; расходы новых задач — по собственным категориям и ставкам Opus 5.5 из AA.",
+        "Общий бюджет считается доступным одной выбранной модели. Квоты двух Opus внутри одной подписки не суммируются; месячный эквивалент использует четыре недели.",
+        "Изменения пятичасовых ограничений при релизе не считаются подтверждённым увеличением недельного денежного пула."
+      ]
     }
   ],
   "additional_plans": [
@@ -1582,6 +1671,45 @@
       "confidence": "medium",
       "workload": "measured",
       "source_url": "https://github.com/FeiZhuLulu/real-api-pricing/blob/b7d9efa1f6ac50a5dfe2f6bfddcab9edf0b36c71/data/research/supergrok-grok47-round1-2026-09-22.json"
+    },
+    {
+      "id": "claude_pro::claude-opus-5.5",
+      "model": "claude-opus-5.5",
+      "model_display": "Claude Opus 5.5",
+      "plan_id": "claude_pro",
+      "plan": "Claude Pro",
+      "billing": "subscription",
+      "monthly_usd": 20,
+      "model_provider": "Anthropic",
+      "access_channel": "Claude",
+      "workload": "model_transfer",
+      "source_url": "https://github.com/FeiZhuLulu/real-api-pricing/blob/6489b60a14680a5ce848131d461a90eb054d03ac/data/adopted.csv"
+    },
+    {
+      "id": "claude_max_5x::claude-opus-5.5",
+      "model": "claude-opus-5.5",
+      "model_display": "Claude Opus 5.5",
+      "plan_id": "claude_max_5x",
+      "plan": "Claude Max 5x",
+      "billing": "subscription",
+      "monthly_usd": 100,
+      "model_provider": "Anthropic",
+      "access_channel": "Claude",
+      "workload": "model_transfer",
+      "source_url": "https://github.com/FeiZhuLulu/real-api-pricing/blob/6489b60a14680a5ce848131d461a90eb054d03ac/data/adopted.csv"
+    },
+    {
+      "id": "claude_max_20x::claude-opus-5.5",
+      "model": "claude-opus-5.5",
+      "model_display": "Claude Opus 5.5",
+      "plan_id": "claude_max_20x",
+      "plan": "Claude Max 20x",
+      "billing": "subscription",
+      "monthly_usd": 200,
+      "model_provider": "Anthropic",
+      "access_channel": "Claude",
+      "workload": "model_transfer",
+      "source_url": "https://github.com/FeiZhuLulu/real-api-pricing/blob/6489b60a14680a5ce848131d461a90eb054d03ac/data/adopted.csv"
     }
   ],
   "excluded": [

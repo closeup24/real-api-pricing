@@ -65,6 +65,73 @@ function rebind(data) {
   data.rates.metadata.pricing_rows_sha256 = hash;
 }
 
+function transferFixture() {
+  const data = fixture();
+  const source = data.pricing.rows.find(row => row.id === 'observed::sample');
+  data.evidence.additional_plans.push({...source, id: 'observed::other', model: 'other', monthly_tokens: undefined});
+  data.evidence.rows.unshift({
+    id: 'observed::other', model_id: 'other', monthly_usd: source.monthly_usd,
+    method: 'empirical_model_transfer', evidence_method: 'model_transfer',
+    source_urls: ['https://example.com/new-model'],
+    transfer: {source_pricing_id: source.id, source_model_id: source.model, confidence: 'medium', assumption_ru: 'Одинаковый денежный пул двух моделей — гипотеза.'},
+  });
+  return data;
+}
+
+test('Перенос сохраняет денежную квоту, но использует собственные ставки и объёмы новой модели', () => {
+  const data = transferFixture();
+  const result = calculate(data);
+  const source = result.rows.find(row => row.pricing_id === 'observed::sample');
+  const target = result.rows.find(row => row.pricing_id === 'observed::other');
+  const api = result.rows.find(row => row.kind === 'api' && row.model_id === 'other');
+  assert.equal(target.method, 'empirical_model_transfer');
+  assert.equal(target.monthly_quota, source.monthly_quota);
+  assert.equal(target.component_rates.answer / source.component_rates.answer, 10);
+  assert.equal(target.quality.level, 'medium');
+  assert.equal(target.empirical.transfer.source_pricing_id, source.pricing_id);
+  assert.deepEqual(target.empirical.transfer.source_empirical, source.empirical);
+  assert.equal(target.empirical.calibration, undefined);
+  for (const scope of ['task', 'suite']) {
+    assert.deepEqual(target[scope].component_tokens, api[scope].component_tokens);
+    close(target[scope].cost_usd, target.monthly_usd * api[scope].cost_usd / source.monthly_quota);
+  }
+  data.evidence.rows.find(row => row.id === 'observed::sample').calibration.observed_api_usd *= 2;
+  const updated = calculate(data).rows.find(row => row.pricing_id === 'observed::other');
+  close(updated.monthly_quota, target.monthly_quota * 2);
+  close(updated.task.cost_usd, target.task.cost_usd / 2);
+});
+
+test('Гипотеза переноса не повышает низкую надёжность исходного лимита', () => {
+  const data = transferFixture();
+  data.evidence.rows.find(row => row.id === 'observed::sample').quality.level = 'low';
+  const target = calculate(data).rows.find(row => row.pricing_id === 'observed::other');
+  assert.equal(target.quality.level, 'low');
+  assert.equal(target.empirical.transfer.confidence, 'medium');
+  assert.equal(target.empirical.transfer.source_quality.level, 'low');
+});
+
+test('Несовместимый, отсутствующий или циклический источник переноса оставляет цену неизвестной', () => {
+  const invalidations = [
+    data => { data.evidence.rows[0].transfer.source_pricing_id = 'missing'; },
+    data => { data.evidence.rows[0].transfer.source_pricing_id = 'observed::other'; },
+    data => { data.evidence.rows[0].transfer.source_model_id = 'other'; },
+    data => { data.evidence.additional_plans[0].plan_id = 'another-tier'; },
+    data => { data.evidence.additional_plans[0].monthly_usd = 100; },
+    data => { data.evidence.rows[0].transfer.assumption_ru = ''; },
+    data => { data.evidence.rows[0].transfer.confidence = 'high'; },
+    data => { data.evidence.rows[1].calibration = null; },
+  ];
+  for (const invalidate of invalidations) {
+    const data = transferFixture();
+    invalidate(data);
+    const result = calculate(data);
+    const target = result.rows.find(row => row.pricing_id === 'observed::other');
+    assert.equal(target.task.cost_usd, null);
+    assert.equal(target.method, 'unavailable_quota_weights');
+    assert.equal(result.plans.find(row => row.id === 'native::sample').included, true);
+  }
+});
+
 test('API-калибровка: полный образец, доля квоты, четыре недели и множитель тарифа дают стоимость задачи', () => {
   const data = fixture();
   // Образец: 2M входа, 10M чтения, 4M записи, 0.5M ответа и 0.7M reasoning.
@@ -355,20 +422,21 @@ test('Sol и Devin используют категории практическ�
   close(cursor.monthly_quota, 214.74 / .268);
 });
 
-test('Реальный снимок: 27 native, 14 калибровок и 14 условных сценариев; десять тарифов остаются без цены', async () => {
+test('Реальный снимок: 27 native, 14 калибровок, 14 сценариев и 3 переноса; десять тарифов без цены', async () => {
   const data = await snapshot();
   const result = calculate(data);
   assert.equal(result.metadata.status, 'ok');
   assert.equal(result.metadata.empirical_status, 'ok');
   assert.equal(result.metadata.native_rates_status, 'ok');
-  assert.equal(result.metadata.included_plans, 55);
-  assert.equal(result.plans.length, 65);
-  assert.equal(result.metadata.empirical_plans, 28);
+  assert.equal(result.metadata.included_plans, 58);
+  assert.equal(result.plans.length, 68);
+  assert.equal(result.metadata.empirical_plans, 31);
+  assert.equal(result.metadata.empirical_model_transfer_plans, 3);
   assert.equal(result.metadata.empirical_api_calibration_plans, 14);
   assert.equal(result.plans.filter(plan => plan.included && plan.method === 'empirical_api_scenario').length, 14);
   assert.equal(result.metadata.empirical_token_proxy_plans, 0);
   assert.equal(result.excluded.length, 10);
-  assert.equal(result.rows.length, 231);
+  assert.equal(result.rows.length, 251);
   assert.ok(result.rows.filter(row => row.pricing_id === 'supergrok_lite::grok-4.6').length > 0);
   assert.equal(result.plans.filter(plan => plan.included && !plan.method.startsWith('empirical_')).length, 27);
   const oldGlm = result.rows.filter(row => row.plan_id?.startsWith('glm_coding_') && row.plan_id.includes('_old_'));
@@ -407,8 +475,8 @@ test('Реальный снимок: Grok 4.7 сохраняет ID и свою 
   const data = await snapshot();
   const result = calculate(data);
   const expected = ['supergrok::grok-4.7', 'supergrok_plus::grok-4.7', 'supergrok_heavy::grok-4.7'];
-  assert.deepEqual(data.evidence.additional_plans.map(plan => plan.id).sort(), [...expected].sort());
-  assert.equal(result.metadata.additional_plans, 3);
+  assert.deepEqual(data.evidence.additional_plans.filter(plan => plan.model === 'grok-4.7').map(plan => plan.id).sort(), [...expected].sort());
+  assert.equal(result.metadata.additional_plans, 6);
   const capacities = [672_000_000, 2_690_000_000, 6_720_000_000];
   for (const [index, id] of expected.entries()) {
     const added = data.evidence.additional_plans.find(plan => plan.id === id);
@@ -445,6 +513,30 @@ test('Fable и Opus Max используют частичные наблюден
       }
     }
     for (const row of max20) close(row.task.cost_usd, max5.find(item => item.source_id === row.source_id).task.cost_usd);
+  }
+});
+
+test('Opus 5.5: пять effort и три тарифа получают прежние денежные пулы с собственной нагрузкой AA', async () => {
+  const data = await snapshot();
+  const result = calculate(data);
+  const variants = data.aa.rows.filter(row => row.model === 'claude-opus-5.5');
+  assert.equal(variants.length, 5);
+  for (const planId of ['claude_pro', 'claude_max_5x', 'claude_max_20x']) {
+    const source = result.rows.find(row => row.pricing_id === `${planId}::claude-opus-5`);
+    const rows = result.rows.filter(row => row.pricing_id === `${planId}::claude-opus-5.5`);
+    assert.equal(rows.length, 5);
+    for (const row of rows) {
+      assert.equal(row.method, 'empirical_model_transfer');
+      assert.equal(row.monthly_quota, source.monthly_quota);
+      assert.equal(row.quality.level, source.quality.level);
+      assert.equal(row.empirical.transfer.confidence, 'medium');
+      assert.deepEqual(row.component_rates, {non_cache_input: 4, cache_read: .2, cache_write: 5, answer: 20, reasoning: 20});
+      const api = result.rows.find(item => item.kind === 'api' && item.source_id === row.source_id);
+      for (const scope of ['task', 'suite']) {
+        assert.deepEqual(row[scope].component_tokens, api[scope].component_tokens);
+        close(row[scope].cost_usd, row.monthly_usd * api[scope].cost_usd / source.monthly_quota);
+      }
+    }
   }
 });
 

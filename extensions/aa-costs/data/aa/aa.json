@@ -9,9 +9,9 @@
     "source_file": "data/aa/astra.html",
     "source_sha256": "3a5287c54c8ac161f1eba83f9d94c31cf54f11285a5e782178c1a4fd0fc998a1",
     "source_model_count": 656,
-    "selected_model_count": 13,
-    "selected_variant_count": 42,
-    "variants_with_both_costs": 39,
+    "selected_model_count": 14,
+    "selected_variant_count": 47,
+    "variants_with_both_costs": 44,
     "extraction": "Публичные объекты Next.js, встроенные в HTML страницы модели. Исходные числа не округлены.",
     "notes": [
       "Стоимость задач использует API-тарифы AA; сумма полного набора и взвешенная цена задачи — разные показатели.",
@@ -23,6 +23,61 @@
       "canonical_intelligence_index_token_count — исходное поле canonicalIntelligenceIndexTokenCount, а не переименованный provider-reported счётчик. Отдельный reportedIntelligenceIndexTokenCount в выбранных объектах не опубликован.",
       "cacheWritePrice сохранена без подстановок. При null использование inputPrice для обратного расчёта — отдельное явно обозначаемое допущение; null не означает бесплатную запись.",
       "Отдельная ставка reasoning не опубликована. Обратный расчёт по outputPrice следует проверять относительно опубликованных токенов на задачу."
+    ],
+    "additions": [
+      {
+        "release_slug": "claude-opus-5-5",
+        "model": "claude-opus-5.5",
+        "source_url": "https://artificialanalysis.ai/models/claude-opus-5-5",
+        "retrieved_at": "2026-09-22T18:23:04.331Z",
+        "intelligence_index_version": "4.3.2",
+        "source_file": "data/aa/claude-opus-5-5.html",
+        "source_sha256": "0560043c006ee307f94dc91b8931938889002fca6a61f37f5b80b78cf88cc1bf",
+        "source_model_count": 661,
+        "selected_variant_count": 5,
+        "raw_file": "data/aa/claude-opus-5-5-raw.json",
+        "raw_sha256": "65cc9e0119cc810157ce06fc3b552396517eb7245691eaff3fc8c802d40c072b",
+        "task_weighting_validation": {
+          "weighting_file": "data/aa/task-weighting.json",
+          "weighting_sha256": "14db31b3037db57a2392fffc26beff34c52b4441f0f44f65b008f69071457a53",
+          "variants_checked": 5,
+          "evaluation_weight_ratios_checked": 50,
+          "max_absolute_weight_error": 2.7755575615628914e-17,
+          "weight_mismatches": [],
+          "models": [
+            {
+              "source_slug": "claude-opus-5-5",
+              "cost_per_task_reported_usd": 5.982012019521066,
+              "cost_per_task_reconstructed_usd": 5.982012019521066,
+              "cost_per_task_delta_usd": 0
+            },
+            {
+              "source_slug": "claude-opus-5-5-low",
+              "cost_per_task_reported_usd": 0.551180473909146,
+              "cost_per_task_reconstructed_usd": 0.551180473909146,
+              "cost_per_task_delta_usd": 0
+            },
+            {
+              "source_slug": "claude-opus-5-5-xhigh",
+              "cost_per_task_reported_usd": 3.459110175822289,
+              "cost_per_task_reconstructed_usd": 3.459110175822289,
+              "cost_per_task_delta_usd": 0
+            },
+            {
+              "source_slug": "claude-opus-5-5-medium",
+              "cost_per_task_reported_usd": 1.3360093438976588,
+              "cost_per_task_reconstructed_usd": 1.3360093438976588,
+              "cost_per_task_delta_usd": 0
+            },
+            {
+              "source_slug": "claude-opus-5-5-high",
+              "cost_per_task_reported_usd": 1.822504718771704,
+              "cost_per_task_reconstructed_usd": 1.822504718771704,
+              "cost_per_task_delta_usd": 0
+            }
+          ]
+        }
+      }
     ]
   },
   "rows": [
@@ -6950,6 +7005,886 @@
       "source_retrieved_at": "2026-09-22T10:49:43.269Z",
       "source_version": "4.3.2",
       "quality_flags": []
+    },
+    {
+      "model": "claude-opus-5.5",
+      "model_display": "Claude Opus 5.5",
+      "source_id": "4416ca93-fde6-4b7b-abbc-3a6be109cc3d",
+      "source_slug": "claude-opus-5-5-low",
+      "source_name": "Claude Opus 5.5 (Adaptive Reasoning, Low Effort, Default Fallback)",
+      "source_short_name": "Claude Opus 5.5 (low with fallback)",
+      "release_slug": "claude-opus-5-5",
+      "release_date": "2026-09-17",
+      "effort": "low",
+      "effort_label": "low",
+      "effort_level": 20,
+      "is_reasoning": true,
+      "intelligence_index": 42.3077781466168,
+      "intelligence_index_estimated": false,
+      "cost_per_task_usd": 0.551180473909146,
+      "cost_total_usd": 860.3337405339145,
+      "cost_per_task_components_usd": {
+        "total": 0.551180473909146,
+        "input": 0.34815494839667943,
+        "nonCacheInput": 0.10263354737635083,
+        "cacheRead": 0.1199490288638381,
+        "cacheWrite": 0.12557237215649053,
+        "output": 0.2030255255124665,
+        "reasoning": 0.06752054513434476,
+        "answer": 0.1355049803781217
+      },
+      "cost_total_components_usd": {
+        "total": 860.3337405339145,
+        "input": 469.00330053391446,
+        "nonCacheInput": 140.796888,
+        "cacheRead": 116.86128822775356,
+        "cacheWrite": 211.34512430616093,
+        "output": 391.33044,
+        "reasoning": 112.40284000000001,
+        "answer": 278.9276
+      },
+      "evaluations": [
+        {
+          "slug": "aa-briefcase",
+          "weightedCostPerTask": 0.1729233425188855
+        },
+        {
+          "slug": "gdpval-aa",
+          "weightedCostPerTask": 0.021375396134987894
+        },
+        {
+          "slug": "automationbench-aa",
+          "weightedCostPerTask": 0.024630636423188947
+        },
+        {
+          "slug": "terminalbench-4-0",
+          "weightedCostPerTask": 0.20776504642643612
+        },
+        {
+          "slug": "scicode",
+          "weightedCostPerTask": 0.002643840277777778
+        },
+        {
+          "slug": "humanitys-last-exam",
+          "weightedCostPerTask": 0.0028577929564411494
+        },
+        {
+          "slug": "gdp-pdf",
+          "weightedCostPerTask": 0.076411812
+        },
+        {
+          "slug": "critpt",
+          "weightedCostPerTask": 0.01237826857142857
+        },
+        {
+          "slug": "omniscience",
+          "weightedCostPerTask": 0.0008652326
+        },
+        {
+          "slug": "artificial-analysis-long-context-reasoning",
+          "weightedCostPerTask": 0.029329106
+        }
+      ],
+      "api_price_input_usd_per_million": 4,
+      "api_price_output_usd_per_million": 20,
+      "api_price_cache_hit_usd_per_million": 0.2,
+      "api_price_cache_write_usd_per_million": 5,
+      "api_price_reasoning_usd_per_million": null,
+      "intelligence_index_output_tokens_per_task": {
+        "reasoning": 3376.0272567172387,
+        "answer": 6775.2490189060845,
+        "output": 10151.276275623324
+      },
+      "canonical_intelligence_index_token_count": {
+        "input": 661774688,
+        "output": 19566522,
+        "answer": 13946380,
+        "reasoning": 5620142
+      },
+      "reported_intelligence_index_token_count": null,
+      "intelligence_index_evaluations": [
+        {
+          "slug": "aa-briefcase",
+          "score": 1284.93,
+          "output_tokens_per_task": 26733.527472527472,
+          "cost_per_task_usd": 1.1528222834592368,
+          "time_per_task_seconds": null
+        },
+        {
+          "slug": "gdpval-aa",
+          "score": 1223.51,
+          "output_tokens_per_task": 6758.895454545454,
+          "cost_per_task_usd": 0.21375396134987892,
+          "time_per_task_seconds": null
+        },
+        {
+          "slug": "automationbench-aa",
+          "score": 0.5292537042934996,
+          "output_tokens_per_task": 11889.707762557078,
+          "cost_per_task_usd": 0.49261272846377885,
+          "time_per_task_seconds": null
+        },
+        {
+          "slug": "terminalbench-4-0",
+          "score": 0.313131313131313,
+          "output_tokens_per_task": 37782.469696969696,
+          "cost_per_task_usd": 2.077650464264361,
+          "time_per_task_seconds": null
+        },
+        {
+          "slug": "scicode",
+          "score": 0.585648148148148,
+          "output_tokens_per_task": 699.7569444444445,
+          "cost_per_task_usd": 0.026438402777777776,
+          "time_per_task_seconds": null
+        },
+        {
+          "slug": "humanitys-last-exam",
+          "score": 0.483317886932345,
+          "output_tokens_per_task": 1341.1858202038925,
+          "cost_per_task_usd": 0.028577929564411495,
+          "time_per_task_seconds": null
+        },
+        {
+          "slug": "gdp-pdf",
+          "score": 0.256,
+          "output_tokens_per_task": 2902.11,
+          "cost_per_task_usd": 0.76411812,
+          "time_per_task_seconds": null
+        },
+        {
+          "slug": "critpt",
+          "score": 0.177142857142857,
+          "output_tokens_per_task": 5291.5,
+          "cost_per_task_usd": 0.1237826857142857,
+          "time_per_task_seconds": null
+        },
+        {
+          "slug": "omniscience",
+          "score": 38.86666666666667,
+          "output_tokens_per_task": 253.8365,
+          "cost_per_task_usd": 0.005768217333333333,
+          "time_per_task_seconds": null
+        },
+        {
+          "slug": "artificial-analysis-long-context-reasoning",
+          "score": 0.806666666666667,
+          "output_tokens_per_task": 621.89,
+          "cost_per_task_usd": 0.58658212,
+          "time_per_task_seconds": null
+        }
+      ],
+      "source": "https://artificialanalysis.ai/models/claude-opus-5-5-low",
+      "source_extraction_url": "https://artificialanalysis.ai/models/claude-opus-5-5",
+      "source_retrieved_at": "2026-09-22T18:23:04.331Z",
+      "source_version": "4.3.2",
+      "quality_flags": [
+        "default_fallback_enabled"
+      ]
+    },
+    {
+      "model": "claude-opus-5.5",
+      "model_display": "Claude Opus 5.5",
+      "source_id": "ea9e0da6-169f-43c6-92f5-730a10d6ff8d",
+      "source_slug": "claude-opus-5-5-medium",
+      "source_name": "Claude Opus 5.5 (Adaptive Reasoning, Medium Effort, Default Fallback)",
+      "source_short_name": "Claude Opus 5.5 (medium with fallback)",
+      "release_slug": "claude-opus-5-5",
+      "release_date": "2026-09-17",
+      "effort": "medium",
+      "effort_label": "medium",
+      "effort_level": 30,
+      "is_reasoning": true,
+      "intelligence_index": 51.2434931792768,
+      "intelligence_index_estimated": false,
+      "cost_per_task_usd": 1.3360093438976588,
+      "cost_total_usd": 1626.8112374421187,
+      "cost_per_task_components_usd": {
+        "total": 1.3360093438976588,
+        "input": 0.8211036059888349,
+        "nonCacheInput": 0.10284827858496842,
+        "cacheRead": 0.4095411957490367,
+        "cacheWrite": 0.30871413165482986,
+        "output": 0.5149057379088234,
+        "reasoning": 0.23391423990770263,
+        "answer": 0.2809914980011208
+      },
+      "cost_total_components_usd": {
+        "total": 1626.8112374421187,
+        "input": 863.6873374421186,
+        "nonCacheInput": 141.152792,
+        "cacheRead": 337.2394562315784,
+        "cacheWrite": 385.29508921054025,
+        "output": 763.1239,
+        "reasoning": 328.6687,
+        "answer": 434.4552
+      },
+      "evaluations": [
+        {
+          "slug": "aa-briefcase",
+          "weightedCostPerTask": 0.6597314749506057
+        },
+        {
+          "slug": "gdpval-aa",
+          "weightedCostPerTask": 0.08564266374284286
+        },
+        {
+          "slug": "automationbench-aa",
+          "weightedCostPerTask": 0.03192224642455344
+        },
+        {
+          "slug": "terminalbench-4-0",
+          "weightedCostPerTask": 0.4042978672513101
+        },
+        {
+          "slug": "scicode",
+          "weightedCostPerTask": 0.0035471250000000004
+        },
+        {
+          "slug": "humanitys-last-exam",
+          "weightedCostPerTask": 0.006194126042632067
+        },
+        {
+          "slug": "gdp-pdf",
+          "weightedCostPerTask": 0.07953176399999999
+        },
+        {
+          "slug": "critpt",
+          "weightedCostPerTask": 0.03450835428571429
+        },
+        {
+          "slug": "omniscience",
+          "weightedCostPerTask": 0.0011322462
+        },
+        {
+          "slug": "artificial-analysis-long-context-reasoning",
+          "weightedCostPerTask": 0.029501476000000002
+        }
+      ],
+      "api_price_input_usd_per_million": 4,
+      "api_price_output_usd_per_million": 20,
+      "api_price_cache_hit_usd_per_million": 0.2,
+      "api_price_cache_write_usd_per_million": 5,
+      "api_price_reasoning_usd_per_million": null,
+      "intelligence_index_output_tokens_per_task": {
+        "reasoning": 11695.71199538513,
+        "answer": 14049.574900056037,
+        "output": 25745.286895441168
+      },
+      "canonical_intelligence_index_token_count": {
+        "input": 1798544497,
+        "output": 38156195,
+        "answer": 21722760,
+        "reasoning": 16433435
+      },
+      "reported_intelligence_index_token_count": null,
+      "intelligence_index_evaluations": [
+        {
+          "slug": "aa-briefcase",
+          "score": 1642.05,
+          "output_tokens_per_task": 83405.9010989011,
+          "cost_per_task_usd": 4.398209833004038,
+          "time_per_task_seconds": null
+        },
+        {
+          "slug": "gdpval-aa",
+          "score": 1576.2,
+          "output_tokens_per_task": 23376.090909090908,
+          "cost_per_task_usd": 0.8564266374284286,
+          "time_per_task_seconds": null
+        },
+        {
+          "slug": "automationbench-aa",
+          "score": 0.6121742919892179,
+          "output_tokens_per_task": 15060.433789954337,
+          "cost_per_task_usd": 0.6384449284910688,
+          "time_per_task_seconds": null
+        },
+        {
+          "slug": "terminalbench-4-0",
+          "score": 0.525252525252525,
+          "output_tokens_per_task": 75654.30303030302,
+          "cost_per_task_usd": 4.042978672513101,
+          "time_per_task_seconds": null
+        },
+        {
+          "slug": "scicode",
+          "score": 0.592592592592593,
+          "output_tokens_per_task": 1102.5833333333333,
+          "cost_per_task_usd": 0.03547125,
+          "time_per_task_seconds": null
+        },
+        {
+          "slug": "humanitys-last-exam",
+          "score": 0.547265987025023,
+          "output_tokens_per_task": 3009.5208526413344,
+          "cost_per_task_usd": 0.06194126042632067,
+          "time_per_task_seconds": null
+        },
+        {
+          "slug": "gdp-pdf",
+          "score": 0.256,
+          "output_tokens_per_task": 4461.59,
+          "cost_per_task_usd": 0.7953176399999999,
+          "time_per_task_seconds": null
+        },
+        {
+          "slug": "critpt",
+          "score": 0.277142857142857,
+          "output_tokens_per_task": 16298.314285714287,
+          "cost_per_task_usd": 0.3450835428571429,
+          "time_per_task_seconds": null
+        },
+        {
+          "slug": "omniscience",
+          "score": 40.31666666666667,
+          "output_tokens_per_task": 342.8453333333333,
+          "cost_per_task_usd": 0.007548308000000001,
+          "time_per_task_seconds": null
+        },
+        {
+          "slug": "artificial-analysis-long-context-reasoning",
+          "score": 0.843333333333333,
+          "output_tokens_per_task": 794.26,
+          "cost_per_task_usd": 0.59002952,
+          "time_per_task_seconds": null
+        }
+      ],
+      "source": "https://artificialanalysis.ai/models/claude-opus-5-5-medium",
+      "source_extraction_url": "https://artificialanalysis.ai/models/claude-opus-5-5",
+      "source_retrieved_at": "2026-09-22T18:23:04.331Z",
+      "source_version": "4.3.2",
+      "quality_flags": [
+        "default_fallback_enabled"
+      ]
+    },
+    {
+      "model": "claude-opus-5.5",
+      "model_display": "Claude Opus 5.5",
+      "source_id": "f314eade-2232-44bf-a3ab-9b326bc67de6",
+      "source_slug": "claude-opus-5-5-high",
+      "source_name": "Claude Opus 5.5 (Adaptive Reasoning, High Effort, Default Fallback)",
+      "source_short_name": "Claude Opus 5.5 (high with fallback)",
+      "release_slug": "claude-opus-5-5",
+      "release_date": "2026-09-17",
+      "effort": "high",
+      "effort_label": "high",
+      "effort_level": 40,
+      "is_reasoning": true,
+      "intelligence_index": 53.5831959822067,
+      "intelligence_index_estimated": false,
+      "cost_per_task_usd": 1.822504718771704,
+      "cost_total_usd": 2172.4277012236644,
+      "cost_per_task_components_usd": {
+        "total": 1.822504718771704,
+        "input": 1.110823541212022,
+        "nonCacheInput": 0.10295064170218898,
+        "cacheRead": 0.6041606983763739,
+        "cacheWrite": 0.40371220113345924,
+        "output": 0.711681177559682,
+        "reasoning": 0.364731742121486,
+        "answer": 0.346949435438196
+      },
+      "cost_total_components_usd": {
+        "total": 2172.4277012236644,
+        "input": 1122.1189212236643,
+        "nonCacheInput": 141.328,
+        "cacheRead": 497.481871824014,
+        "cacheWrite": 483.30904939965035,
+        "output": 1050.3087799999998,
+        "reasoning": 539.46336,
+        "answer": 510.84542
+      },
+      "evaluations": [
+        {
+          "slug": "aa-briefcase",
+          "weightedCostPerTask": 0.9406232854012683
+        },
+        {
+          "slug": "gdpval-aa",
+          "weightedCostPerTask": 0.15426848886979924
+        },
+        {
+          "slug": "automationbench-aa",
+          "weightedCostPerTask": 0.034930580701925125
+        },
+        {
+          "slug": "terminalbench-4-0",
+          "weightedCostPerTask": 0.5118905183990514
+        },
+        {
+          "slug": "scicode",
+          "weightedCostPerTask": 0.004019579166666667
+        },
+        {
+          "slug": "humanitys-last-exam",
+          "weightedCostPerTask": 0.010378723632993513
+        },
+        {
+          "slug": "gdp-pdf",
+          "weightedCostPerTask": 0.082542564
+        },
+        {
+          "slug": "critpt",
+          "weightedCostPerTask": 0.05298188
+        },
+        {
+          "slug": "omniscience",
+          "weightedCostPerTask": 0.0012799825999999998
+        },
+        {
+          "slug": "artificial-analysis-long-context-reasoning",
+          "weightedCostPerTask": 0.029589116
+        }
+      ],
+      "api_price_input_usd_per_million": 4,
+      "api_price_output_usd_per_million": 20,
+      "api_price_cache_hit_usd_per_million": 0.2,
+      "api_price_cache_write_usd_per_million": 5,
+      "api_price_reasoning_usd_per_million": null,
+      "intelligence_index_output_tokens_per_task": {
+        "reasoning": 18236.5871060743,
+        "answer": 17347.4717719098,
+        "output": 35584.058877984105
+      },
+      "canonical_intelligence_index_token_count": {
+        "input": 2619403169,
+        "output": 52515439,
+        "answer": 25542271,
+        "reasoning": 26973168
+      },
+      "reported_intelligence_index_token_count": null,
+      "intelligence_index_evaluations": [
+        {
+          "slug": "aa-briefcase",
+          "score": 1704.5,
+          "output_tokens_per_task": 113122.20879120879,
+          "cost_per_task_usd": 6.270821902675123,
+          "time_per_task_seconds": null
+        },
+        {
+          "slug": "gdpval-aa",
+          "score": 1691.72,
+          "output_tokens_per_task": 38790.45,
+          "cost_per_task_usd": 1.5426848886979923,
+          "time_per_task_seconds": null
+        },
+        {
+          "slug": "automationbench-aa",
+          "score": 0.6320677483186213,
+          "output_tokens_per_task": 16536.11415525114,
+          "cost_per_task_usd": 0.6986116140385024,
+          "time_per_task_seconds": null
+        },
+        {
+          "slug": "terminalbench-4-0",
+          "score": 0.565656565656566,
+          "output_tokens_per_task": 100178.16666666667,
+          "cost_per_task_usd": 5.118905183990514,
+          "time_per_task_seconds": null
+        },
+        {
+          "slug": "scicode",
+          "score": 0.604166666666667,
+          "output_tokens_per_task": 1316,
+          "cost_per_task_usd": 0.04019579166666666,
+          "time_per_task_seconds": null
+        },
+        {
+          "slug": "humanitys-last-exam",
+          "score": 0.555607043558851,
+          "output_tokens_per_task": 5101.708063021316,
+          "cost_per_task_usd": 0.10378723632993513,
+          "time_per_task_seconds": null
+        },
+        {
+          "slug": "gdp-pdf",
+          "score": 0.288,
+          "output_tokens_per_task": 5967.49,
+          "cost_per_task_usd": 0.82542564,
+          "time_per_task_seconds": null
+        },
+        {
+          "slug": "critpt",
+          "score": 0.308571428571429,
+          "output_tokens_per_task": 25506.314285714285,
+          "cost_per_task_usd": 0.5298188,
+          "time_per_task_seconds": null
+        },
+        {
+          "slug": "omniscience",
+          "score": 40.63333333333333,
+          "output_tokens_per_task": 392.093,
+          "cost_per_task_usd": 0.008533217333333332,
+          "time_per_task_seconds": null
+        },
+        {
+          "slug": "artificial-analysis-long-context-reasoning",
+          "score": 0.826666666666667,
+          "output_tokens_per_task": 881.9,
+          "cost_per_task_usd": 0.59178232,
+          "time_per_task_seconds": null
+        }
+      ],
+      "source": "https://artificialanalysis.ai/models/claude-opus-5-5-high",
+      "source_extraction_url": "https://artificialanalysis.ai/models/claude-opus-5-5",
+      "source_retrieved_at": "2026-09-22T18:23:04.331Z",
+      "source_version": "4.3.2",
+      "quality_flags": [
+        "default_fallback_enabled"
+      ]
+    },
+    {
+      "model": "claude-opus-5.5",
+      "model_display": "Claude Opus 5.5",
+      "source_id": "df5bf99d-d228-4715-b41b-19ca86118777",
+      "source_slug": "claude-opus-5-5-xhigh",
+      "source_name": "Claude Opus 5.5 (Adaptive Reasoning, Xhigh Effort, Default Fallback)",
+      "source_short_name": "Claude Opus 5.5 (xhigh with fallback)",
+      "release_slug": "claude-opus-5-5",
+      "release_date": "2026-09-17",
+      "effort": "xhigh",
+      "effort_label": "xhigh",
+      "effort_level": 50,
+      "is_reasoning": true,
+      "intelligence_index": 55.9873505840139,
+      "intelligence_index_estimated": false,
+      "cost_per_task_usd": 3.459110175822289,
+      "cost_total_usd": 4056.6546786492113,
+      "cost_per_task_components_usd": {
+        "total": 3.459110175822289,
+        "input": 2.145762274502332,
+        "nonCacheInput": 0.10312117539655766,
+        "cacheRead": 1.369353232934504,
+        "cacheWrite": 0.6732878661712699,
+        "output": 1.3133479013199578,
+        "reasoning": 0.8062946130915963,
+        "answer": 0.5070532882283616
+      },
+      "cost_total_components_usd": {
+        "total": 4056.6546786492113,
+        "input": 2063.2885186492113,
+        "nonCacheInput": 141.573104,
+        "cacheRead": 1153.8409229312829,
+        "cacheWrite": 767.8744917179283,
+        "output": 1993.36616,
+        "reasoning": 1295.7464200000002,
+        "answer": 697.61974
+      },
+      "evaluations": [
+        {
+          "slug": "aa-briefcase",
+          "weightedCostPerTask": 1.8399278300386313
+        },
+        {
+          "slug": "gdpval-aa",
+          "weightedCostPerTask": 0.4211652288983978
+        },
+        {
+          "slug": "automationbench-aa",
+          "weightedCostPerTask": 0.04390178155427155
+        },
+        {
+          "slug": "terminalbench-4-0",
+          "weightedCostPerTask": 0.877835633170967
+        },
+        {
+          "slug": "scicode",
+          "weightedCostPerTask": 0.006755947222222222
+        },
+        {
+          "slug": "humanitys-last-exam",
+          "weightedCostPerTask": 0.02405343225208526
+        },
+        {
+          "slug": "gdp-pdf",
+          "weightedCostPerTask": 0.096427288
+        },
+        {
+          "slug": "critpt",
+          "weightedCostPerTask": 0.1170762742857143
+        },
+        {
+          "slug": "omniscience",
+          "weightedCostPerTask": 0.0020206043999999998
+        },
+        {
+          "slug": "artificial-analysis-long-context-reasoning",
+          "weightedCostPerTask": 0.029946155999999998
+        }
+      ],
+      "api_price_input_usd_per_million": 4,
+      "api_price_output_usd_per_million": 20,
+      "api_price_cache_hit_usd_per_million": 0.2,
+      "api_price_cache_write_usd_per_million": 5,
+      "api_price_reasoning_usd_per_million": null,
+      "intelligence_index_output_tokens_per_task": {
+        "reasoning": 40314.73065457981,
+        "answer": 25352.66441141809,
+        "output": 65667.3950659979
+      },
+      "canonical_intelligence_index_token_count": {
+        "input": 5958172789,
+        "output": 99668308,
+        "answer": 34880987,
+        "reasoning": 64787321
+      },
+      "reported_intelligence_index_token_count": null,
+      "intelligence_index_evaluations": [
+        {
+          "slug": "aa-briefcase",
+          "score": 1779.5,
+          "output_tokens_per_task": 198194.8791208791,
+          "cost_per_task_usd": 12.266185533590876,
+          "time_per_task_seconds": null
+        },
+        {
+          "slug": "gdpval-aa",
+          "score": 1820.11,
+          "output_tokens_per_task": 92412.82272727272,
+          "cost_per_task_usd": 4.211652288983977,
+          "time_per_task_seconds": null
+        },
+        {
+          "slug": "automationbench-aa",
+          "score": 0.6495283516401527,
+          "output_tokens_per_task": 21784.182648401827,
+          "cost_per_task_usd": 0.8780356310854309,
+          "time_per_task_seconds": null
+        },
+        {
+          "slug": "terminalbench-4-0",
+          "score": 0.595959595959596,
+          "output_tokens_per_task": 169497.45454545456,
+          "cost_per_task_usd": 8.77835633170967,
+          "time_per_task_seconds": null
+        },
+        {
+          "slug": "scicode",
+          "score": 0.650462962962963,
+          "output_tokens_per_task": 2651.6423611111113,
+          "cost_per_task_usd": 0.06755947222222222,
+          "time_per_task_seconds": null
+        },
+        {
+          "slug": "humanitys-last-exam",
+          "score": 0.575069508804449,
+          "output_tokens_per_task": 11939.452270620945,
+          "cost_per_task_usd": 0.2405343225208526,
+          "time_per_task_seconds": null
+        },
+        {
+          "slug": "gdp-pdf",
+          "score": 0.266,
+          "output_tokens_per_task": 12909.85,
+          "cost_per_task_usd": 0.9642728800000001,
+          "time_per_task_seconds": null
+        },
+        {
+          "slug": "critpt",
+          "score": 0.317142857142857,
+          "output_tokens_per_task": 57500.4,
+          "cost_per_task_usd": 1.170762742857143,
+          "time_per_task_seconds": null
+        },
+        {
+          "slug": "omniscience",
+          "score": 42.65,
+          "output_tokens_per_task": 638.9658333333333,
+          "cost_per_task_usd": 0.013470695999999999,
+          "time_per_task_seconds": null
+        },
+        {
+          "slug": "artificial-analysis-long-context-reasoning",
+          "score": 0.846666666666667,
+          "output_tokens_per_task": 1238.94,
+          "cost_per_task_usd": 0.59892312,
+          "time_per_task_seconds": null
+        }
+      ],
+      "source": "https://artificialanalysis.ai/models/claude-opus-5-5-xhigh",
+      "source_extraction_url": "https://artificialanalysis.ai/models/claude-opus-5-5",
+      "source_retrieved_at": "2026-09-22T18:23:04.331Z",
+      "source_version": "4.3.2",
+      "quality_flags": [
+        "default_fallback_enabled"
+      ]
+    },
+    {
+      "model": "claude-opus-5.5",
+      "model_display": "Claude Opus 5.5",
+      "source_id": "2f3c4dc9-a450-4303-8697-0237257cf08f",
+      "source_slug": "claude-opus-5-5",
+      "source_name": "Claude Opus 5.5 (Adaptive Reasoning, Max Effort, Default Fallback)",
+      "source_short_name": "Claude Opus 5.5 (max with fallback)",
+      "release_slug": "claude-opus-5-5",
+      "release_date": "2026-09-22",
+      "effort": "max",
+      "effort_label": "max",
+      "effort_level": 60,
+      "is_reasoning": true,
+      "intelligence_index": 57.6223698102963,
+      "intelligence_index_estimated": false,
+      "cost_per_task_usd": 5.982012019521066,
+      "cost_total_usd": 8708.197642611496,
+      "cost_per_task_components_usd": {
+        "total": 5.982012019521066,
+        "input": 3.5986917043747417,
+        "nonCacheInput": 0.10323659681523459,
+        "cacheRead": 2.4242292976790343,
+        "cacheWrite": 1.0712258098804728,
+        "output": 2.383320315146325,
+        "reasoning": 1.6785816382534489,
+        "answer": 0.7047386768928764
+      },
+      "cost_total_components_usd": {
+        "total": 8708.197642611496,
+        "input": 3510.4310226114962,
+        "nonCacheInput": 142.212792,
+        "cacheRead": 2139.400743307854,
+        "cacheWrite": 1228.8174873036423,
+        "output": 5197.76662,
+        "reasoning": 4277.1398,
+        "answer": 920.62682
+      },
+      "evaluations": [
+        {
+          "slug": "aa-briefcase",
+          "weightedCostPerTask": 3.1568959073487983
+        },
+        {
+          "slug": "gdpval-aa",
+          "weightedCostPerTask": 0.8918386645138963
+        },
+        {
+          "slug": "automationbench-aa",
+          "weightedCostPerTask": 0.07143775552710561
+        },
+        {
+          "slug": "terminalbench-4-0",
+          "weightedCostPerTask": 1.3109276120148785
+        },
+        {
+          "slug": "scicode",
+          "weightedCostPerTask": 0.04691160138888889
+        },
+        {
+          "slug": "humanitys-last-exam",
+          "weightedCostPerTask": 0.07184060055607044
+        },
+        {
+          "slug": "gdp-pdf",
+          "weightedCostPerTask": 0.155233548
+        },
+        {
+          "slug": "critpt",
+          "weightedCostPerTask": 0.21896170857142858
+        },
+        {
+          "slug": "omniscience",
+          "weightedCostPerTask": 0.024136925599999998
+        },
+        {
+          "slug": "artificial-analysis-long-context-reasoning",
+          "weightedCostPerTask": 0.033827696000000004
+        }
+      ],
+      "api_price_input_usd_per_million": 4,
+      "api_price_output_usd_per_million": 20,
+      "api_price_cache_hit_usd_per_million": 0.2,
+      "api_price_cache_write_usd_per_million": 5,
+      "api_price_reasoning_usd_per_million": null,
+      "intelligence_index_output_tokens_per_task": {
+        "reasoning": 83929.08191267242,
+        "answer": 35236.93384464381,
+        "output": 119166.01575731623
+      },
+      "canonical_intelligence_index_token_count": {
+        "input": 10978320412,
+        "output": 259888331,
+        "answer": 46031341,
+        "reasoning": 213856990
+      },
+      "reported_intelligence_index_token_count": null,
+      "intelligence_index_evaluations": [
+        {
+          "slug": "aa-briefcase",
+          "score": 1821.85,
+          "output_tokens_per_task": 338098.7802197802,
+          "cost_per_task_usd": 21.045972715658657,
+          "time_per_task_seconds": null
+        },
+        {
+          "slug": "gdpval-aa",
+          "score": 1846.17,
+          "output_tokens_per_task": 187173.29090909092,
+          "cost_per_task_usd": 8.918386645138963,
+          "time_per_task_seconds": null
+        },
+        {
+          "slug": "automationbench-aa",
+          "score": 0.6953868128636069,
+          "output_tokens_per_task": 41105.06088280061,
+          "cost_per_task_usd": 1.428755110542112,
+          "time_per_task_seconds": null
+        },
+        {
+          "slug": "terminalbench-4-0",
+          "score": 0.595959595959596,
+          "output_tokens_per_task": 252948.42424242425,
+          "cost_per_task_usd": 13.109276120148786,
+          "time_per_task_seconds": null
+        },
+        {
+          "slug": "scicode",
+          "score": 0.668981481481482,
+          "output_tokens_per_task": 22606.840277777777,
+          "cost_per_task_usd": 0.46911601388888885,
+          "time_per_task_seconds": null
+        },
+        {
+          "slug": "humanitys-last-exam",
+          "score": 0.613531047265987,
+          "output_tokens_per_task": 35832.23262279889,
+          "cost_per_task_usd": 0.7184060055607044,
+          "time_per_task_seconds": null
+        },
+        {
+          "slug": "gdp-pdf",
+          "score": 0.262,
+          "output_tokens_per_task": 42319.45,
+          "cost_per_task_usd": 1.55233548,
+          "time_per_task_seconds": null
+        },
+        {
+          "slug": "critpt",
+          "score": 0.317142857142857,
+          "output_tokens_per_task": 108502.3,
+          "cost_per_task_usd": 2.189617085714286,
+          "time_per_task_seconds": null
+        },
+        {
+          "slug": "omniscience",
+          "score": 46.416666666666664,
+          "output_tokens_per_task": 8011.119166666666,
+          "cost_per_task_usd": 0.16091283733333334,
+          "time_per_task_seconds": null
+        },
+        {
+          "slug": "artificial-analysis-long-context-reasoning",
+          "score": 0.846666666666667,
+          "output_tokens_per_task": 5120.48,
+          "cost_per_task_usd": 0.67655392,
+          "time_per_task_seconds": null
+        }
+      ],
+      "source": "https://artificialanalysis.ai/models/claude-opus-5-5",
+      "source_extraction_url": "https://artificialanalysis.ai/models/claude-opus-5-5",
+      "source_retrieved_at": "2026-09-22T18:23:04.331Z",
+      "source_version": "4.3.2",
+      "quality_flags": [
+        "default_fallback_enabled"
+      ]
     }
   ],
   "coverage": [
@@ -7140,6 +8075,22 @@
       "available_variants": 1,
       "variants_with_both_costs": 1,
       "efforts": [
+        "max"
+      ],
+      "missing_cost_variants": []
+    },
+    {
+      "model": "claude-opus-5.5",
+      "model_display": "Claude Opus 5.5",
+      "release_slug": "claude-opus-5-5",
+      "status": "found",
+      "available_variants": 5,
+      "variants_with_both_costs": 5,
+      "efforts": [
+        "low",
+        "medium",
+        "high",
+        "xhigh",
         "max"
       ],
       "missing_cost_variants": []

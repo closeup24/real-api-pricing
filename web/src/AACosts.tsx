@@ -8,14 +8,14 @@ import ResizeHandle from "./ResizeHandle";
 import { BrandMarks } from "./ProviderLogo";
 import { color, defaultState, groups, pareto } from "./domain";
 import type { Lang, SiteData, State } from "./types";
-import { aaIsApproximate, aaMethodLabel as methodLabel, aaQuality, aaQualityLabel, aaQualityRank, aaReferencePoint, adaptAAChart } from "./aaChartAdapter";
+import { aaIsApproximate, aaMethodLabel as methodLabel, aaQuality, aaQualityLabel, aaQualityRank, aaReferencePoint, aaTransferLabel, adaptAAChart, displayAAPlan } from "./aaChartAdapter";
 import { componentKeys } from "./aaTypes";
 import type { AACostData, AATokenReconstruction, ComponentKey, QuotaMetric, QuotaPlan, QuotaRow, Scope } from "./aaTypes";
 
 const componentNames: Record<ComponentKey, string> = {
   non_cache_input: "Вход без кэша", cache_read: "Чтение кэша", cache_write: "Запись кэша", answer: "Ответ", reasoning: "Reasoning",
 };
-const evidenceNames: Record<string, string> = { direct_measurement: "Прямой замер", plan_extrapolation: "Перенос с другого тарифа", pooled_measurements: "Несколько замеров", calibrated_measurement: "Замер с поправками", published_rates: "Опубликованные квоты и ставки", reported_quota: "Сообщённая квота", aa_original_api: "Исходные расходы AA", unknown: "Основание не указано" };
+const evidenceNames: Record<string, string> = { direct_measurement: "Прямой замер", plan_extrapolation: "Перенос с другого тарифа", model_transfer: "Перенос с другой модели", pooled_measurements: "Несколько замеров", calibrated_measurement: "Замер с поправками", published_rates: "Опубликованные квоты и ставки", reported_quota: "Сообщённая квота", aa_original_api: "Исходные расходы AA", unknown: "Основание не указано" };
 const evidenceKey = (row: QuotaRow) => row.evidence_method || (row.kind === "api" ? "aa_original_api" : row.method === "aa_tokens_quota_rates" ? "published_rates" : "unknown");
 const evidenceLabel = (value: string) => evidenceNames[value] || value;
 const statusNames: Record<string, string> = { consistent: "Согласовано", approximate: "Приближённая оценка", missing: "Нет данных AA", unavailable: "Расчёт недоступен" };
@@ -62,9 +62,21 @@ function QualityBadge({ row }: { row: QuotaRow }) {
   return <span className={`confidence aa-quality ${quality.level}`} title={[quality.label, ...quality.reasons].filter(Boolean).join("\n")}><i />{aaQualityLabel(quality.level)}</span>;
 }
 
-function QualityDetail({ row }: { row: QuotaRow }) {
+function TransferBadge({ row }: { row: QuotaRow }) {
+  if (row.method !== "empirical_model_transfer") return null;
+  return <span className="aa-transfer-badge" title={row.empirical?.transfer?.assumption_ru}><i />{aaTransferLabel}</span>;
+}
+
+function QualityDetail({ row, label = "Надёжность оценки" }: { row: QuotaRow; label?: string }) {
   const quality = aaQuality(row);
-  return <div className="aa-quality-detail"><span>Надёжность оценки: <QualityBadge row={row} /></span>{quality.label && quality.label !== aaQualityLabel(quality.level) && <p>{quality.label}</p>}{quality.reasons.length > 0 && <ul className="aa-notes">{quality.reasons.map((reason, index) => <li key={index}>{reason}</li>)}</ul>}</div>;
+  return <div className="aa-quality-detail"><div className="aa-quality-summary"><span>{label}: <QualityBadge row={row} /></span><TransferBadge row={row} /></div>{quality.label && quality.label !== aaQualityLabel(quality.level) && <p>{quality.label}</p>}{quality.reasons.length > 0 && <ul className="aa-notes">{quality.reasons.map((reason, index) => <li key={index}>{reason}</li>)}</ul>}</div>;
+}
+
+function AASnapshot({ row }: { row: QuotaRow }) {
+  if (!row.aa_retrieved_at) return null;
+  const timestamp = new Date(row.aa_retrieved_at);
+  const label = Number.isFinite(timestamp.getTime()) ? new Intl.DateTimeFormat("ru-RU", { year: "numeric", month: "long", day: "numeric", hour: "2-digit", minute: "2-digit", timeZone: "UTC" }).format(timestamp) + " UTC" : row.aa_retrieved_at;
+  return <p title={row.aa_retrieved_at}>Срез собственного профиля AA: <time dateTime={row.aa_retrieved_at}>{label}</time>. Дата относится к этой модели и effort.</p>;
 }
 
 function TokenReconstruction({ estimate, metric, exact }: { estimate?: AATokenReconstruction; metric: QuotaMetric; exact: boolean }) {
@@ -73,7 +85,8 @@ function TokenReconstruction({ estimate, metric, exact }: { estimate?: AATokenRe
   return <div className="aa-token-reconstruction"><h4>Исходный профиль: расход AA ÷ API-ставка × 1 000 000</h4><p>Восстанавливаем пять категорий токенов AA по опубликованным расходам и API-ставкам. Дальнейший перенос на подписку зависит от выбранного метода оценки.</p><div className="aa-scroll"><table className="aa-calculation-table"><thead><tr><th>Категория</th><th>Расход AA, $</th><th>API-ставка, $/MTok</th><th>Восстановление токенов</th><th>Токены для расчёта</th></tr></thead><tbody>{componentKeys.map(key => <tr key={key}><th>{componentNames[key]}</th><td>{money(estimate.component_costs_usd?.[key], exact)}</td><td>{money(estimate.rates_usd_per_million?.[key], exact)}</td><td className="aa-operation">{n(estimate.component_costs_usd?.[key])} ÷ {n(estimate.rates_usd_per_million?.[key])} × 1 000 000</td><td>{n(metric.component_tokens?.[key])}</td></tr>)}</tbody></table></div><Equation label="Сумма пяти непересекающихся категорий">{componentKeys.map((key, index) => <span key={key}>{index ? " + " : ""}{n(metric.component_tokens?.[key])}</span>)} = <strong>{n(metric.total_tokens)} токенов</strong></Equation></div>;
 }
 
-function EmpiricalCalculation({ row, exact }: { row: QuotaRow; exact: boolean }) {
+function EmpiricalCalculation({ row, exact, sourceContext = false }: { row: QuotaRow; exact: boolean; sourceContext?: boolean }) {
+  if (row.method === "empirical_model_transfer") return <ModelTransferCalculation row={row} exact={exact} />;
   if (!["empirical_api_calibration", "empirical_api_scenario"].includes(row.method || "")) return null;
   const basis = row.empirical, calibration = basis?.calibration;
   const n = (value: unknown) => number(value, exact);
@@ -90,7 +103,7 @@ function EmpiricalCalculation({ row, exact }: { row: QuotaRow; exact: boolean })
     return { ...correction, before, after: correctedPool };
   });
   return <div className="aa-empirical-basis">
-    <h4>{methodLabel(row.method)} · {evidenceLabel(evidenceKey(row))}</h4>
+    <h4>{methodLabel(row.method)}{!sourceContext && <> · {evidenceLabel(evidenceKey(row))}</>}</h4>
     {basis?.basis_label && <p><strong>{basis.basis_label}</strong></p>}
     {basis?.reason_ru && <p>{basis.reason_ru}</p>}
       {row.method === "empirical_api_scenario" && <p className="aa-notice">≈ Приблизительный сценарий. Допущения при восстановлении исходного лимита снижают надёжность оценки; причины перечислены выше.</p>}
@@ -106,6 +119,24 @@ function EmpiricalCalculation({ row, exact }: { row: QuotaRow; exact: boolean })
   </div>;
 }
 
+function ModelTransferCalculation({ row, exact }: { row: QuotaRow; exact: boolean }) {
+  const transfer = row.empirical?.transfer;
+  if (!transfer) return <div className="aa-notice"><TransferBadge row={row} /><p>Исходная квота для переноса не указана.</p></div>;
+  const sourceRow: QuotaRow = { ...row, pricing_id: transfer.source_pricing_id, model_id: transfer.source_model_id, model: transfer.source_model_name, plan: transfer.source_plan, method: transfer.source_method, evidence_method: undefined, quality: transfer.source_quality, empirical: transfer.source_empirical };
+  const ownAASources = texts(row.sources).filter(url => { const valid = sourceUrl(url); return valid && new URL(valid).hostname === "artificialanalysis.ai"; });
+  const quotaSources = texts(row.sources).filter(url => !ownAASources.includes(url));
+  return <div className="aa-empirical-basis aa-model-transfer">
+    <h4>{methodLabel(row.method)}</h4>
+    <p>{transfer.assumption_ru}</p>
+    <p title={transfer.source_pricing_id}>Источник месячной квоты: <strong>{transfer.source_model_name} · {displayAAPlan(transfer.source_plan)}</strong>.</p>
+    <QualityDetail row={sourceRow} label="Надёжность исходной квоты" />
+    <Equation label="Гипотеза: доступная месячная ёмкость в API-эквиваленте одинакова">P({row.model}) = P({transfer.source_model_name}) = <strong>{money(transfer.monthly_api_equivalent_usd, exact)} API-экв. / мес.</strong></Equation>
+    <p>Для расхода задачи используем собственные токены и API-ставки AA: <strong>{row.model} · {effortLabel(row)}</strong>. Далее умножаем месячную плату на API-стоимость этого профиля AA и делим на перенесённую ёмкость P. Надёжность переноса ограничена средней; низкая надёжность исходной квоты сохраняется.</p>
+    <Sources urls={ownAASources} />
+    <details className="aa-source-detail"><summary>Как получена исходная квота {transfer.source_model_name}</summary><EmpiricalCalculation row={sourceRow} exact={exact} sourceContext />{!["empirical_api_calibration", "empirical_api_scenario", "empirical_model_transfer"].includes(transfer.source_method) && <pre>{humanValue(transfer.source_empirical)}</pre>}<Sources urls={quotaSources} /></details>
+  </div>;
+}
+
 function AvailableTokenProfile({ metric, estimate, exact }: { metric: QuotaMetric; estimate?: AATokenReconstruction; exact: boolean }) {
   const tokens = Object.fromEntries(componentKeys.map(key => [key, finite(metric.component_tokens?.[key]) ? metric.component_tokens[key] : estimate?.component_tokens?.[key]]));
   const known = componentKeys.filter(key => finite(tokens[key]));
@@ -118,22 +149,23 @@ function Calculation({ row, scope, exact, estimate }: { row: QuotaRow; scope: Sc
   const metric = row[scope] ?? {};
   const n = (value: unknown) => number(value, exact);
   const unit = row.quota_unit || "ед. квоты";
-  const empirical = ["empirical_api_calibration", "empirical_api_scenario"].includes(row.method || "");
+  const empirical = ["empirical_api_calibration", "empirical_api_scenario", "empirical_model_transfer"].includes(row.method || "");
   const approximate = aaIsApproximate(row, scope) ? "≈ " : "";
   const combinedNotes = unique([...texts(row.notes), ...texts(metric.notes), ...texts(row.shared_pool_note)]);
   if (!hasCost(metric) || row.method === "unavailable_quota_weights" || metric.status === "unavailable") return <div className="aa-calculation-body">
-    <h3>{row.model} · {effortLabel(row)} · {row.plan}</h3>
-    <QualityDetail row={row} />
+    <h3>{row.model} · {effortLabel(row)} · {displayAAPlan(row.plan)}</h3>
+    <QualityDetail row={row} /><AASnapshot row={row} />
     <div className="aa-calculation-givens">{finite(row.monthly_usd) && <span>Плата за тариф: <b>{money(row.monthly_usd, exact)} / мес.</b></span>}<span>Метод: <b>{methodLabel(row.method)}</b></span><span>Основание: <b>{evidenceLabel(evidenceKey(row))}</b></span></div>
     <div className="aa-notice"><strong>Нет оценки стоимости {scope === "task" ? "задачи" : "набора"}.</strong><p>{row.method === "unavailable_quota_weights" ? "Не хватает обоснованных весов списания по категориям токенов и ёмкости лимита. Одного месячного числа токенов недостаточно, чтобы перенести замер на смесь AA." : "Исходных данных для этого профиля AA недостаточно, чтобы рассчитать цену."}</p></div>
     {row.empirical?.basis_label && <p><strong>{row.empirical.basis_label}</strong></p>}{row.empirical?.reason_ru && <p>{row.empirical.reason_ru}</p>}
     {combinedNotes.length > 0 && <ul className="aa-notes">{combinedNotes.map(note => <li key={note}>{note}</li>)}</ul>}
+    {row.method === "empirical_model_transfer" && <EmpiricalCalculation row={row} exact={exact} />}
     <AvailableTokenProfile metric={metric} estimate={estimate} exact={exact} />
     <h4>Источники</h4><Sources urls={row.sources} />
   </div>;
   if (row.kind === "api") return <div className="aa-calculation-body">
     <h3>{row.model} · {effortLabel(row)} · исходный API AA</h3>
-    <QualityDetail row={row} />
+    <QualityDetail row={row} /><AASnapshot row={row} />
     <p>Стоимость {scope === "task" ? "взвешенной задачи" : "полного набора"} взята из Artificial Analysis. Месячная квота к API не применяется.</p>
     <TokenReconstruction estimate={estimate} metric={metric} exact={exact} />
     <Equation label="API-цена миллиона токенов">{money(metric.cost_usd, exact)} ÷ {n(metric.total_tokens)} × 1 000 000 = <strong>{money(metric.api_price_usd_per_million, exact)} / MTok</strong></Equation>
@@ -142,8 +174,8 @@ function Calculation({ row, scope, exact, estimate }: { row: QuotaRow; scope: Sc
     <Sources urls={row.sources} />
   </div>;
   return <div className="aa-calculation-body">
-    <h3>{row.model} · {effortLabel(row)} · {row.plan}</h3>
-    <QualityDetail row={row} />
+    <h3>{row.model} · {effortLabel(row)} · {displayAAPlan(row.plan)}</h3>
+    <QualityDetail row={row} /><AASnapshot row={row} />
     <p className="aa-comparison-note">Месячная плата — цена тарифа. Цена задачи — доля этой платы с учётом оценённого доступного объёма работы. Сравнивайте тарифы для одной модели и одного effort. Учитывайте основания весов списания: API-калибровка остаётся гипотезой и чувствительна к выбранному замеру.</p>
     <div className="aa-calculation-givens"><span>Плата F: <b>{money(row.monthly_usd, exact)} / мес.</b></span><span>{empirical ? "Оценка ёмкости Q" : "Квота Q"}: <b>{n(row.monthly_quota)} {unit} / мес.</b></span><span>Метод: <b>{methodLabel(row.method)}</b></span><span>Основание: <b>{evidenceLabel(evidenceKey(row))}</b></span></div>
     <TokenReconstruction estimate={estimate} metric={metric} exact={exact} />
@@ -169,18 +201,18 @@ function Calculation({ row, scope, exact, estimate }: { row: QuotaRow; scope: Sc
 
 function ExcludedPlans({ plans }: { plans: QuotaPlan[] }) {
   return <details className="aa-excluded"><summary>Тарифы без расчёта и причины <span>{plans.length}</span></summary>
-    {plans.length ? <div className="aa-scroll"><table className="aa-data-table"><thead><tr><th>Модель / тариф</th><th>Причина</th><th>Источники</th></tr></thead><tbody>{plans.map((plan, index) => <tr key={plan.id || index}><td><b>{plan.model_id}</b><small>{plan.plan}</small></td><td className="aa-wrap">{unique([...texts(plan.reasons), ...texts(plan.notes)]).map(note => <p key={note}>{note}</p>)}</td><td><Sources urls={plan.sources} /></td></tr>)}</tbody></table></div> : <p>Исключённых тарифов в срезе нет.</p>}
+    {plans.length ? <div className="aa-scroll"><table className="aa-data-table"><thead><tr><th>Модель / тариф</th><th>Причина</th><th>Источники</th></tr></thead><tbody>{plans.map((plan, index) => <tr key={plan.id || index}><td><b>{plan.model_id}</b><small>{displayAAPlan(plan.plan || "—")}</small></td><td className="aa-wrap">{unique([...texts(plan.reasons), ...texts(plan.notes)]).map(note => <p key={note}>{note}</p>)}</td><td><Sources urls={plan.sources} /></td></tr>)}</tbody></table></div> : <p>Исключённых тарифов в срезе нет.</p>}
   </details>;
 }
 
 function downloadCsv(rows: QuotaRow[], scope: Scope) {
-  const fields = ["id", "model", "model_id", "effort", "intelligence_index", "plan", "plan_id", "kind", "quality", "confidence", "monthly_usd", "monthly_quota", "quota_unit", "status", "method", "evidence_method", "empirical", "sources", "notes", "component_rates"];
+  const fields = ["id", "model", "model_id", "effort", "aa_retrieved_at", "intelligence_index", "plan", "plan_raw", "plan_id", "kind", "quality", "confidence", "monthly_usd", "monthly_quota", "quota_unit", "status", "method", "evidence_method", "empirical", "sources", "notes", "component_rates"];
   const metricFields = ["status", "total_tokens", "quota_per_unit", "cost_usd", "effective_price_usd_per_million", "api_price_usd_per_million", "units_per_month", "units_per_100_usd", "cache_read_share", "input_without_cache_read_share", "output_share", "component_tokens", "component_quota", "reported_total_tokens", "total_relative_error_pct", "notes"];
   const cell = (value: unknown) => { let content = value == null ? "" : typeof value === "object" ? JSON.stringify(value) : String(value); if (typeof value !== "number" && /^[=+@\-\t\r]/.test(content)) content = "'" + content; return '"' + content.replace(/"/g, '""') + '"'; };
   const header = ["profile", ...fields, ...metricFields.map(field => `${scope}.${field}`)];
   const records = rows.map(row => {
     const record = row as unknown as Record<string, unknown>, metric = (row[scope] || {}) as Record<string, unknown>;
-    return [scope, ...fields.map(field => field === "quality" ? aaQuality(row) : record[field]), ...metricFields.map(field => metric[field])].map(cell).join(";");
+    return [scope, ...fields.map(field => field === "quality" ? aaQuality(row) : field === "plan" ? displayAAPlan(row.plan) : field === "plan_raw" ? row.plan : record[field]), ...metricFields.map(field => metric[field])].map(cell).join(";");
   });
   const url = URL.createObjectURL(new Blob(["\ufeff", header.map(cell).join(";"), "\r\n", records.join("\r\n")], { type: "text/csv;charset=utf-8" }));
   const link = document.createElement("a"); link.href = url; link.download = `aa-quota-${scope}.csv`; link.click(); setTimeout(() => URL.revokeObjectURL(url), 1000);
@@ -198,7 +230,7 @@ const sortValue = (row: QuotaRow, scope: Scope, key: SortKey): number | string |
   const metric = row[scope] || {};
   switch (key) {
     case "model": return `${row.model} ${row.effort}`;
-    case "plan": return row.plan;
+    case "plan": return displayAAPlan(row.plan);
     case "cost": return metric.cost_usd;
     case "score": return row.intelligence_index;
     case "fee": return row.monthly_usd;
@@ -238,12 +270,12 @@ export default function AACosts({ navigation, baseData, theme, lang }: AACostsPr
   }, [attempt]);
   const rows = useMemo(() => data?.quota_scenario.rows ?? [], [data]);
   const options = useMemo(() => Object.fromEntries(filters.map(filter => [filter.key, unique(rows.map(filter.value)).map(value => ({
-    value, label: filter.key === "model" ? rows.find(row => row.model_id === value)?.model || value : filter.key === "plan" ? rows.find(row => (row.plan_id || row.plan) === value)?.plan || value : filter.label ? filter.label(value) : value,
+    value, label: filter.key === "model" ? rows.find(row => row.model_id === value)?.model || value : filter.key === "plan" ? displayAAPlan(rows.find(row => (row.plan_id || row.plan) === value)?.plan || value) : filter.label ? filter.label(value) : value,
   })).sort((a, b) => filter.key === "quality" ? aaQualityRank(a.value) - aaQualityRank(b.value) : a.label.localeCompare(b.label, "ru", { numeric: true }))])) as Record<FilterKey, { value: string; label: string }[]>, [rows]);
   const visible = useMemo(() => rows.filter(row => filters.every(filter => selection[filter.key] === null || selection[filter.key]!.includes(filter.value(row)))), [rows, selection]);
   const sorted = useMemo(() => {
     const terms = query.toLocaleLowerCase("ru").trim().split(/\s+/).filter(Boolean);
-    return visible.filter(row => terms.every(term => `${row.model} ${row.plan} ${row.effort} ${methodLabel(row.method)} ${evidenceLabel(evidenceKey(row))} ${aaQualityLabel(aaQuality(row).level)} ${aaQuality(row).reasons.join(" ")}`.toLocaleLowerCase("ru").includes(term))).sort((a, b) => {
+    return visible.filter(row => terms.every(term => `${row.model} ${row.plan} ${displayAAPlan(row.plan)} ${row.effort} ${methodLabel(row.method)} ${row.method === "empirical_model_transfer" ? aaTransferLabel : ""} ${evidenceLabel(evidenceKey(row))} ${aaQualityLabel(aaQuality(row).level)} ${aaQuality(row).reasons.join(" ")}`.toLocaleLowerCase("ru").includes(term))).sort((a, b) => {
       const av = sortValue(a, scope, sort), bv = sortValue(b, scope, sort);
       if (av == null) return bv == null ? a.id.localeCompare(b.id) : 1;
       if (bv == null) return -1;
@@ -291,18 +323,18 @@ export default function AACosts({ navigation, baseData, theme, lang }: AACostsPr
       <div className="legend">{channels.map(channel => <span key={channel}><i style={{ background: color(adapted.rows.find(row => row.point.channel === channel)!.point) }} />{channel}</span>)}{state.frontier && <span className="frontier-legend"><i />Граница выборки, включая условные оценки</span>}</div>
       {adapted.rows.length ? <Chart rows={adapted.rows} state={state} data={chartData} theme={theme} handle={chart} metricLabels={{ axisTitle: scope === "task" ? "Стоимость задачи AA · $ / задача" : "Стоимость полного набора AA · $ / набор", priceLabel: scope === "task" ? "Стоимость задачи AA" : "Стоимость набора AA", priceUnit: scope === "task" ? "задача" : "набор" }} onSearch={(find, lock) => setChartState(previous => ({ ...previous, find, lock }))} onSelect={selected => { const original = selected.map(row => adapted.sourceRows.get(row.point.id)).find(Boolean); if (original) chooseExample(original); }} /> : <div className="empty"><Calculator size={35} /><h3>Нет точек для графика</h3><p>Строки без стоимости или индекса сохраняются в таблице. Неизвестные значения не заменяются нулями.</p><button onClick={reset}>Сбросить фильтры</button></div>}
       <div className="chart-foot"><div><Info size={15} /><span>Правее — дешевле. Выше — больше индекс AA. Нажмите точку для расчёта и источников.</span></div><span>{plotted.length} координат · {frontier.length} на границе</span></div>
-      {visible.length > adapted.rows.length && <details className="unscored"><summary>{visible.length - adapted.rows.length} строк без стоимости или индекса</summary><p>Все они остаются в таблице; цену и индекс не достраиваем.</p><div>{visible.filter(row => !adapted.rows.some(point => point.point.id === `aa::${row.id}`)).map(row => <button key={row.id} onClick={() => chooseExample(row)}>{row.model} · {effortLabel(row)} · {row.plan}<ArrowUpRight size={12} /></button>)}</div></details>}
+      {visible.length > adapted.rows.length && <details className="unscored"><summary>{visible.length - adapted.rows.length} строк без стоимости или индекса</summary><p>Все они остаются в таблице; цену и индекс не достраиваем.</p><div>{visible.filter(row => !adapted.rows.some(point => point.point.id === `aa::${row.id}`)).map(row => <button key={row.id} onClick={() => chooseExample(row)}>{row.model} · {effortLabel(row)} · {displayAAPlan(row.plan)}<ArrowUpRight size={12} /></button>)}</div></details>}
     </section>
-    <div className="method-note aa-method-note"><Info size={16} /><p>Одна схема расчёта: объёмы пяти категорий токенов AA × веса списания → расход квоты → доля месячной платы. Используем ставки подписки либо API-калибровку, которая предполагает пропорциональное API-стоимости списание лимита. Фиксированная смесь RAP не используется. При неполных исходных данных показываем приблизительные сценарии с низкой надёжностью; если восстановить веса нельзя, цена отсутствует. ≈ обозначает приближённую оценку; оценка предполагает полное использование месячной ёмкости. «На $100» — нормировка, попытки не равны успешным решениям. <button onClick={() => { const row = visible.find(item => item.kind === "subscription" && hasCost(item[scope])) || visible[0]; if (row) chooseExample(row); }}>Показать арифметику <ArrowUpRight size={13} /></button>{metadata.status && metadata.status !== "ok" && <span> Проверка данных: {texts(metadata.notes).join(" ")}</span>}</p></div>
+    <div className="method-note aa-method-note"><Info size={16} /><p>Одна схема расчёта: объёмы пяти категорий токенов AA × веса списания → расход квоты → доля месячной платы. Используем ставки подписки либо API-калибровку, которая предполагает пропорциональное API-стоимости списание лимита. Для Opus 5.5 отдельно помечена гипотеза переноса месячной API-ёмкости Opus 5: профиль токенов и API-ставки берём у самой Opus 5.5, а надёжность сохраняем не выше исходной и средней. Фиксированная смесь RAP не используется. При неполных исходных данных показываем приблизительные сценарии с низкой надёжностью; если восстановить веса нельзя, цена отсутствует. ≈ обозначает приближённую оценку; оценка предполагает полное использование месячной ёмкости. «На $100» — нормировка, попытки не равны успешным решениям. <button onClick={() => { const row = visible.find(item => item.kind === "subscription" && hasCost(item[scope])) || visible[0]; if (row) chooseExample(row); }}>Показать арифметику <ArrowUpRight size={13} /></button>{metadata.status && metadata.status !== "ok" && <span> Проверка данных: {texts(metadata.notes).join(" ")}</span>}</p></div>
     <section className="data-section aa-data-section" id="all-data" tabIndex={-1}>
       <div className="table-heading"><div><h2>Данные и расчёты.</h2><p>Каждый тариф и effort · {scope === "task" ? "одна взвешенная задача AA" : "полный набор AA"} · исходная точность доступна в разборе.</p></div><button className="text-button" onClick={() => downloadCsv(sorted, scope)} disabled={!sorted.length}><DownloadSimple size={16} />Экспорт CSV</button></div>
       <div className="table-tools"><label className="search"><MagnifyingGlass size={17} /><input aria-label="Поиск в таблице AA" placeholder="Найти модель, тариф или effort…" value={query} onChange={event => setQuery(event.target.value)} />{query && <button className="icon-button" onClick={() => setQuery("")} aria-label="Очистить поиск"><X size={14} /></button>}</label><span>{sorted.length} строк</span></div>
       <div className="table-scroll" ref={tableScroll} role="region" tabIndex={0} aria-label="Таблица стоимости задач AA"><table><thead><tr><th className="row-number">#</th>{sortHead("model", "Модель / effort")}{sortHead("plan", "Тариф / канал")}{sortHead("method", "Метод / основание")}{sortHead("cost", `$ / ${unitName}`)}{sortHead("score", "Индекс AA", "Индекс показан для сравнения качества и не входит в формулу стоимости.")}{sortHead("fee", "$ / месяц")}{sortHead("cache", "Чтение кэша")}{sortHead("input", "Вход + запись кэша")}{sortHead("output", "Выход")}{sortHead("api", "API, $ / MTok")}{sortHead("subscription", "Подписка, $ / MTok")}{sortHead("quota", `Квота / ${unitName}`)}{sortHead("month", "Единиц / месяц")}{sortHead("budget", "Единиц / $100")}{sortHead("quality", "Надёжность")}<th><span className="sr-only">Разбор</span></th></tr></thead><tbody>{sorted.map((row, index) => {
         const metric = row[scope] || {}, point = aaReferencePoint(row, baseData), approximate = aaIsApproximate(row, scope);
-        return <tr key={row.id} onClick={() => chooseExample(row)} className={state.frontier && frontIds.has(`aa::${row.id}`) ? "frontier-row" : ""}><td className="row-number">{index + 1}</td><td><button className="model-cell" onClick={event => { event.stopPropagation(); chooseExample(row); }}><i className="vendor-dot" style={{ background: point ? color(point) : "var(--muted)" }} /><span><strong className="model-with-logo">{point && <BrandMarks point={point} />}{row.model}</strong><small>{effortLabel(row)}</small></span></button></td><td><strong className="plan-name">{row.plan}</strong><small>{point?.channel || "—"} · {row.kind === "api" ? "API" : "Подписка"}</small></td><td className="aa-method-cell"><strong>{methodLabel(row.method)}</strong><small>{evidenceLabel(evidenceKey(row))}</small></td><td className="numeric real-price">{costLabel(row, scope)}{!hasCost(metric) && <small>{statusNames[metric.status || "missing"]}</small>}</td><td className="numeric">{row.estimated ? "≈ " : ""}{number(row.intelligence_index)}</td><td className="numeric">{money(row.monthly_usd)}</td>{[metric.cache_read_share, metric.input_without_cache_read_share, metric.output_share].map((value, item) => <td key={item} className="numeric">{percent(value)}</td>)}<td className="numeric">{money(metric.api_price_usd_per_million)}</td><td className="numeric">{row.kind === "subscription" ? (approximate && finite(metric.effective_price_usd_per_million) ? "≈ " : "") + money(metric.effective_price_usd_per_million) : "—"}</td><td className="numeric">{number(metric.quota_per_unit)}{row.quota_unit && <small>{row.quota_unit}</small>}</td><td className="numeric">{number(metric.units_per_month)}</td><td className="numeric">{number(metric.units_per_100_usd)}</td><td><QualityBadge row={row} /></td><td><ArrowUpRight size={15} /></td></tr>;
+        return <tr key={row.id} onClick={() => chooseExample(row)} className={state.frontier && frontIds.has(`aa::${row.id}`) ? "frontier-row" : ""}><td className="row-number">{index + 1}</td><td><button className="model-cell" onClick={event => { event.stopPropagation(); chooseExample(row); }}><i className="vendor-dot" style={{ background: point ? color(point) : "var(--muted)" }} /><span><strong className="model-with-logo">{point && <BrandMarks point={point} />}{row.model}</strong><small>{effortLabel(row)}</small></span></button></td><td><strong className="plan-name">{displayAAPlan(row.plan)}</strong><small>{point?.channel || "—"} · {row.kind === "api" ? "API" : "Подписка"}</small></td><td className="aa-method-cell"><strong>{methodLabel(row.method)}</strong><small>{evidenceLabel(evidenceKey(row))}</small><TransferBadge row={row} /></td><td className="numeric real-price">{costLabel(row, scope)}{!hasCost(metric) && <small>{statusNames[metric.status || "missing"]}</small>}</td><td className="numeric">{row.estimated ? "≈ " : ""}{number(row.intelligence_index)}</td><td className="numeric">{money(row.monthly_usd)}</td>{[metric.cache_read_share, metric.input_without_cache_read_share, metric.output_share].map((value, item) => <td key={item} className="numeric">{percent(value)}</td>)}<td className="numeric">{money(metric.api_price_usd_per_million)}</td><td className="numeric">{row.kind === "subscription" ? (approximate && finite(metric.effective_price_usd_per_million) ? "≈ " : "") + money(metric.effective_price_usd_per_million) : "—"}</td><td className="numeric">{number(metric.quota_per_unit)}{row.quota_unit && <small>{row.quota_unit}</small>}</td><td className="numeric">{number(metric.units_per_month)}</td><td className="numeric">{number(metric.units_per_100_usd)}</td><td><QualityBadge row={row} /></td><td><ArrowUpRight size={15} /></td></tr>;
       })}</tbody></table>{!sorted.length && <div className="empty table-empty">Нет строк, соответствующих фильтрам и поиску.</div>}</div>
       <ResizeHandle target={tableScroll} label="Потяните для изменения высоты таблицы · двойной щелчок для сброса" /><p className="ranking-status">{sorted.length} строк · прокрутка внутри таблицы · три доли токенов суммируются в 100% до округления. Выход включает ответ и reasoning.</p>
-      <details className="aa-data-notes"><summary>Метод, срезы данных и ограничения</summary><p>Для каждого тарифа показаны основание весов списания и происхождение данных: прямой замер, перенос с другого тарифа, несколько замеров или замер с поправками. Во всех вариантах складываем объёмы категорий AA, умноженные на их веса, и делим месячную плату пропорционально расходу лимита. Для известных квот используем ставки канала. API-калибровка оценивает месячный API-эквивалент по измеренной доле лимита и предполагает API-ставки в роли весов списания. Это гипотеза, а не подтверждённое правило подписки. Приблизительный API-сценарий допускает дополнительные явно указанные допущения об исходном замере или сообщённом денежном пуле и получает низкую надёжность. Такие оценки видны на графике и могут входить в границу текущей выборки. Без данных для сценария цена отсутствует.</p><p>Цена API и цена подписки за миллион относятся к одному профилю AA. Стоимость задачи — взвешенное среднее расходов по бенчмаркам, без деления на индекс интеллекта. Стоимость набора — суммарный расход полного прогона; пропорции между моделями могут отличаться.</p><p>AA {metadata.aa_version || "—"} · срез AA: {metadata.aa_retrieved_at || "—"} · срез тарифов: {metadata.pricing_retrieved_at_utc || "—"} · включено пар модель × тариф: {number(metadata.included_plans)}.</p>{metadata.pricing_revision && /^[a-f0-9]{7,40}$/i.test(metadata.pricing_revision) && <p><a href={`https://github.com/FeiZhuLulu/real-api-pricing/tree/${metadata.pricing_revision}`} target="_blank" rel="noreferrer">Исходный срез RAP {metadata.pricing_revision.slice(0, 8)} ↗</a></p>}{typeof metadata.supplemental_source_revision === "string" && /^[a-f0-9]{7,40}$/i.test(metadata.supplemental_source_revision) && <p>Дополнительные практические данные: <a href={`https://github.com/FeiZhuLulu/real-api-pricing/tree/${metadata.supplemental_source_revision}`} target="_blank" rel="noreferrer">срез RAP {metadata.supplemental_source_revision.slice(0, 8)} ↗</a>. API-калибровка: {number(metadata.empirical_api_calibration_plans)} пар; приблизительные API-сценарии: {number(new Set(rows.filter(row => row.method === "empirical_api_scenario").map(row => row.pricing_id || `${row.plan_id}::${row.model_id}`)).size)} пар; без ставок списания: {number(unavailablePlans)} пар.</p>}</details>
+      <details className="aa-data-notes"><summary>Метод, срезы данных и ограничения</summary><p>Для каждого тарифа показаны основание весов списания и происхождение данных: прямой замер, перенос с другого тарифа, несколько замеров или замер с поправками. Во всех вариантах складываем объёмы категорий AA, умноженные на их веса, и делим месячную плату пропорционально расходу лимита. Для известных квот используем ставки канала. API-калибровка оценивает месячный API-эквивалент по измеренной доле лимита и предполагает API-ставки в роли весов списания. Это гипотеза, а не подтверждённое правило подписки. Приблизительный API-сценарий допускает дополнительные явно указанные допущения об исходном замере или сообщённом денежном пуле и получает низкую надёжность. Такие оценки видны на графике и могут входить в границу текущей выборки. При переносе между моделями предполагаем равенство месячного API-эквивалента квоты: P(Opus 5.5) = P(Opus 5). Расход задачи рассчитываем по собственному профилю AA новой модели. Жёлтая метка «Гипотеза переноса» обозначает это отдельное допущение; общая надёжность не выше средней и не выше надёжности исходной квоты. Без данных для сценария цена отсутствует.</p><p>Цена API и цена подписки за миллион относятся к одному профилю AA. Стоимость задачи — взвешенное среднее расходов по бенчмаркам, без деления на индекс интеллекта. Стоимость набора — суммарный расход полного прогона; пропорции между моделями могут отличаться.</p><p>AA {metadata.aa_version || "—"} · срез AA: {metadata.aa_retrieved_at || "—"} · срез тарифов: {metadata.pricing_retrieved_at_utc || "—"} · включено пар модель × тариф: {number(metadata.included_plans)}.</p>{metadata.pricing_revision && /^[a-f0-9]{7,40}$/i.test(metadata.pricing_revision) && <p><a href={`https://github.com/FeiZhuLulu/real-api-pricing/tree/${metadata.pricing_revision}`} target="_blank" rel="noreferrer">Исходный срез RAP {metadata.pricing_revision.slice(0, 8)} ↗</a></p>}{typeof metadata.supplemental_source_revision === "string" && /^[a-f0-9]{7,40}$/i.test(metadata.supplemental_source_revision) && <p>Дополнительные практические данные: <a href={`https://github.com/FeiZhuLulu/real-api-pricing/tree/${metadata.supplemental_source_revision}`} target="_blank" rel="noreferrer">срез RAP {metadata.supplemental_source_revision.slice(0, 8)} ↗</a>. API-калибровка: {number(metadata.empirical_api_calibration_plans)} пар; приблизительные API-сценарии: {number(new Set(rows.filter(row => row.method === "empirical_api_scenario").map(row => row.pricing_id || `${row.plan_id}::${row.model_id}`)).size)} пар; гипотезы переноса между моделями: {number(new Set(rows.filter(row => row.method === "empirical_model_transfer").map(row => row.pricing_id || `${row.plan_id}::${row.model_id}`)).size)} пар; без ставок списания: {number(unavailablePlans)} пар.</p>}</details>
       <ExcludedPlans plans={data.quota_scenario.excluded || []} />
     </section>
     {panel && <Modal title={panel === "models" ? "Выберите модели и тарифы" : panel === "filters" ? "Фильтры расчёта" : panel === "display" ? "Настройки графика" : "Скачать график и данные"} onClose={() => setPanel(null)} wide={panel === "models" || panel === "filters"} closeLabel="Закрыть">
@@ -310,6 +342,6 @@ export default function AACosts({ navigation, baseData, theme, lang }: AACostsPr
       {panel === "display" && <div className="settings"><label><span>Граница выборки, включая условные оценки</span><input type="checkbox" checked={state.frontier} onChange={event => setChartState(previous => ({ ...previous, frontier: event.target.checked }))} /></label><label><span>Подписи точек</span><select value={state.labels} onChange={event => setChartState(previous => ({ ...previous, labels: event.target.value as State["labels"] }))}><option value="frontier">На границе</option><option value="all">Все</option><option value="none">Без подписей</option></select></label></div>}
       {panel === "download" && <div className="download-list"><p className="panel-description">График использует текущие фильтры и единицы стоимости. CSV содержит строки таблицы с исходной числовой точностью.</p><button onClick={() => void exportChart("png")} disabled={!adapted.rows.length}><DownloadSimple size={17} />График PNG</button><button onClick={() => void exportChart("svg")} disabled={!adapted.rows.length}><DownloadSimple size={17} />График SVG</button><button onClick={() => downloadCsv(sorted, scope)} disabled={!sorted.length}><DownloadSimple size={17} />Таблица CSV</button>{exportError && <p role="alert">Не удалось экспортировать график: {exportError}</p>}</div>}
     </Modal>}
-    {detailOpen && example && <Modal title="Пошаговый расчёт" onClose={() => setDetailOpen(false)} wide closeLabel="Закрыть"><div className="aa-calculation-controls"><label>Модель · effort · тариф<select id="aa-example" value={selectedId} onChange={event => setSelectedId(event.target.value)}>{rows.map(row => <option key={row.id} value={row.id}>{row.model} · {effortLabel(row)} · {row.plan}</option>)}</select></label><label className="aa-exact"><input type="checkbox" checked={exact} onChange={event => setExact(event.target.checked)} />Полная точность</label></div><Calculation row={example} scope={scope} exact={exact} estimate={reconstruction} /></Modal>}
+    {detailOpen && example && <Modal title="Пошаговый расчёт" onClose={() => setDetailOpen(false)} wide closeLabel="Закрыть"><div className="aa-calculation-controls"><label>Модель · effort · тариф<select id="aa-example" value={selectedId} onChange={event => setSelectedId(event.target.value)}>{rows.map(row => <option key={row.id} value={row.id}>{row.model} · {effortLabel(row)} · {displayAAPlan(row.plan)}</option>)}</select></label><label className="aa-exact"><input type="checkbox" checked={exact} onChange={event => setExact(event.target.checked)} />Полная точность</label></div><Calculation row={example} scope={scope} exact={exact} estimate={reconstruction} /></Modal>}
   </>;
 }

@@ -14,9 +14,9 @@ const reference = createAaData(aa, pricing, rates, audit, weighting);
 test('Основная вкладка получает обычные подписки, метод переноса и исходные числа замера', async () => {
   const empirical = await read('pricing/empirical-evidence.json');
   const data = createAaData(aa, pricing, rates, audit, weighting, empirical);
-  assert.equal(data.quota_scenario.metadata.included_plans, 55);
+  assert.equal(data.quota_scenario.metadata.included_plans, 58);
   assert.equal(data.quota_scenario.metadata.excluded_plans, 10);
-  assert.equal(data.quota_scenario.rows.length, 231);
+  assert.equal(data.quota_scenario.rows.length, 251);
   assert.equal(data.metadata.row_count, data.quota_scenario.rows.length);
   const luna = data.quota_scenario.rows.find(row => row.pricing_id === 'chatgpt_plus::gpt-5.6-luna');
   assert.equal(luna.method, 'empirical_api_calibration');

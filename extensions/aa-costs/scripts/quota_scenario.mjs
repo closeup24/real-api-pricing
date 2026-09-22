@@ -237,7 +237,7 @@ export function buildQuotaScenario(aa, pricing, rates) {
       effort_label: variant.effort_label, effort_level: variant.effort_level,
       source_id: variant.source_id, source_name: variant.source_name,
       intelligence_index: variant.intelligence_index, estimated: variant.intelligence_index_estimated,
-      aa_version: variant.source_version, method: METHOD,
+      aa_version: variant.source_version, aa_retrieved_at: variant.source_retrieved_at || aa.metadata?.retrieved_at, method: METHOD,
     };
     const apiTask = apiMetric(taskProfile);
     const apiSuite = apiMetric(suiteProfile);
@@ -286,6 +286,7 @@ export function buildQuotaScenario(aa, pricing, rates) {
     metadata: {
       schema_version: 1, method: METHOD, status: guard.status, notes: guard.notes,
       aa_version: aa.metadata?.intelligence_index_version ?? null, aa_retrieved_at: aa.metadata?.retrieved_at ?? null,
+      aa_additions: aa.metadata?.additions ?? [],
       pricing_revision: pricing.revision ?? null, pricing_retrieved_at_utc: pricing.retrieved_at_utc ?? null,
       pricing_rows_sha256: pricingRowsSha256(pricing), quota_rates_metadata: rates?.metadata ?? null,
       model_count: modelIds.size, variant_count: aa.rows.length, api_rows: aa.rows.length,

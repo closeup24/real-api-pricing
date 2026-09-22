@@ -7,6 +7,62 @@ const same = (a, b) => positive(a) && positive(b) && Math.abs(a - b) <= Math.max
 const origins = new Set(['direct_measurement', 'pooled_measurements', 'calibrated_measurement', 'plan_extrapolation', 'reported_quota']);
 const unique = values => [...new Set(values.filter(value => typeof value === 'string' && value.trim()))];
 
+/** Переносит денежный пул, сохраняя ставки новой модели и неопределённость исходного замера. */
+function modelTransferRate(evidence, plan, variants, sourceRate, sourcePlan) {
+  const transfer = evidence.transfer;
+  if (evidence.evidence_method !== 'model_transfer' || transfer?.confidence !== 'medium'
+    || typeof transfer.assumption_ru !== 'string' || !transfer.assumption_ru.trim()
+    || !Array.isArray(evidence.source_urls) || !evidence.source_urls.length) {
+    throw new Error('Перенос между моделями требует явной гипотезы, средней уверенности переноса и источников.');
+  }
+  if (!sourceRate || !sourcePlan || !['empirical_api_calibration', 'empirical_api_scenario'].includes(sourceRate.method)
+    || sourceRate.quota_unit !== 'USD API-экв.' || !positive(sourceRate.monthly_quota)
+    || transfer.source_model_id !== sourcePlan.model || sourceRate.model_id !== sourcePlan.model
+    || plan.model === sourcePlan.model || plan.plan_id !== sourcePlan.plan_id
+    || !same(plan.monthly_usd, sourcePlan.monthly_usd) || !same(evidence.monthly_usd, plan.monthly_usd)
+    || evidence.model_id !== plan.model) {
+    throw new Error('Нет совместимого денежного пула исходной модели на том же тарифе; цепочки переносов не допускаются.');
+  }
+  const sourceQuality = sourceRate.quality;
+  if (!['high', 'medium', 'low'].includes(sourceQuality?.level) || !Array.isArray(sourceQuality.reasons)
+    || !sourceQuality.reasons.length || sourceQuality.reasons.some(reason => typeof reason !== 'string' || !reason.trim())) {
+    throw new Error('Неизвестна надёжность исходной квоты.');
+  }
+  if (!variants.length) throw new Error('В AA нет новой модели для переноса.');
+  const componentRates = getRates(variants[0]);
+  if (!QUOTA_COMPONENTS.every(key => positive(componentRates[key]))
+    || variants.some(variant => QUOTA_COMPONENTS.some(key => !same(getRates(variant)[key], componentRates[key])))) {
+    throw new Error('Неизвестны или различаются API-ставки новой модели.');
+  }
+  const quality = {
+    level: sourceQuality.level === 'low' ? 'low' : 'medium',
+    reasons: unique([transfer.assumption_ru, 'Прямого замера новой модели нет. Надёжность всей оценки не выше надёжности исходного денежного пула.', ...sourceQuality.reasons]),
+  };
+  const empirical = {
+    basis_label: evidence.basis_label, reason_ru: evidence.reason_ru,
+    transfer: {
+      ...transfer, source_plan: sourcePlan.plan,
+      source_model_name: sourcePlan.model_display || sourcePlan.model,
+      monthly_api_equivalent_usd: sourceRate.monthly_quota,
+      source_quality: structuredClone(sourceQuality),
+      source_empirical: structuredClone(sourceRate.empirical), source_method: sourceRate.method,
+    },
+  };
+  return {
+    id: plan.id, model_id: plan.model, plan: plan.plan, status: 'assumed',
+    method: 'empirical_model_transfer', evidence_method: 'model_transfer', empirical, quality,
+    monthly_usd: plan.monthly_usd, monthly_quota: sourceRate.monthly_quota, quota_unit: 'USD API-экв.',
+    component_rates: componentRates,
+    component_rate_status: Object.fromEntries(QUOTA_COMPONENTS.map(key => [key, 'assumed'])),
+    original_quota: empirical,
+    rate_basis: {method: 'empirical_model_transfer', basis_label: evidence.basis_label, evidence_method: 'model_transfer'},
+    source_urls: unique([...sourceRate.source_urls, ...evidence.source_urls]),
+    assumptions_ru: [transfer.assumption_ru, 'Категории токенов и API-ставки берутся у новой модели из AA. Списание квоты условно пропорционально API-стоимости.'],
+    notes_ru: unique([evidence.reason_ru, ...(evidence.notes_ru || [])]),
+    shared_pool_note: sourceRate.shared_pool_note,
+  };
+}
+
 /** Замер задаёт условную ёмкость; он сам по себе не устанавливает веса списания. */
 function empiricalRate(evidence, plan, variants) {
   if (!origins.has(evidence.evidence_method)) throw new Error('Нет проверенного практического основания: синтетическая смесь и неизвестное происхождение не допускаются.');
@@ -135,7 +191,9 @@ export function buildExpandedQuotaScenario(aa, pricing, rates, evidence) {
   const nativeIds = new Set(mergedRates.map(row => row.id));
   const failures = new Map();
   const unavailable = new Map();
-  for (const observation of evidence.rows) {
+  // Сначала восстанавливаются исходные денежные пулы, затем разрешаются ссылки на них.
+  const observations = [...evidence.rows].sort((a, b) => Number(a.method === 'empirical_model_transfer') - Number(b.method === 'empirical_model_transfer'));
+  for (const observation of observations) {
     if (nativeIds.has(observation.id)) continue;
     const plan = expandedPricing.rows.find(row => row.id === observation.id && row.billing === 'subscription');
     if (!plan) { failures.set(observation.id, 'В проверенном снимке нет соответствующего тарифа.'); continue; }
@@ -144,7 +202,12 @@ export function buildExpandedQuotaScenario(aa, pricing, rates, evidence) {
       continue;
     }
     try {
-      mergedRates.push(empiricalRate(observation, plan, aa.rows.filter(row => row.model === plan.model)));
+      const variants = aa.rows.filter(row => row.model === plan.model);
+      if (observation.method === 'empirical_model_transfer') {
+        const sourceId = observation.transfer?.source_pricing_id;
+        mergedRates.push(modelTransferRate(observation, plan, variants,
+          mergedRates.find(rate => rate.id === sourceId), expandedPricing.rows.find(row => row.id === sourceId)));
+      } else mergedRates.push(empiricalRate(observation, plan, variants));
     } catch (error) { failures.set(observation.id, error.message); }
   }
   const merged = {
@@ -186,6 +249,7 @@ export function buildExpandedQuotaScenario(aa, pricing, rates, evidence) {
     empirical_plans: empiricalPlans.length,
     empirical_api_calibration_plans: empiricalPlans.filter(plan => plan.method === 'empirical_api_calibration').length,
     empirical_api_scenario_plans: empiricalPlans.filter(plan => plan.method === 'empirical_api_scenario').length,
+    empirical_model_transfer_plans: empiricalPlans.filter(plan => plan.method === 'empirical_model_transfer').length,
     empirical_token_proxy_plans: 0,
     independent_of_rap_token_mix: true,
   });

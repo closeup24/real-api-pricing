@@ -355,7 +355,7 @@ const rows = audit.rows.filter(row => !present.has(row.id) && auditedMethods.has
   return row;
 });
 
-// Дополнение только для трёх новых пар Grok 4.7; полный снимок pricing не заменяется.
+// Дополнительные пары не заменяют закреплённый снимок pricing.
 const additionalPlans = ['supergrok', 'supergrok_plus', 'supergrok_heavy'].map(planId => {
   const id = `${planId}::grok-4.7`;
   const point = fullPoints.points.find(item => item.id === id);
@@ -399,6 +399,41 @@ const additionalPlans = ['supergrok', 'supergrok_plus', 'supergrok_heavy'].map(p
   return plan;
 });
 
+// Opus 5.5 получает прежний денежный пул, а не прежнее число токенов и не переоценённый замер.
+for (const planId of ['claude_pro', 'claude_max_5x', 'claude_max_20x']) {
+  const sourceId = `${planId}::claude-opus-5`;
+  const sourcePlan = pricingById.get(sourceId);
+  const sourceEvidence = rows.find(row => row.id === sourceId);
+  assert.ok(sourcePlan && sourceEvidence, `Нет исходной квоты ${sourceId}`);
+  const id = `${planId}::claude-opus-5.5`;
+  const assumption = 'Гипотеза: для Opus 5.5 и Opus 5 на одном тарифе Claude доступен одинаковый денежный API-эквивалент квоты. Прямых замеров Opus 5.5 пока нет.';
+  const sourceUrls = unique([...sourceEvidence.source_urls,
+    'https://platform.claude.com/docs/en/about-claude/pricing',
+    'https://artificialanalysis.ai/models/claude-opus-5-5',
+  ]);
+  additionalPlans.push({
+    id, model: 'claude-opus-5.5', model_display: 'Claude Opus 5.5',
+    plan_id: planId, plan: sourcePlan.plan.replace(' (9/14+)', ''),
+    billing: 'subscription', monthly_usd: sourcePlan.monthly_usd,
+    model_provider: 'Anthropic', access_channel: 'Claude', workload: 'model_transfer',
+    source_url: sourceUrls[0],
+  });
+  rows.push({
+    id, model_id: 'claude-opus-5.5', monthly_usd: sourcePlan.monthly_usd,
+    method: 'empirical_model_transfer', evidence_method: 'model_transfer',
+    basis_label: 'Гипотеза переноса денежной квоты Opus 5 → Opus 5.5',
+    reason_ru: assumption,
+    transfer: {source_pricing_id: sourceId, source_model_id: 'claude-opus-5', confidence: 'medium', assumption_ru: assumption},
+    source_urls: sourceUrls,
+    notes_ru: [
+      'Перенос имеет среднюю уверенность как гипотеза, а итоговая надёжность не выше исходного замера Opus 5. Жёлтая метка не означает наличие измерения Opus 5.5.',
+      'Пул восстанавливается по старым ставкам и наблюдениям Opus 5; расходы новых задач — по собственным категориям и ставкам Opus 5.5 из AA.',
+      'Общий бюджет считается доступным одной выбранной модели. Квоты двух Opus внутри одной подписки не суммируются; месячный эквивалент использует четыре недели.',
+      'Изменения пятичасовых ограничений при релизе не считаются подтверждённым увеличением недельного денежного пула.',
+    ],
+  });
+}
+
 assert.equal(new Set(rows.map(row => row.id)).size, rows.length, 'Повторная пара тариф/модель.');
 assert.ok(rows.every(row => !present.has(row.id)), 'Эмпирический метод не должен заменять документированные ставки.');
 const counts = Object.fromEntries(unique(rows.map(row => row.method)).map(method => [method, rows.filter(row => row.method === method).length]));
@@ -417,7 +452,7 @@ const result = {
     method_ru: 'Объёмы для цены задачи берутся только из AA. Связанные замеры дают условную API-калибровку, неполные замеры и сообщения о пулах — отдельные сценарии низкой надёжности с явными допущениями. Общая токенная ёмкость RAP и фиксированная смесь не используются.',
     quality_policy_ru: 'Надёжность оценивается для переноса квоты на нагрузку AA: средняя — связанный замер с API-гипотезой, низкая — неполный/смешанный образец, внутренние денежные единицы, сообщённый пул или перенос между тарифами. Оценка RAP сохраняется отдельно и автоматически не наследуется.',
     period_note_ru: 'Недельные наблюдения приводятся к четырём неделям; это не календарный месяц. Пулы общие для моделей одного тарифа: ёмкости нельзя складывать.',
-    source_policy_ru: 'Снимок pricing и его аудит сохранены. Research и три дополнительные пары Grok 4.7 прочитаны из закреплённого коммита; их точные байты проверяются SHA-256.',
+    source_policy_ru: 'Снимок pricing и его аудит сохранены. Research и три дополнительные пары Grok 4.7 прочитаны из закреплённого коммита; их точные байты проверяются SHA-256. Три пары Opus 5.5 добавлены отдельно как гипотеза переноса денежного пула Opus 5, без выдуманного токенного лимита.',
   },
   rows,
   additional_plans: additionalPlans,

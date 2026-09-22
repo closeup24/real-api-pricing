@@ -1,6 +1,6 @@
 import assert from "node:assert/strict";
 import test from "node:test";
-import { aaIsApproximate, aaMethodLabel, aaQuality, aaQualityLabel, aaReferencePoint, adaptAAChart } from "./aaChartAdapter";
+import { aaIsApproximate, aaMethodLabel, aaQuality, aaQualityLabel, aaReferencePoint, aaTransferLabel, adaptAAChart, displayAAPlan } from "./aaChartAdapter";
 import type { QuotaRow } from "./aaTypes";
 import type { Point, SiteData } from "./types";
 
@@ -151,4 +151,89 @@ test("приблизительный сценарий с низкой надёж
     assert.equal(aaIsApproximate(row, scope), true);
   }
   assert.equal(aaIsApproximate(quota({ task: { cost_usd: null }, quality: row.quality }), "task"), false);
+});
+
+const transferRow = (): QuotaRow => quota({
+  id: "opus55-max::claude_max_20x", model_id: "claude-opus-5.5", model: "Claude Opus 5.5", effort: "max", effort_label: "Max",
+  aa_retrieved_at: "2026-09-23T08:00:00Z",
+  method: "empirical_model_transfer", evidence_method: "model_transfer", plan: "Claude Max 20x (9/14+)",
+  plan_id: "claude_max_20x", pricing_id: "claude_max_20x::claude-opus-5.5", monthly_quota: 4000,
+  quality: { level: "medium", reasons: ["Ёмкость перенесена с Opus 5."] },
+  empirical: {
+    basis_label: "Гипотеза равной ёмкости", reason_ru: "Токены и API-ставки AA относятся к Opus 5.5.",
+    transfer: {
+      source_pricing_id: "claude_max_20x::claude-opus-5", source_model_id: "claude-opus-5", source_model_name: "Claude Opus 5",
+      source_plan: "Claude Max 20x (9/14+)", monthly_api_equivalent_usd: 4000,
+      source_quality: { level: "low", reasons: ["Неполная разбивка исходного замера."] }, assumption_ru: "P(Opus 5.5) = P(Opus 5).", confidence: "medium",
+      source_method: "empirical_api_scenario", source_empirical: { basis_label: "Замер Opus 5", reason_ru: "Исходный сценарий.", calibration: { observed_api_usd: 200, quota_fraction: .2, periods_per_month: 4, plan_multiplier: 1, monthly_api_equivalent_usd: 4000 } },
+    },
+  },
+});
+
+test("перенос между моделями получает отдельную жёлтую метку и сохраняет собственную цену AA", () => {
+  const row = transferRow(), before = JSON.stringify(row);
+  assert.equal(aaMethodLabel(row.method), "Перенос квоты между моделями");
+  assert.equal(aaTransferLabel, "Гипотеза переноса");
+  assert.equal(row.empirical?.calibration, undefined);
+  for (const scope of ["task", "suite"] as const) {
+    const result = adaptAAChart([row], scope, site([]));
+    assert.equal(result.rows.length, 1);
+    assert.equal(result.rows[0].point.real_usd_per_mtok, row[scope]?.cost_usd);
+    assert.equal(result.rows[0].point.vendor, "Anthropic");
+    assert.equal(result.rows[0].point.confidence, "low");
+    assert.match(result.rows[0].mapping?.variant || "", /🟡 Гипотеза переноса · Надёжность: Низкая/);
+    assert.match(result.rows[0].point.model_display, /^≈ Claude Opus 5\.5 · Max$/);
+    assert.equal(result.sourceRows.get(`aa::${row.id}`), row);
+  }
+  assert.equal(JSON.stringify(row), before);
+});
+
+test("надёжность переноса не повышает слабый источник и ограничена средней", () => {
+  for (const [sourceLevel, expected] of [["high", "medium"], ["medium", "medium"], ["low", "low"], ["unavailable", "unavailable"]] as const) {
+    const row = transferRow();
+    row.quality = { level: "high", reasons: [] };
+    row.empirical!.transfer!.source_quality = { level: sourceLevel, reasons: ["Основание исходной квоты."] };
+    assert.equal(aaQuality(row).level, expected);
+  }
+  const alreadyLow = transferRow();
+  alreadyLow.quality = { level: "low", reasons: ["Дополнительное ограничение AA."] };
+  alreadyLow.empirical!.transfer!.source_quality.level = "high";
+  assert.equal(aaQuality(alreadyLow).level, "low");
+});
+
+test("дата тарифа AA читаема на графике, исходные имена и связи сохраняются", () => {
+  assert.equal(displayAAPlan("Claude Max 20x (9/14+)"), "Claude Max 20x (с 14 сентября 2026)");
+  assert.equal(displayAAPlan("Claude Max 5x (9/14+)"), "Claude Max 5x (с 14 сентября 2026)");
+  assert.equal(displayAAPlan("Claude Pro"), "Claude Pro");
+  const row = transferRow(), result = adaptAAChart([row], "task", site([]));
+  assert.equal(result.rows[0].point.plan, "Claude Max 20x (с 14 сентября 2026)");
+  assert.match(result.rows[0].point.label, /с 14 сентября 2026/);
+  assert.equal(result.rows[0].point.plan_id, "claude_max_20x");
+  assert.equal(row.plan, "Claude Max 20x (9/14+)");
+  assert.equal(row.empirical?.transfer?.source_plan, "Claude Max 20x (9/14+)");
+  assert.equal(result.sourceRows.get(`aa::${row.id}`)?.pricing_id, row.pricing_id);
+  assert.equal(result.sourceRows.get(`aa::${row.id}`)?.aa_retrieved_at, "2026-09-23T08:00:00Z");
+});
+
+test("новая модель вне RAP получает производителя и канал в таблице без подмены моделью источника", () => {
+  const source = nativePoint({ id: "claude_max_20x::claude-opus-5", model: "claude-opus-5", model_display: "Claude Opus 5", vendor: "Anthropic", channel: "Anthropic", plan_id: "claude_max_20x" });
+  const upstream = site([source]);
+  const subscription = transferRow();
+  const api = { ...subscription, id: "opus55-api", pricing_id: undefined, kind: "api" as const, plan_id: "api-aa", plan: "API AA" };
+  for (const row of [subscription, api]) {
+    for (const data of [upstream, site([])]) {
+      const display = aaReferencePoint(row, data), chart = adaptAAChart([row], "task", data).rows[0].point;
+      assert.equal(display.vendor, "Anthropic");
+      assert.equal(display.channel, "Anthropic");
+      assert.equal(display.vendor, chart.vendor);
+      assert.equal(display.channel, chart.channel);
+      assert.equal(display.model, "claude-opus-5.5");
+      assert.equal(display.model_display, "Claude Opus 5.5 · Max");
+      assert.equal(display.id, `aa::${row.id}`);
+      assert.equal(display.source, row.sources?.join("\n"));
+      assert.equal(Number.isNaN(display.real_usd_per_mtok), true);
+      assert.equal(display.monthly_tokens, null);
+      assert.notEqual(display.id, source.id);
+    }
+  }
 });
