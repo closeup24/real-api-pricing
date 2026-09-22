@@ -1,6 +1,6 @@
 import assert from "node:assert/strict";
 import test from "node:test";
-import { aaMethodLabel, aaReferencePoint, adaptAAChart } from "./aaChartAdapter";
+import { aaIsApproximate, aaMethodLabel, aaQuality, aaQualityLabel, aaReferencePoint, adaptAAChart } from "./aaChartAdapter";
 import type { QuotaRow } from "./aaTypes";
 import type { Point, SiteData } from "./types";
 
@@ -113,9 +113,42 @@ test("подсказка AA называет основание расчёта �
   const calibration = quota({ id: "calibration", method: "empirical_api_calibration" });
   const native = quota({ id: "native", method: "aa_tokens_quota_rates" });
   const result = adaptAAChart([calibration, native], "task", site());
-  assert.equal(result.rows[0].mapping?.variant, "High · Метод: API-калибровка");
-  assert.equal(result.rows[1].mapping?.variant, "High · Метод: Квота × ставки");
+  assert.equal(result.rows[0].mapping?.variant, "High · Метод: API-калибровка · Надёжность: Средняя");
+  assert.equal(result.rows[1].mapping?.variant, "High · Метод: Квота × ставки · Надёжность: Средняя");
   assert.equal(result.rows[0].mapping?.reasoning_effort, "High");
   assert.equal(result.rows[0].point.real_usd_per_mtok, calibration.task?.cost_usd);
   assert.equal(result.rows[1].point.real_usd_per_mtok, native.task?.cost_usd);
+});
+
+test("явная надёжность AA имеет приоритет над исторической confidence", () => {
+  const row = quota({ confidence: "source", quality: { level: "low", reasons: ["Неполный смешанный замер."], label: "Условный сценарий" } });
+  const result = adaptAAChart([row], "task", site());
+  assert.deepEqual(aaQuality(row), row.quality);
+  assert.equal(result.rows[0].point.confidence, "low");
+  assert.equal(result.rows[0].mapping?.mapping_confidence, "low");
+  assert.match(result.rows[0].point.note, /Неполный смешанный замер/);
+  assert.match(result.rows[0].mapping?.variant || "", /Надёжность: Низкая/);
+  assert.equal(row.confidence, "source");
+});
+
+test("старые срезы сохраняют четыре уровня надёжности через confidence", () => {
+  for (const [confidence, level, label] of [["source", "high", "Высокая"], ["documented", "high", "Высокая"], ["assumed", "medium", "Средняя"], ["low", "low", "Низкая"], ["unavailable", "unavailable", "Нет данных"]]) {
+    assert.equal(aaQuality(quota({ confidence })).level, level);
+    assert.equal(aaQualityLabel(level), label);
+  }
+  assert.equal(aaQuality(quota({ confidence: "documented", method: "unavailable_quota_weights" })).level, "unavailable");
+});
+
+test("приблизительный сценарий с низкой надёжностью остаётся на обоих графиках с явной отметкой", () => {
+  const row = quota({ method: "empirical_api_scenario", quality: { level: "low", reasons: ["API-веса списания предположены."] } });
+  for (const scope of ["task", "suite"] as const) {
+    const result = adaptAAChart([row], scope, site());
+    assert.equal(result.rows.length, 1);
+    assert.equal(result.sourceRows.get(`aa::${row.id}`), row);
+    assert.equal(result.rows[0].point.real_usd_per_mtok, row[scope]?.cost_usd);
+    assert.match(result.rows[0].point.model_display, /^≈ /);
+    assert.match(result.rows[0].mapping?.variant || "", /≈ Метод: Приблизительный API-сценарий · Надёжность: Низкая/);
+    assert.equal(aaIsApproximate(row, scope), true);
+  }
+  assert.equal(aaIsApproximate(quota({ task: { cost_usd: null }, quality: row.quality }), "task"), false);
 });

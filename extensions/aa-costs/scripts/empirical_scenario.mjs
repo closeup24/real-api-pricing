@@ -4,7 +4,7 @@ import { getRates } from './estimate_api_price.mjs';
 
 const positive = value => typeof value === 'number' && Number.isFinite(value) && value > 0;
 const same = (a, b) => positive(a) && positive(b) && Math.abs(a - b) <= Math.max(1e-8, Math.abs(b) * 1e-9);
-const origins = new Set(['direct_measurement', 'pooled_measurements', 'calibrated_measurement', 'plan_extrapolation']);
+const origins = new Set(['direct_measurement', 'pooled_measurements', 'calibrated_measurement', 'plan_extrapolation', 'reported_quota']);
 const unique = values => [...new Set(values.filter(value => typeof value === 'string' && value.trim()))];
 
 /** Замер задаёт условную ёмкость; он сам по себе не устанавливает веса списания. */
@@ -17,11 +17,26 @@ function empiricalRate(evidence, plan, variants) {
     reason_ru: evidence.reason_ru,
   };
   let monthlyQuota, quotaUnit, componentRates, assumption;
-  if (evidence.method === 'empirical_api_calibration') {
+  if (['empirical_api_calibration', 'empirical_api_scenario'].includes(evidence.method)) {
+    if (evidence.method === 'empirical_api_scenario' && (evidence.quality?.level !== 'low' || !Array.isArray(evidence.quality?.reasons)
+      || !evidence.quality.reasons.length || evidence.quality.reasons.some(reason => typeof reason !== 'string' || !reason.trim()))) {
+      throw new Error('Приблизительный сценарий требует низкой надёжности и явного объяснения допущений.');
+    }
     const sample = evidence.calibration;
-    if (!sample || ![sample.observed_api_usd, sample.quota_fraction, sample.periods_per_month, sample.plan_multiplier].every(positive)
-      || sample.quota_fraction > 1) throw new Error('Неполные исходные числа API-калибровки.');
-    monthlyQuota = sample.observed_api_usd / sample.quota_fraction * sample.periods_per_month * sample.plan_multiplier;
+    const reportedPool = sample?.input_kind === 'reported_monthly_pool';
+    if (reportedPool && evidence.method !== 'empirical_api_scenario') throw new Error('Сообщённый внутренний пул допускается только как приблизительный сценарий.');
+    if (!sample || !positive(sample.plan_multiplier)
+      || (reportedPool ? !positive(sample.reported_monthly_pool_usd)
+        : ![sample.observed_api_usd, sample.quota_fraction, sample.periods_per_month].every(positive) || sample.quota_fraction > 1)) {
+      throw new Error('Неполные исходные числа API-калибровки.');
+    }
+    const corrections = sample.corrections === undefined ? [] : sample.corrections;
+    if (!Array.isArray(corrections) || corrections.some(item => !positive(item.factor) || typeof item.label !== 'string' || !item.label.trim())) {
+      throw new Error('Поправки к квоте должны иметь положительный множитель и объяснение.');
+    }
+    const basePool = reportedPool ? sample.reported_monthly_pool_usd : sample.observed_api_usd / sample.quota_fraction * sample.periods_per_month;
+    monthlyQuota = basePool * sample.plan_multiplier
+      * corrections.reduce((factor, item) => factor * item.factor, 1);
     quotaUnit = 'USD API-экв.';
     if (!positive(monthlyQuota)) throw new Error('Невозможно вычислить конечный API-эквивалент квоты.');
     if (!variants.length) throw new Error('В AA нет модели для калибровки.');
@@ -30,12 +45,16 @@ function empiricalRate(evidence, plan, variants) {
     if (variants.some(variant => QUOTA_COMPONENTS.some(key => !same(getRates(variant)[key], componentRates[key])))) {
       throw new Error('API-ставки модели различаются по профилям; единая калибровка не подтверждена.');
     }
+    const rateMultiplier = evidence.quota_rate_multiplier ?? 1;
+    if (!positive(rateMultiplier)) throw new Error('Множитель списания должен быть положительным.');
+    componentRates = Object.fromEntries(QUOTA_COMPONENTS.map(key => [key, componentRates[key] * rateMultiplier]));
+    empirical.quota_rate_multiplier = rateMultiplier;
     empirical.calibration = { ...sample, monthly_api_equivalent_usd: monthlyQuota };
-    assumption = 'API-калибровка: предполагается, что доля подписочной квоты пропорциональна API-стоимости нагрузки. Практический замер определяет коэффициент при этой гипотезе, но не доказывает её. Состав AA оплачивается по его категориям и ставкам; фиксированная смесь RAP не используется.';
+    assumption = 'Предполагается, что доля подписочной квоты пропорциональна API-стоимости нагрузки. Исходное наблюдение или сообщение о пуле задаёт коэффициент при этой гипотезе, но не доказывает её. Состав AA оплачивается по его категориям и ставкам; фиксированная смесь RAP не используется.';
   } else throw new Error('Для пересчёта на состав AA нужны ставки списания либо API-калибровка полного замера. Общий токенный объём и равные веса категорий не используются.');
   return {
     id: plan.id, model_id: plan.model, plan: plan.plan, status: 'assumed', method: evidence.method,
-    evidence_method: evidence.evidence_method, empirical,
+    evidence_method: evidence.evidence_method, empirical, quality: evidence.quality,
     monthly_usd: plan.monthly_usd, monthly_quota: monthlyQuota, quota_unit: quotaUnit,
     component_rates: componentRates,
     component_rate_status: Object.fromEntries(QUOTA_COMPONENTS.map(key => [key, 'assumed'])),
@@ -66,6 +85,7 @@ function retainUnavailablePlans(result) {
         monthly_usd: plan.monthly_usd, monthly_quota: null, quota_unit: null,
         component_rates: Object.fromEntries(QUOTA_COMPONENTS.map(key => [key, null])),
         method: 'unavailable_quota_weights', confidence: 'unavailable', status: 'unavailable',
+        quality: {level: 'unavailable', reasons: unique(plan.notes || [])},
         evidence_method: plan.evidence_method, empirical: plan.empirical,
         notes: unique(plan.notes || []), sources: unique([...api.sources, ...plan.sources]),
         task: unavailableMetric(api.task, plan.notes), suite: unavailableMetric(api.suite, plan.notes),
@@ -165,6 +185,7 @@ export function buildExpandedQuotaScenario(aa, pricing, rates, evidence) {
     supplemental_source_revision: evidence.metadata.source_revision,
     empirical_plans: empiricalPlans.length,
     empirical_api_calibration_plans: empiricalPlans.filter(plan => plan.method === 'empirical_api_calibration').length,
+    empirical_api_scenario_plans: empiricalPlans.filter(plan => plan.method === 'empirical_api_scenario').length,
     empirical_token_proxy_plans: 0,
     independent_of_rap_token_mix: true,
   });

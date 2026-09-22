@@ -20,3 +20,4 @@
 .aa-method-cell{min-width:155px}.aa-method-cell>strong{font-size:11px;font-weight:500}.aa-method-cell>small{max-width:210px;white-space:normal}.aa-empirical-basis{margin:20px 0;padding:2px 0 18px;border-bottom:1px solid var(--line)}.aa-empirical-basis>h4{margin-top:10px}.aa-empirical-basis>p>strong{font-weight:550;color:var(--ink)}
 
 .aa-calculation-body .aa-comparison-note{border-left:2px solid var(--line);padding-left:12px;margin:14px 0 20px}
+.aa-quality{white-space:nowrap}.aa-quality.low{color:#bd835b}.aa-quality.low i{background:#bd835b}.aa-quality.unavailable{color:var(--muted)}.aa-quality.unavailable i{background:var(--muted)}.aa-quality-detail{border:1px solid var(--line);border-radius:7px;padding:12px 14px;margin:14px 0}.aa-quality-detail .aa-quality{font-size:12px}.aa-quality-detail .aa-notes{margin-bottom:0}

@@ -164,6 +164,25 @@ function overallStatus(task, suite) {
   return task.status === 'missing' && suite.status === 'missing' ? 'missing' : 'unavailable';
 }
 
+/** Надёжность основания расчёта отделена от технического статуса доступности цены. */
+function quotaQuality(rate, included, notes) {
+  if (!included) return {level: 'unavailable', reasons: unique(notes)};
+  if (rate.quality && ['high', 'medium', 'low'].includes(rate.quality.level) && Array.isArray(rate.quality.reasons) && rate.quality.reasons.length) {
+    return structuredClone(rate.quality);
+  }
+  const conflicts = strings(rate.source_conflicts_ru);
+  const temporalScenario = rate.capacity_multiplier != null && ![1, 2].includes(rate.capacity_multiplier);
+  const extrapolated = rate.evidence_method === 'plan_extrapolation';
+  const level = conflicts.length || temporalScenario || extrapolated ? 'low' : rate.status === 'documented' ? 'high' : 'medium';
+  return {level, reasons: unique([
+    ...conflicts,
+    temporalScenario ? 'Использован условный средний сценарий времени суток, а не отдельный тариф.' : '',
+    extrapolated ? 'Квота перенесена с другого тарифа; независимого замера этой подписки нет.' : '',
+    rate.status === 'documented' ? 'В сохранённом источнике заданы совместимые квота и ставки всех категорий.' : 'Есть основание для квоты, но правила списания содержат перечисленные допущения.',
+    ...strings(rate.assumptions_ru),
+  ])};
+}
+
 /** Списывает квоты по составу AA; смесь RAP и её месячная token-ёмкость не используются. */
 export function buildQuotaScenario(aa, pricing, rates) {
   if (!Array.isArray(aa?.rows) || !Array.isArray(pricing?.rows)) throw new TypeError('Нужны массивы AA и тарифов.');
@@ -189,6 +208,7 @@ export function buildQuotaScenario(aa, pricing, rates) {
       component_rate_status: rate?.component_rate_status ?? null,
       status: included ? rate.status : 'unavailable', included,
       confidence: rate?.status ?? 'unavailable',
+      quality: quotaQuality(rate, included, notes),
       method: rate?.method ?? METHOD,
       evidence_method: rate?.evidence_method,
       empirical: rate?.empirical,
@@ -224,6 +244,7 @@ export function buildQuotaScenario(aa, pricing, rates) {
     rows.push({
       ...common, id: `${variant.source_id}::quota-api-aa`, kind: 'api', plan: 'API · исходная стоимость AA', plan_id: 'api-aa',
       confidence: 'source', monthly_usd: null, monthly_quota: null, quota_unit: null, method: 'aa_original_api',
+      quality: {level: apiTask.cost_usd === null && apiSuite.cost_usd === null ? 'unavailable' : 'high', reasons: ['Опубликованная API-стоимость AA. Надёжность восстановления токенов и оценочный индекс отмечены отдельно в разборе.']},
       status: overallStatus(apiTask, apiSuite), notes: unique(estimates.notes), sources: unique([variant.source]),
       task: apiTask, suite: apiSuite,
     });
@@ -234,6 +255,7 @@ export function buildQuotaScenario(aa, pricing, rates) {
       rows.push({
         ...common, id: `${variant.source_id}::quota::${plan.id}`, kind: 'subscription', plan: plan.plan, plan_id: plan.plan_id,
         pricing_id: plan.id, confidence: rate.status, monthly_usd: rate.monthly_usd, monthly_quota: rate.monthly_quota, quota_unit: rate.quota_unit,
+        quality: structuredClone(plan.quality),
         method: rate.method ?? METHOD, evidence_method: rate.evidence_method, empirical: rate.empirical,
         original_quota: rate.original_quota ?? null, component_rates: { ...rate.component_rates }, rate_basis: rate.rate_basis,
         component_rate_status: rate.component_rate_status ?? null,

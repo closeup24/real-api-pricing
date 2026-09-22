@@ -3,17 +3,27 @@ export type ComponentKey = typeof componentKeys[number];
 export type Components = Partial<Record<ComponentKey, number | null>>;
 export type Scope = "task" | "suite";
 export type MetricStatus = "consistent" | "approximate" | "missing" | "unavailable";
+export type QualityLevel = "high" | "medium" | "low" | "unavailable";
+export interface RowQuality {
+  level: QualityLevel;
+  reasons: string[];
+  label?: string;
+}
 
 export interface EmpiricalBasis {
   basis_label: string;
+  quota_rate_multiplier?: number;
   calibration?: {
-    observed_api_usd: number;
-    quota_fraction: number;
-    periods_per_month: number;
+    input_kind?: "reported_monthly_pool";
+    reported_monthly_pool_usd?: number;
+    observed_api_usd?: number;
+    quota_fraction?: number;
+    periods_per_month?: number;
     plan_multiplier: number;
     monthly_api_equivalent_usd: number;
     sample_components?: { label: string; tokens: number; rate_usd_per_million: number }[];
     extra_cost_usd?: number;
+    corrections?: { label: string; factor: number }[];
   };
   reason_ru: string;
 }
@@ -55,6 +65,7 @@ export interface QuotaRow {
   plan_id: string;
   pricing_id?: string;
   confidence: "documented" | "assumed" | "source" | string;
+  quality?: RowQuality;
   monthly_usd?: number | null;
   monthly_quota?: number | null;
   quota_unit?: string | null;

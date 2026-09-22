@@ -14,19 +14,53 @@ const reference = createAaData(aa, pricing, rates, audit, weighting);
 test('Основная вкладка получает обычные подписки, метод переноса и исходные числа замера', async () => {
   const empirical = await read('pricing/empirical-evidence.json');
   const data = createAaData(aa, pricing, rates, audit, weighting, empirical);
-  assert.equal(data.quota_scenario.metadata.included_plans, 41);
+  assert.equal(data.quota_scenario.metadata.included_plans, 55);
+  assert.equal(data.quota_scenario.metadata.excluded_plans, 10);
+  assert.equal(data.quota_scenario.rows.length, 231);
   assert.equal(data.metadata.row_count, data.quota_scenario.rows.length);
   const luna = data.quota_scenario.rows.find(row => row.pricing_id === 'chatgpt_plus::gpt-5.6-luna');
   assert.equal(luna.method, 'empirical_api_calibration');
   assert.equal(luna.empirical.calibration.quota_fraction, .06);
   assert.equal(luna.empirical.calibration.sample_components.length, 3);
   const claude = data.quota_scenario.rows.find(row => row.pricing_id === 'claude_max_20x::claude-opus-5');
-  assert.equal(claude.method, 'unavailable_quota_weights');
-  assert.equal(claude.task.cost_usd, null);
+  assert.equal(claude.method, 'empirical_api_scenario');
+  assert.equal(claude.quality.level, 'low');
+  assert.ok(claude.task.cost_usd > 0);
   assert.ok(claude.task.total_tokens > 0);
   assert.ok(claude.sources.length > 0);
   assert.deepEqual(data.api_estimate, reference.api_estimate);
   assert.equal('token_scenario' in data, false);
+});
+
+test('Сборка сохраняет поправки и низкую надёжность сценариев, а неизвестные тарифы не становятся бесплатными', async () => {
+  const empirical = await read('pricing/empirical-evidence.json');
+  const before = structuredClone(empirical);
+  const data = createAaData(aa, pricing, rates, audit, weighting, empirical);
+  const rows = data.quota_scenario.rows;
+  for (const row of rows) {
+    assert.equal(typeof row.quality?.level, 'string', row.id);
+    assert.ok(Array.isArray(row.quality.reasons) && row.quality.reasons.length > 0, row.id);
+  }
+  const fable = rows.find(row => row.pricing_id === 'claude_max_20x::claude-fable-5.1' && row.effort === 'max');
+  assert.equal(fable.method, 'empirical_api_scenario');
+  assert.equal(fable.quality.level, 'low');
+  assert.equal(fable.empirical.calibration.corrections.length, 3);
+  assert.ok(Math.abs(fable.monthly_quota - 1760.9649122807016) < 1e-9);
+  assert.ok(Math.abs(fable.task.cost_usd - .866537011702667) < 1e-12);
+  const ultra = rows.find(row => row.pricing_id === 'cursor_ultra::grok-4.6' && row.task.cost_usd > 0);
+  const fast = rows.find(row => row.pricing_id === 'cursor_ultra_fast::grok-4.6' && row.source_id === ultra.source_id);
+  assert.equal(ultra.monthly_quota, 3000);
+  assert.equal(fast.monthly_quota, 3000);
+  assert.equal(ultra.empirical.calibration.input_kind, 'reported_monthly_pool');
+  assert.equal('quota_fraction' in ultra.empirical.calibration, false);
+  assert.deepEqual(fast.task.component_tokens, ultra.task.component_tokens);
+  assert.ok(Math.abs(fast.task.cost_usd - ultra.task.cost_usd * 2) < 1e-12);
+  const unknown = rows.filter(row => row.method === 'unavailable_quota_weights');
+  assert.equal(new Set(unknown.map(row => row.pricing_id)).size, 10);
+  assert.ok(unknown.every(row => row.task.cost_usd === null && row.suite.cost_usd === null));
+  assert.deepEqual(rows.filter(row => row.kind === 'api'), reference.quota_scenario.rows.filter(row => row.kind === 'api'));
+  assert.deepEqual(data.api_estimate, reference.api_estimate);
+  assert.deepEqual(empirical, before);
 });
 
 for (const [name, mixture] of [['без смеси RAP', undefined], ['с неверной смесью RAP', { cache: -4, input: 20, output: 'неизвестно' }]]) {
