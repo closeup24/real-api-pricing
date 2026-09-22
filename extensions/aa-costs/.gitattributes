@@ -1,0 +1,5 @@
+# Исходные снимки сверяются по SHA-256 байтов; не менять переводы строк при checkout.
+data/pricing/raw/* -text
+data/aa/aa.json -text
+# Этот файл создаёт нормализатор; он не является исходником в source_sha256.
+data/pricing/raw/aa-api-fallbacks.json text eol=lf

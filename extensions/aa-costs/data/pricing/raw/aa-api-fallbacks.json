@@ -1,0 +1,26 @@
+[
+  {
+    "slug": "gpt-6-astra",
+    "cacheHitPrice": 1,
+    "price1mInputTokens": 10,
+    "price1mOutputTokens": 50
+  },
+  {
+    "slug": "gemini-3-8-flash",
+    "cacheHitPrice": 0.075,
+    "price1mInputTokens": 0.75,
+    "price1mOutputTokens": 3.75
+  },
+  {
+    "slug": "grok-4-7",
+    "cacheHitPrice": 0.5,
+    "price1mInputTokens": 2,
+    "price1mOutputTokens": 6
+  },
+  {
+    "slug": "mimo-v2-6-pro",
+    "cacheHitPrice": 0.0036,
+    "price1mInputTokens": 0.435,
+    "price1mOutputTokens": 0.87
+  }
+]

@@ -1,0 +1,106 @@
+[
+  {
+    "model": "gpt-5.6-luna",
+    "model_display": "GPT-5.6 Luna",
+    "subscription_rows": 5,
+    "api_rows": 1,
+    "api_baseline_available": true,
+    "status": "ok"
+  },
+  {
+    "model": "gpt-5.6-sol",
+    "model_display": "GPT-5.6 Sol",
+    "subscription_rows": 4,
+    "api_rows": 1,
+    "api_baseline_available": true,
+    "status": "ok"
+  },
+  {
+    "model": "gpt-6-astra",
+    "model_display": "GPT-6 Astra",
+    "subscription_rows": 4,
+    "api_rows": 1,
+    "api_baseline_available": true,
+    "status": "ok"
+  },
+  {
+    "model": "claude-opus-5",
+    "model_display": "Claude Opus 5",
+    "subscription_rows": 3,
+    "api_rows": 1,
+    "api_baseline_available": true,
+    "status": "ok"
+  },
+  {
+    "model": "claude-fable-5.1",
+    "model_display": "Claude Fable 5.1",
+    "subscription_rows": 2,
+    "api_rows": 1,
+    "api_baseline_available": true,
+    "status": "ok"
+  },
+  {
+    "model": "gemini-3.8-flash",
+    "model_display": "Gemini 3.8 Flash",
+    "subscription_rows": 4,
+    "api_rows": 1,
+    "api_baseline_available": true,
+    "status": "ok"
+  },
+  {
+    "model": "deepseek-v4.1-flash",
+    "model_display": "DeepSeek V4.1 Flash",
+    "subscription_rows": 4,
+    "api_rows": 2,
+    "api_baseline_available": true,
+    "status": "ok"
+  },
+  {
+    "model": "deepseek-v4-flash",
+    "model_display": "DeepSeek V4 Flash 0731",
+    "subscription_rows": 2,
+    "api_rows": 2,
+    "api_baseline_available": true,
+    "status": "ok"
+  },
+  {
+    "model": "grok-4.6",
+    "model_display": "Grok 4.6",
+    "subscription_rows": 10,
+    "api_rows": 1,
+    "api_baseline_available": true,
+    "status": "ok"
+  },
+  {
+    "model": "grok-4.7",
+    "model_display": "Grok 4.7",
+    "subscription_rows": 0,
+    "api_rows": 1,
+    "api_baseline_available": true,
+    "status": "no_subscription_data"
+  },
+  {
+    "model": "mimo-v2.5-pro",
+    "model_display": "MiMo V2.5 Pro",
+    "subscription_rows": 2,
+    "api_rows": 1,
+    "api_baseline_available": true,
+    "status": "ok"
+  },
+  {
+    "model": "mimo-v2.6-pro",
+    "model_display": "MiMo V2.6 Pro",
+    "subscription_rows": 0,
+    "api_rows": 1,
+    "api_baseline_available": true,
+    "status": "no_subscription_data"
+  },
+  {
+    "model": "glm-5.3-flash",
+    "model_display": "GLM 5.3 Flash",
+    "subscription_rows": 22,
+    "api_rows": 1,
+    "api_baseline_available": true,
+    "status": "ok"
+  }
+]

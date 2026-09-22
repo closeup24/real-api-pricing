@@ -1,0 +1,2029 @@
+{
+  "schema_version": 1,
+  "metadata": {
+    "pricing_revision": "6489b60a14680a5ce848131d461a90eb054d03ac",
+    "pricing_retrieved_at_utc": "2026-09-22T10:53:17.553330+00:00",
+    "retrieved_at_utc": "2026-09-22T10:53:17.553330+00:00",
+    "pricing_rows_sha256": "c4a34f0db796d78eca7f6aa143f870415c8783fda5a6b91ae55c8f5a1d5192f5",
+    "generated_by": "scripts/fetch_quota_rates.mjs",
+    "source_sha256": {
+      "scripts/build_adopted.py": "a900607de2286c7159ff4611f5ee52bdaab3d6a28f02eed22172081080842ff7",
+      "data/conventions.json": "05e513a75c0be8dc6f32dcfd39b02e14256bc306108c90fb122390698b756bea",
+      "data/research/opencode-go-round5-2026-09-06.json": "cd1050217cb510c519df730a618fd9028ba949b90cadc10514c4576eb99b13cf",
+      "data/research/opencode-go-deepseek-round6-2026-09-10.json": "2093c01718ad66f48233947308790021c3f9e12c72879aae8ca6a4584fdadaf5",
+      "data/research/code-subscriptions-round1-2026-09-06.json": "ddfe10c887f86949267b35ee9fc9674ecd2667a4e684102910742a4e780d884f",
+      "data/research/command-code-goat-deepseek-round1-2026-09-10.json": "21f6c789191543aa8a9469a1f3567081e3a659f3faa133d674dcfd6ecdfce0fb",
+      "data/research/ollama-deepseek-v41-round1-2026-09-11.json": "7f809753d19d1efcf1ed45078cd29944ce540efcd201bdfcc0533b4d5e52b456",
+      "data/research/quotas-web-2026-09.json": "6b27cd04a898165a71158e5c125515172e50003195f7fddf76d21ba390253497",
+      "data/research/glm-adoption-round4-2026-09-07.json": "d4b3ecebac1c8d3f2c49d9f07713cec5375910bd700400ef2d8f3f8ae5cb8f0a"
+    },
+    "rows": 36,
+    "status_counts": {
+      "documented": 0,
+      "assumed": 36,
+      "unavailable": 0
+    },
+    "component_rate_unit": "quota_unit per 1 000 000 tokens",
+    "method_ru": "Квоты и ставки взяты из исходных credits/points и таблиц research закреплённого RAP. monthly_tokens, real_price и фиксированная смесь не используются для восстановления квоты.",
+    "status_policy_ru": "documented требует однозначного сопоставления всех пяти категорий и условий тарифа; assumed допускает явно перечисленные допущения; unavailable означает недостаточные данные для арифметики. Официальность базового пула не устраняет неопределённость сопоставления cache write/reasoning.",
+    "snapshot_policy_ru": "Используются принятые условия снимка, включая отмеченные в нём конфликты. Текущие страницы не опрашиваются; исходные pricing.json и monthly_tokens не изменяются."
+  },
+  "rows": [
+    {
+      "id": "glm_coding_lite_cn_new_peak::glm-5.3-flash",
+      "model_id": "glm-5.3-flash",
+      "plan": "GLM Coding Lite (新客 ¥118) 忙时",
+      "monthly_usd": 17.407467508519332,
+      "quota_unit": "points",
+      "monthly_quota": 40000,
+      "original_quota": {
+        "period": "week",
+        "amount": 10000,
+        "periods_per_month": 4,
+        "shared_pool_amount": 10000,
+        "model_pool_amount": null
+      },
+      "rate_basis": "Баллы за 1 000 000 токенов: исходные коэффициенты на 10 000 токенов × 100 / 1. Пул одинаков для всех временных сценариев.",
+      "quota_basis_status": "documented",
+      "source_urls": [
+        "https://github.com/FeiZhuLulu/real-api-pricing/blob/6489b60a14680a5ce848131d461a90eb054d03ac/scripts/build_adopted.py",
+        "https://github.com/FeiZhuLulu/real-api-pricing/blob/6489b60a14680a5ce848131d461a90eb054d03ac/data/research/quotas-web-2026-09.json",
+        "https://github.com/FeiZhuLulu/real-api-pricing/blob/6489b60a14680a5ce848131d461a90eb054d03ac/data/research/glm-adoption-round4-2026-09-07.json",
+        "https://docs.bigmodel.cn/cn/coding-plan/overview"
+      ],
+      "assumptions_ru": [
+        "Недельный пул приведён к условному месяцу из четырёх недель по конвенции RAP; это не новый официальный месячный лимит.",
+        "Отдельная ставка cache write в сохранённой таблице не указана. Принята обычная input-ставка; отсутствие отдельной записи не считается доказанным нулевым тарифом.",
+        "Reasoning-токены сопоставлены опубликованной ставке output. Отдельное подтверждение этого сопоставления в сохранённых данных канала отсутствует."
+      ],
+      "notes_ru": [
+        "Peak: пн–пт 14:00–18:00 UTC+8. В off-peak официальный расход составляет 50% базового.",
+        "Квота ограничена недельным и пятичасовым окнами; месячный результат предполагает их полное использование.",
+        "Расчёт включает только пять токенных категорий AA. Возможные отдельные расходы инструментов не восстановлены из этих категорий.",
+        "Состав AA переносится в расчёт расхода credits; воспроизведение той же доли cache hits на другом канале не гарантировано. Полное использование месячного пула является условием оценки."
+      ],
+      "source_conflicts_ru": [],
+      "additional_limits": {
+        "per_5h": 2000,
+        "per_week": 10000
+      },
+      "capacity_multiplier": 1,
+      "charge_multiplier": 1,
+      "shared_pool_note": "Общие баллы Coding Plan расходуются на все модели; здесь весь пул выделен GLM 5.3 Flash. Peak, mid и off-peak — альтернативные сценарии одного пула, их нельзя складывать.",
+      "component_rates": {
+        "non_cache_input": 230,
+        "cache_read": 56,
+        "cache_write": 230,
+        "answer": 800,
+        "reasoning": 800
+      },
+      "component_rate_status": {
+        "non_cache_input": "documented",
+        "cache_read": "documented",
+        "cache_write": "assumed",
+        "answer": "documented",
+        "reasoning": "assumed"
+      },
+      "status": "assumed"
+    },
+    {
+      "id": "glm_coding_lite_cn_new_mid::glm-5.3-flash",
+      "model_id": "glm-5.3-flash",
+      "plan": "GLM Coding Lite (新客 ¥118) 中间值",
+      "monthly_usd": 17.407467508519332,
+      "quota_unit": "points",
+      "monthly_quota": 40000,
+      "original_quota": {
+        "period": "week",
+        "amount": 10000,
+        "periods_per_month": 4,
+        "shared_pool_amount": 10000,
+        "model_pool_amount": null
+      },
+      "rate_basis": "Баллы за 1 000 000 токенов: исходные коэффициенты на 10 000 токенов × 100 / 1.5. Пул одинаков для всех временных сценариев.",
+      "quota_basis_status": "documented",
+      "source_urls": [
+        "https://github.com/FeiZhuLulu/real-api-pricing/blob/6489b60a14680a5ce848131d461a90eb054d03ac/scripts/build_adopted.py",
+        "https://github.com/FeiZhuLulu/real-api-pricing/blob/6489b60a14680a5ce848131d461a90eb054d03ac/data/research/quotas-web-2026-09.json",
+        "https://github.com/FeiZhuLulu/real-api-pricing/blob/6489b60a14680a5ce848131d461a90eb054d03ac/data/research/glm-adoption-round4-2026-09-07.json",
+        "https://docs.bigmodel.cn/cn/coding-plan/overview"
+      ],
+      "assumptions_ru": [
+        "Недельный пул приведён к условному месяцу из четырёх недель по конвенции RAP; это не новый официальный месячный лимит.",
+        "Mid — сценарий RAP: среднее арифметическое ёмкостей peak/off-peak, то есть peak × 1.5. При неизменном пуле ставки равны peak × 2/3; это не официальный тариф и не смесь 50/50 токенов по времени.",
+        "Отдельная ставка cache write в сохранённой таблице не указана. Принята обычная input-ставка; отсутствие отдельной записи не считается доказанным нулевым тарифом.",
+        "Reasoning-токены сопоставлены опубликованной ставке output. Отдельное подтверждение этого сопоставления в сохранённых данных канала отсутствует."
+      ],
+      "notes_ru": [
+        "Peak: пн–пт 14:00–18:00 UTC+8. В off-peak официальный расход составляет 50% базового.",
+        "Квота ограничена недельным и пятичасовым окнами; месячный результат предполагает их полное использование.",
+        "Расчёт включает только пять токенных категорий AA. Возможные отдельные расходы инструментов не восстановлены из этих категорий.",
+        "Состав AA переносится в расчёт расхода credits; воспроизведение той же доли cache hits на другом канале не гарантировано. Полное использование месячного пула является условием оценки."
+      ],
+      "source_conflicts_ru": [],
+      "additional_limits": {
+        "per_5h": 2000,
+        "per_week": 10000
+      },
+      "capacity_multiplier": 1.5,
+      "charge_multiplier": 0.6666666666666666,
+      "shared_pool_note": "Общие баллы Coding Plan расходуются на все модели; здесь весь пул выделен GLM 5.3 Flash. Peak, mid и off-peak — альтернативные сценарии одного пула, их нельзя складывать.",
+      "component_rates": {
+        "non_cache_input": 153.33333333333331,
+        "cache_read": 37.33333333333333,
+        "cache_write": 153.33333333333331,
+        "answer": 533.3333333333333,
+        "reasoning": 533.3333333333333
+      },
+      "component_rate_status": {
+        "non_cache_input": "assumed",
+        "cache_read": "assumed",
+        "cache_write": "assumed",
+        "answer": "assumed",
+        "reasoning": "assumed"
+      },
+      "status": "assumed"
+    },
+    {
+      "id": "glm_coding_lite_cn_new_offpeak::glm-5.3-flash",
+      "model_id": "glm-5.3-flash",
+      "plan": "GLM Coding Lite (新客 ¥118) 闲时",
+      "monthly_usd": 17.407467508519332,
+      "quota_unit": "points",
+      "monthly_quota": 40000,
+      "original_quota": {
+        "period": "week",
+        "amount": 10000,
+        "periods_per_month": 4,
+        "shared_pool_amount": 10000,
+        "model_pool_amount": null
+      },
+      "rate_basis": "Баллы за 1 000 000 токенов: исходные коэффициенты на 10 000 токенов × 100 / 2. Пул одинаков для всех временных сценариев.",
+      "quota_basis_status": "documented",
+      "source_urls": [
+        "https://github.com/FeiZhuLulu/real-api-pricing/blob/6489b60a14680a5ce848131d461a90eb054d03ac/scripts/build_adopted.py",
+        "https://github.com/FeiZhuLulu/real-api-pricing/blob/6489b60a14680a5ce848131d461a90eb054d03ac/data/research/quotas-web-2026-09.json",
+        "https://github.com/FeiZhuLulu/real-api-pricing/blob/6489b60a14680a5ce848131d461a90eb054d03ac/data/research/glm-adoption-round4-2026-09-07.json",
+        "https://docs.bigmodel.cn/cn/coding-plan/overview"
+      ],
+      "assumptions_ru": [
+        "Недельный пул приведён к условному месяцу из четырёх недель по конвенции RAP; это не новый официальный месячный лимит.",
+        "Отдельная ставка cache write в сохранённой таблице не указана. Принята обычная input-ставка; отсутствие отдельной записи не считается доказанным нулевым тарифом.",
+        "Reasoning-токены сопоставлены опубликованной ставке output. Отдельное подтверждение этого сопоставления в сохранённых данных канала отсутствует."
+      ],
+      "notes_ru": [
+        "Peak: пн–пт 14:00–18:00 UTC+8. В off-peak официальный расход составляет 50% базового.",
+        "Квота ограничена недельным и пятичасовым окнами; месячный результат предполагает их полное использование.",
+        "Расчёт включает только пять токенных категорий AA. Возможные отдельные расходы инструментов не восстановлены из этих категорий.",
+        "Состав AA переносится в расчёт расхода credits; воспроизведение той же доли cache hits на другом канале не гарантировано. Полное использование месячного пула является условием оценки."
+      ],
+      "source_conflicts_ru": [],
+      "additional_limits": {
+        "per_5h": 2000,
+        "per_week": 10000
+      },
+      "capacity_multiplier": 2,
+      "charge_multiplier": 0.5,
+      "shared_pool_note": "Общие баллы Coding Plan расходуются на все модели; здесь весь пул выделен GLM 5.3 Flash. Peak, mid и off-peak — альтернативные сценарии одного пула, их нельзя складывать.",
+      "component_rates": {
+        "non_cache_input": 115,
+        "cache_read": 28,
+        "cache_write": 115,
+        "answer": 400,
+        "reasoning": 400
+      },
+      "component_rate_status": {
+        "non_cache_input": "documented",
+        "cache_read": "documented",
+        "cache_write": "assumed",
+        "answer": "documented",
+        "reasoning": "assumed"
+      },
+      "status": "assumed"
+    },
+    {
+      "id": "glm_coding_lite_cn_old_peak::glm-5.3-flash",
+      "model_id": "glm-5.3-flash",
+      "plan": "GLM Coding Lite (老客 ¥49) 忙时",
+      "monthly_usd": 7.228524643368197,
+      "quota_unit": "points",
+      "monthly_quota": 40000,
+      "original_quota": {
+        "period": "week",
+        "amount": 10000,
+        "periods_per_month": 4,
+        "shared_pool_amount": 10000,
+        "model_pool_amount": null
+      },
+      "rate_basis": "Баллы за 1 000 000 токенов: исходные коэффициенты на 10 000 токенов × 100 / 1. Пул одинаков для всех временных сценариев.",
+      "quota_basis_status": "assumed",
+      "source_urls": [
+        "https://github.com/FeiZhuLulu/real-api-pricing/blob/6489b60a14680a5ce848131d461a90eb054d03ac/scripts/build_adopted.py",
+        "https://github.com/FeiZhuLulu/real-api-pricing/blob/6489b60a14680a5ce848131d461a90eb054d03ac/data/research/quotas-web-2026-09.json",
+        "https://github.com/FeiZhuLulu/real-api-pricing/blob/6489b60a14680a5ce848131d461a90eb054d03ac/data/research/glm-adoption-round4-2026-09-07.json",
+        "https://docs.bigmodel.cn/cn/coding-plan/overview"
+      ],
+      "assumptions_ru": [
+        "Недельный пул приведён к условному месяцу из четырёх недель по конвенции RAP; это не новый официальный месячный лимит.",
+        "Строка использует legacy V2 цену со значениями pools/rates V3, как в принятой таблице RAP. Источник отмечает различие систем квот V2/V3; перенос на старый тариф не подтверждён.",
+        "Отдельная ставка cache write в сохранённой таблице не указана. Принята обычная input-ставка; отсутствие отдельной записи не считается доказанным нулевым тарифом.",
+        "Reasoning-токены сопоставлены опубликованной ставке output. Отдельное подтверждение этого сопоставления в сохранённых данных канала отсутствует."
+      ],
+      "notes_ru": [
+        "Peak: пн–пт 14:00–18:00 UTC+8. В off-peak официальный расход составляет 50% базового.",
+        "Квота ограничена недельным и пятичасовым окнами; месячный результат предполагает их полное использование.",
+        "Расчёт включает только пять токенных категорий AA. Возможные отдельные расходы инструментов не восстановлены из этих категорий.",
+        "Состав AA переносится в расчёт расхода credits; воспроизведение той же доли cache hits на другом канале не гарантировано. Полное использование месячного пула является условием оценки."
+      ],
+      "source_conflicts_ru": [],
+      "additional_limits": {
+        "per_5h": 2000,
+        "per_week": 10000
+      },
+      "capacity_multiplier": 1,
+      "charge_multiplier": 1,
+      "shared_pool_note": "Общие баллы Coding Plan расходуются на все модели; здесь весь пул выделен GLM 5.3 Flash. Peak, mid и off-peak — альтернативные сценарии одного пула, их нельзя складывать.",
+      "component_rates": {
+        "non_cache_input": 230,
+        "cache_read": 56,
+        "cache_write": 230,
+        "answer": 800,
+        "reasoning": 800
+      },
+      "component_rate_status": {
+        "non_cache_input": "assumed",
+        "cache_read": "assumed",
+        "cache_write": "assumed",
+        "answer": "assumed",
+        "reasoning": "assumed"
+      },
+      "status": "assumed"
+    },
+    {
+      "id": "glm_coding_lite_cn_old_mid::glm-5.3-flash",
+      "model_id": "glm-5.3-flash",
+      "plan": "GLM Coding Lite (老客 ¥49) 中间值",
+      "monthly_usd": 7.228524643368197,
+      "quota_unit": "points",
+      "monthly_quota": 40000,
+      "original_quota": {
+        "period": "week",
+        "amount": 10000,
+        "periods_per_month": 4,
+        "shared_pool_amount": 10000,
+        "model_pool_amount": null
+      },
+      "rate_basis": "Баллы за 1 000 000 токенов: исходные коэффициенты на 10 000 токенов × 100 / 1.5. Пул одинаков для всех временных сценариев.",
+      "quota_basis_status": "assumed",
+      "source_urls": [
+        "https://github.com/FeiZhuLulu/real-api-pricing/blob/6489b60a14680a5ce848131d461a90eb054d03ac/scripts/build_adopted.py",
+        "https://github.com/FeiZhuLulu/real-api-pricing/blob/6489b60a14680a5ce848131d461a90eb054d03ac/data/research/quotas-web-2026-09.json",
+        "https://github.com/FeiZhuLulu/real-api-pricing/blob/6489b60a14680a5ce848131d461a90eb054d03ac/data/research/glm-adoption-round4-2026-09-07.json",
+        "https://docs.bigmodel.cn/cn/coding-plan/overview"
+      ],
+      "assumptions_ru": [
+        "Недельный пул приведён к условному месяцу из четырёх недель по конвенции RAP; это не новый официальный месячный лимит.",
+        "Mid — сценарий RAP: среднее арифметическое ёмкостей peak/off-peak, то есть peak × 1.5. При неизменном пуле ставки равны peak × 2/3; это не официальный тариф и не смесь 50/50 токенов по времени.",
+        "Строка использует legacy V2 цену со значениями pools/rates V3, как в принятой таблице RAP. Источник отмечает различие систем квот V2/V3; перенос на старый тариф не подтверждён.",
+        "Отдельная ставка cache write в сохранённой таблице не указана. Принята обычная input-ставка; отсутствие отдельной записи не считается доказанным нулевым тарифом.",
+        "Reasoning-токены сопоставлены опубликованной ставке output. Отдельное подтверждение этого сопоставления в сохранённых данных канала отсутствует."
+      ],
+      "notes_ru": [
+        "Peak: пн–пт 14:00–18:00 UTC+8. В off-peak официальный расход составляет 50% базового.",
+        "Квота ограничена недельным и пятичасовым окнами; месячный результат предполагает их полное использование.",
+        "Расчёт включает только пять токенных категорий AA. Возможные отдельные расходы инструментов не восстановлены из этих категорий.",
+        "Состав AA переносится в расчёт расхода credits; воспроизведение той же доли cache hits на другом канале не гарантировано. Полное использование месячного пула является условием оценки."
+      ],
+      "source_conflicts_ru": [],
+      "additional_limits": {
+        "per_5h": 2000,
+        "per_week": 10000
+      },
+      "capacity_multiplier": 1.5,
+      "charge_multiplier": 0.6666666666666666,
+      "shared_pool_note": "Общие баллы Coding Plan расходуются на все модели; здесь весь пул выделен GLM 5.3 Flash. Peak, mid и off-peak — альтернативные сценарии одного пула, их нельзя складывать.",
+      "component_rates": {
+        "non_cache_input": 153.33333333333331,
+        "cache_read": 37.33333333333333,
+        "cache_write": 153.33333333333331,
+        "answer": 533.3333333333333,
+        "reasoning": 533.3333333333333
+      },
+      "component_rate_status": {
+        "non_cache_input": "assumed",
+        "cache_read": "assumed",
+        "cache_write": "assumed",
+        "answer": "assumed",
+        "reasoning": "assumed"
+      },
+      "status": "assumed"
+    },
+    {
+      "id": "glm_coding_lite_cn_old_offpeak::glm-5.3-flash",
+      "model_id": "glm-5.3-flash",
+      "plan": "GLM Coding Lite (老客 ¥49) 闲时",
+      "monthly_usd": 7.228524643368197,
+      "quota_unit": "points",
+      "monthly_quota": 40000,
+      "original_quota": {
+        "period": "week",
+        "amount": 10000,
+        "periods_per_month": 4,
+        "shared_pool_amount": 10000,
+        "model_pool_amount": null
+      },
+      "rate_basis": "Баллы за 1 000 000 токенов: исходные коэффициенты на 10 000 токенов × 100 / 2. Пул одинаков для всех временных сценариев.",
+      "quota_basis_status": "assumed",
+      "source_urls": [
+        "https://github.com/FeiZhuLulu/real-api-pricing/blob/6489b60a14680a5ce848131d461a90eb054d03ac/scripts/build_adopted.py",
+        "https://github.com/FeiZhuLulu/real-api-pricing/blob/6489b60a14680a5ce848131d461a90eb054d03ac/data/research/quotas-web-2026-09.json",
+        "https://github.com/FeiZhuLulu/real-api-pricing/blob/6489b60a14680a5ce848131d461a90eb054d03ac/data/research/glm-adoption-round4-2026-09-07.json",
+        "https://docs.bigmodel.cn/cn/coding-plan/overview"
+      ],
+      "assumptions_ru": [
+        "Недельный пул приведён к условному месяцу из четырёх недель по конвенции RAP; это не новый официальный месячный лимит.",
+        "Строка использует legacy V2 цену со значениями pools/rates V3, как в принятой таблице RAP. Источник отмечает различие систем квот V2/V3; перенос на старый тариф не подтверждён.",
+        "Отдельная ставка cache write в сохранённой таблице не указана. Принята обычная input-ставка; отсутствие отдельной записи не считается доказанным нулевым тарифом.",
+        "Reasoning-токены сопоставлены опубликованной ставке output. Отдельное подтверждение этого сопоставления в сохранённых данных канала отсутствует."
+      ],
+      "notes_ru": [
+        "Peak: пн–пт 14:00–18:00 UTC+8. В off-peak официальный расход составляет 50% базового.",
+        "Квота ограничена недельным и пятичасовым окнами; месячный результат предполагает их полное использование.",
+        "Расчёт включает только пять токенных категорий AA. Возможные отдельные расходы инструментов не восстановлены из этих категорий.",
+        "Состав AA переносится в расчёт расхода credits; воспроизведение той же доли cache hits на другом канале не гарантировано. Полное использование месячного пула является условием оценки."
+      ],
+      "source_conflicts_ru": [],
+      "additional_limits": {
+        "per_5h": 2000,
+        "per_week": 10000
+      },
+      "capacity_multiplier": 2,
+      "charge_multiplier": 0.5,
+      "shared_pool_note": "Общие баллы Coding Plan расходуются на все модели; здесь весь пул выделен GLM 5.3 Flash. Peak, mid и off-peak — альтернативные сценарии одного пула, их нельзя складывать.",
+      "component_rates": {
+        "non_cache_input": 115,
+        "cache_read": 28,
+        "cache_write": 115,
+        "answer": 400,
+        "reasoning": 400
+      },
+      "component_rate_status": {
+        "non_cache_input": "assumed",
+        "cache_read": "assumed",
+        "cache_write": "assumed",
+        "answer": "assumed",
+        "reasoning": "assumed"
+      },
+      "status": "assumed"
+    },
+    {
+      "id": "glm_coding_pro_cn_new_peak::glm-5.3-flash",
+      "model_id": "glm-5.3-flash",
+      "plan": "GLM Coding Pro (新客 ¥538) 忙时",
+      "monthly_usd": 79.36625016596102,
+      "quota_unit": "points",
+      "monthly_quota": 240000,
+      "original_quota": {
+        "period": "week",
+        "amount": 60000,
+        "periods_per_month": 4,
+        "shared_pool_amount": 60000,
+        "model_pool_amount": null
+      },
+      "rate_basis": "Баллы за 1 000 000 токенов: исходные коэффициенты на 10 000 токенов × 100 / 1. Пул одинаков для всех временных сценариев.",
+      "quota_basis_status": "documented",
+      "source_urls": [
+        "https://github.com/FeiZhuLulu/real-api-pricing/blob/6489b60a14680a5ce848131d461a90eb054d03ac/scripts/build_adopted.py",
+        "https://github.com/FeiZhuLulu/real-api-pricing/blob/6489b60a14680a5ce848131d461a90eb054d03ac/data/research/quotas-web-2026-09.json",
+        "https://github.com/FeiZhuLulu/real-api-pricing/blob/6489b60a14680a5ce848131d461a90eb054d03ac/data/research/glm-adoption-round4-2026-09-07.json",
+        "https://docs.bigmodel.cn/cn/coding-plan/overview"
+      ],
+      "assumptions_ru": [
+        "Недельный пул приведён к условному месяцу из четырёх недель по конвенции RAP; это не новый официальный месячный лимит.",
+        "Отдельная ставка cache write в сохранённой таблице не указана. Принята обычная input-ставка; отсутствие отдельной записи не считается доказанным нулевым тарифом.",
+        "Reasoning-токены сопоставлены опубликованной ставке output. Отдельное подтверждение этого сопоставления в сохранённых данных канала отсутствует."
+      ],
+      "notes_ru": [
+        "Peak: пн–пт 14:00–18:00 UTC+8. В off-peak официальный расход составляет 50% базового.",
+        "Квота ограничена недельным и пятичасовым окнами; месячный результат предполагает их полное использование.",
+        "Расчёт включает только пять токенных категорий AA. Возможные отдельные расходы инструментов не восстановлены из этих категорий.",
+        "Состав AA переносится в расчёт расхода credits; воспроизведение той же доли cache hits на другом канале не гарантировано. Полное использование месячного пула является условием оценки."
+      ],
+      "source_conflicts_ru": [],
+      "additional_limits": {
+        "per_5h": 12000,
+        "per_week": 60000
+      },
+      "capacity_multiplier": 1,
+      "charge_multiplier": 1,
+      "shared_pool_note": "Общие баллы Coding Plan расходуются на все модели; здесь весь пул выделен GLM 5.3 Flash. Peak, mid и off-peak — альтернативные сценарии одного пула, их нельзя складывать.",
+      "component_rates": {
+        "non_cache_input": 230,
+        "cache_read": 56,
+        "cache_write": 230,
+        "answer": 800,
+        "reasoning": 800
+      },
+      "component_rate_status": {
+        "non_cache_input": "documented",
+        "cache_read": "documented",
+        "cache_write": "assumed",
+        "answer": "documented",
+        "reasoning": "assumed"
+      },
+      "status": "assumed"
+    },
+    {
+      "id": "glm_coding_pro_cn_new_mid::glm-5.3-flash",
+      "model_id": "glm-5.3-flash",
+      "plan": "GLM Coding Pro (新客 ¥538) 中间值",
+      "monthly_usd": 79.36625016596102,
+      "quota_unit": "points",
+      "monthly_quota": 240000,
+      "original_quota": {
+        "period": "week",
+        "amount": 60000,
+        "periods_per_month": 4,
+        "shared_pool_amount": 60000,
+        "model_pool_amount": null
+      },
+      "rate_basis": "Баллы за 1 000 000 токенов: исходные коэффициенты на 10 000 токенов × 100 / 1.5. Пул одинаков для всех временных сценариев.",
+      "quota_basis_status": "documented",
+      "source_urls": [
+        "https://github.com/FeiZhuLulu/real-api-pricing/blob/6489b60a14680a5ce848131d461a90eb054d03ac/scripts/build_adopted.py",
+        "https://github.com/FeiZhuLulu/real-api-pricing/blob/6489b60a14680a5ce848131d461a90eb054d03ac/data/research/quotas-web-2026-09.json",
+        "https://github.com/FeiZhuLulu/real-api-pricing/blob/6489b60a14680a5ce848131d461a90eb054d03ac/data/research/glm-adoption-round4-2026-09-07.json",
+        "https://docs.bigmodel.cn/cn/coding-plan/overview"
+      ],
+      "assumptions_ru": [
+        "Недельный пул приведён к условному месяцу из четырёх недель по конвенции RAP; это не новый официальный месячный лимит.",
+        "Mid — сценарий RAP: среднее арифметическое ёмкостей peak/off-peak, то есть peak × 1.5. При неизменном пуле ставки равны peak × 2/3; это не официальный тариф и не смесь 50/50 токенов по времени.",
+        "Отдельная ставка cache write в сохранённой таблице не указана. Принята обычная input-ставка; отсутствие отдельной записи не считается доказанным нулевым тарифом.",
+        "Reasoning-токены сопоставлены опубликованной ставке output. Отдельное подтверждение этого сопоставления в сохранённых данных канала отсутствует."
+      ],
+      "notes_ru": [
+        "Peak: пн–пт 14:00–18:00 UTC+8. В off-peak официальный расход составляет 50% базового.",
+        "Квота ограничена недельным и пятичасовым окнами; месячный результат предполагает их полное использование.",
+        "Расчёт включает только пять токенных категорий AA. Возможные отдельные расходы инструментов не восстановлены из этих категорий.",
+        "Состав AA переносится в расчёт расхода credits; воспроизведение той же доли cache hits на другом канале не гарантировано. Полное использование месячного пула является условием оценки."
+      ],
+      "source_conflicts_ru": [],
+      "additional_limits": {
+        "per_5h": 12000,
+        "per_week": 60000
+      },
+      "capacity_multiplier": 1.5,
+      "charge_multiplier": 0.6666666666666666,
+      "shared_pool_note": "Общие баллы Coding Plan расходуются на все модели; здесь весь пул выделен GLM 5.3 Flash. Peak, mid и off-peak — альтернативные сценарии одного пула, их нельзя складывать.",
+      "component_rates": {
+        "non_cache_input": 153.33333333333331,
+        "cache_read": 37.33333333333333,
+        "cache_write": 153.33333333333331,
+        "answer": 533.3333333333333,
+        "reasoning": 533.3333333333333
+      },
+      "component_rate_status": {
+        "non_cache_input": "assumed",
+        "cache_read": "assumed",
+        "cache_write": "assumed",
+        "answer": "assumed",
+        "reasoning": "assumed"
+      },
+      "status": "assumed"
+    },
+    {
+      "id": "glm_coding_pro_cn_new_offpeak::glm-5.3-flash",
+      "model_id": "glm-5.3-flash",
+      "plan": "GLM Coding Pro (新客 ¥538) 闲时",
+      "monthly_usd": 79.36625016596102,
+      "quota_unit": "points",
+      "monthly_quota": 240000,
+      "original_quota": {
+        "period": "week",
+        "amount": 60000,
+        "periods_per_month": 4,
+        "shared_pool_amount": 60000,
+        "model_pool_amount": null
+      },
+      "rate_basis": "Баллы за 1 000 000 токенов: исходные коэффициенты на 10 000 токенов × 100 / 2. Пул одинаков для всех временных сценариев.",
+      "quota_basis_status": "documented",
+      "source_urls": [
+        "https://github.com/FeiZhuLulu/real-api-pricing/blob/6489b60a14680a5ce848131d461a90eb054d03ac/scripts/build_adopted.py",
+        "https://github.com/FeiZhuLulu/real-api-pricing/blob/6489b60a14680a5ce848131d461a90eb054d03ac/data/research/quotas-web-2026-09.json",
+        "https://github.com/FeiZhuLulu/real-api-pricing/blob/6489b60a14680a5ce848131d461a90eb054d03ac/data/research/glm-adoption-round4-2026-09-07.json",
+        "https://docs.bigmodel.cn/cn/coding-plan/overview"
+      ],
+      "assumptions_ru": [
+        "Недельный пул приведён к условному месяцу из четырёх недель по конвенции RAP; это не новый официальный месячный лимит.",
+        "Отдельная ставка cache write в сохранённой таблице не указана. Принята обычная input-ставка; отсутствие отдельной записи не считается доказанным нулевым тарифом.",
+        "Reasoning-токены сопоставлены опубликованной ставке output. Отдельное подтверждение этого сопоставления в сохранённых данных канала отсутствует."
+      ],
+      "notes_ru": [
+        "Peak: пн–пт 14:00–18:00 UTC+8. В off-peak официальный расход составляет 50% базового.",
+        "Квота ограничена недельным и пятичасовым окнами; месячный результат предполагает их полное использование.",
+        "Расчёт включает только пять токенных категорий AA. Возможные отдельные расходы инструментов не восстановлены из этих категорий.",
+        "Состав AA переносится в расчёт расхода credits; воспроизведение той же доли cache hits на другом канале не гарантировано. Полное использование месячного пула является условием оценки."
+      ],
+      "source_conflicts_ru": [],
+      "additional_limits": {
+        "per_5h": 12000,
+        "per_week": 60000
+      },
+      "capacity_multiplier": 2,
+      "charge_multiplier": 0.5,
+      "shared_pool_note": "Общие баллы Coding Plan расходуются на все модели; здесь весь пул выделен GLM 5.3 Flash. Peak, mid и off-peak — альтернативные сценарии одного пула, их нельзя складывать.",
+      "component_rates": {
+        "non_cache_input": 115,
+        "cache_read": 28,
+        "cache_write": 115,
+        "answer": 400,
+        "reasoning": 400
+      },
+      "component_rate_status": {
+        "non_cache_input": "documented",
+        "cache_read": "documented",
+        "cache_write": "assumed",
+        "answer": "documented",
+        "reasoning": "assumed"
+      },
+      "status": "assumed"
+    },
+    {
+      "id": "glm_coding_pro_cn_old_peak::glm-5.3-flash",
+      "model_id": "glm-5.3-flash",
+      "plan": "GLM Coding Pro (老客 ¥149) 忙时",
+      "monthly_usd": 21.980615752282887,
+      "quota_unit": "points",
+      "monthly_quota": 240000,
+      "original_quota": {
+        "period": "week",
+        "amount": 60000,
+        "periods_per_month": 4,
+        "shared_pool_amount": 60000,
+        "model_pool_amount": null
+      },
+      "rate_basis": "Баллы за 1 000 000 токенов: исходные коэффициенты на 10 000 токенов × 100 / 1. Пул одинаков для всех временных сценариев.",
+      "quota_basis_status": "assumed",
+      "source_urls": [
+        "https://github.com/FeiZhuLulu/real-api-pricing/blob/6489b60a14680a5ce848131d461a90eb054d03ac/scripts/build_adopted.py",
+        "https://github.com/FeiZhuLulu/real-api-pricing/blob/6489b60a14680a5ce848131d461a90eb054d03ac/data/research/quotas-web-2026-09.json",
+        "https://github.com/FeiZhuLulu/real-api-pricing/blob/6489b60a14680a5ce848131d461a90eb054d03ac/data/research/glm-adoption-round4-2026-09-07.json",
+        "https://docs.bigmodel.cn/cn/coding-plan/overview"
+      ],
+      "assumptions_ru": [
+        "Недельный пул приведён к условному месяцу из четырёх недель по конвенции RAP; это не новый официальный месячный лимит.",
+        "Строка использует legacy V2 цену со значениями pools/rates V3, как в принятой таблице RAP. Источник отмечает различие систем квот V2/V3; перенос на старый тариф не подтверждён.",
+        "Отдельная ставка cache write в сохранённой таблице не указана. Принята обычная input-ставка; отсутствие отдельной записи не считается доказанным нулевым тарифом.",
+        "Reasoning-токены сопоставлены опубликованной ставке output. Отдельное подтверждение этого сопоставления в сохранённых данных канала отсутствует."
+      ],
+      "notes_ru": [
+        "Peak: пн–пт 14:00–18:00 UTC+8. В off-peak официальный расход составляет 50% базового.",
+        "Квота ограничена недельным и пятичасовым окнами; месячный результат предполагает их полное использование.",
+        "Расчёт включает только пять токенных категорий AA. Возможные отдельные расходы инструментов не восстановлены из этих категорий.",
+        "Состав AA переносится в расчёт расхода credits; воспроизведение той же доли cache hits на другом канале не гарантировано. Полное использование месячного пула является условием оценки."
+      ],
+      "source_conflicts_ru": [],
+      "additional_limits": {
+        "per_5h": 12000,
+        "per_week": 60000
+      },
+      "capacity_multiplier": 1,
+      "charge_multiplier": 1,
+      "shared_pool_note": "Общие баллы Coding Plan расходуются на все модели; здесь весь пул выделен GLM 5.3 Flash. Peak, mid и off-peak — альтернативные сценарии одного пула, их нельзя складывать.",
+      "component_rates": {
+        "non_cache_input": 230,
+        "cache_read": 56,
+        "cache_write": 230,
+        "answer": 800,
+        "reasoning": 800
+      },
+      "component_rate_status": {
+        "non_cache_input": "assumed",
+        "cache_read": "assumed",
+        "cache_write": "assumed",
+        "answer": "assumed",
+        "reasoning": "assumed"
+      },
+      "status": "assumed"
+    },
+    {
+      "id": "glm_coding_pro_cn_old_mid::glm-5.3-flash",
+      "model_id": "glm-5.3-flash",
+      "plan": "GLM Coding Pro (老客 ¥149) 中间值",
+      "monthly_usd": 21.980615752282887,
+      "quota_unit": "points",
+      "monthly_quota": 240000,
+      "original_quota": {
+        "period": "week",
+        "amount": 60000,
+        "periods_per_month": 4,
+        "shared_pool_amount": 60000,
+        "model_pool_amount": null
+      },
+      "rate_basis": "Баллы за 1 000 000 токенов: исходные коэффициенты на 10 000 токенов × 100 / 1.5. Пул одинаков для всех временных сценариев.",
+      "quota_basis_status": "assumed",
+      "source_urls": [
+        "https://github.com/FeiZhuLulu/real-api-pricing/blob/6489b60a14680a5ce848131d461a90eb054d03ac/scripts/build_adopted.py",
+        "https://github.com/FeiZhuLulu/real-api-pricing/blob/6489b60a14680a5ce848131d461a90eb054d03ac/data/research/quotas-web-2026-09.json",
+        "https://github.com/FeiZhuLulu/real-api-pricing/blob/6489b60a14680a5ce848131d461a90eb054d03ac/data/research/glm-adoption-round4-2026-09-07.json",
+        "https://docs.bigmodel.cn/cn/coding-plan/overview"
+      ],
+      "assumptions_ru": [
+        "Недельный пул приведён к условному месяцу из четырёх недель по конвенции RAP; это не новый официальный месячный лимит.",
+        "Mid — сценарий RAP: среднее арифметическое ёмкостей peak/off-peak, то есть peak × 1.5. При неизменном пуле ставки равны peak × 2/3; это не официальный тариф и не смесь 50/50 токенов по времени.",
+        "Строка использует legacy V2 цену со значениями pools/rates V3, как в принятой таблице RAP. Источник отмечает различие систем квот V2/V3; перенос на старый тариф не подтверждён.",
+        "Отдельная ставка cache write в сохранённой таблице не указана. Принята обычная input-ставка; отсутствие отдельной записи не считается доказанным нулевым тарифом.",
+        "Reasoning-токены сопоставлены опубликованной ставке output. Отдельное подтверждение этого сопоставления в сохранённых данных канала отсутствует."
+      ],
+      "notes_ru": [
+        "Peak: пн–пт 14:00–18:00 UTC+8. В off-peak официальный расход составляет 50% базового.",
+        "Квота ограничена недельным и пятичасовым окнами; месячный результат предполагает их полное использование.",
+        "Расчёт включает только пять токенных категорий AA. Возможные отдельные расходы инструментов не восстановлены из этих категорий.",
+        "Состав AA переносится в расчёт расхода credits; воспроизведение той же доли cache hits на другом канале не гарантировано. Полное использование месячного пула является условием оценки."
+      ],
+      "source_conflicts_ru": [],
+      "additional_limits": {
+        "per_5h": 12000,
+        "per_week": 60000
+      },
+      "capacity_multiplier": 1.5,
+      "charge_multiplier": 0.6666666666666666,
+      "shared_pool_note": "Общие баллы Coding Plan расходуются на все модели; здесь весь пул выделен GLM 5.3 Flash. Peak, mid и off-peak — альтернативные сценарии одного пула, их нельзя складывать.",
+      "component_rates": {
+        "non_cache_input": 153.33333333333331,
+        "cache_read": 37.33333333333333,
+        "cache_write": 153.33333333333331,
+        "answer": 533.3333333333333,
+        "reasoning": 533.3333333333333
+      },
+      "component_rate_status": {
+        "non_cache_input": "assumed",
+        "cache_read": "assumed",
+        "cache_write": "assumed",
+        "answer": "assumed",
+        "reasoning": "assumed"
+      },
+      "status": "assumed"
+    },
+    {
+      "id": "glm_coding_pro_cn_old_offpeak::glm-5.3-flash",
+      "model_id": "glm-5.3-flash",
+      "plan": "GLM Coding Pro (老客 ¥149) 闲时",
+      "monthly_usd": 21.980615752282887,
+      "quota_unit": "points",
+      "monthly_quota": 240000,
+      "original_quota": {
+        "period": "week",
+        "amount": 60000,
+        "periods_per_month": 4,
+        "shared_pool_amount": 60000,
+        "model_pool_amount": null
+      },
+      "rate_basis": "Баллы за 1 000 000 токенов: исходные коэффициенты на 10 000 токенов × 100 / 2. Пул одинаков для всех временных сценариев.",
+      "quota_basis_status": "assumed",
+      "source_urls": [
+        "https://github.com/FeiZhuLulu/real-api-pricing/blob/6489b60a14680a5ce848131d461a90eb054d03ac/scripts/build_adopted.py",
+        "https://github.com/FeiZhuLulu/real-api-pricing/blob/6489b60a14680a5ce848131d461a90eb054d03ac/data/research/quotas-web-2026-09.json",
+        "https://github.com/FeiZhuLulu/real-api-pricing/blob/6489b60a14680a5ce848131d461a90eb054d03ac/data/research/glm-adoption-round4-2026-09-07.json",
+        "https://docs.bigmodel.cn/cn/coding-plan/overview"
+      ],
+      "assumptions_ru": [
+        "Недельный пул приведён к условному месяцу из четырёх недель по конвенции RAP; это не новый официальный месячный лимит.",
+        "Строка использует legacy V2 цену со значениями pools/rates V3, как в принятой таблице RAP. Источник отмечает различие систем квот V2/V3; перенос на старый тариф не подтверждён.",
+        "Отдельная ставка cache write в сохранённой таблице не указана. Принята обычная input-ставка; отсутствие отдельной записи не считается доказанным нулевым тарифом.",
+        "Reasoning-токены сопоставлены опубликованной ставке output. Отдельное подтверждение этого сопоставления в сохранённых данных канала отсутствует."
+      ],
+      "notes_ru": [
+        "Peak: пн–пт 14:00–18:00 UTC+8. В off-peak официальный расход составляет 50% базового.",
+        "Квота ограничена недельным и пятичасовым окнами; месячный результат предполагает их полное использование.",
+        "Расчёт включает только пять токенных категорий AA. Возможные отдельные расходы инструментов не восстановлены из этих категорий.",
+        "Состав AA переносится в расчёт расхода credits; воспроизведение той же доли cache hits на другом канале не гарантировано. Полное использование месячного пула является условием оценки."
+      ],
+      "source_conflicts_ru": [],
+      "additional_limits": {
+        "per_5h": 12000,
+        "per_week": 60000
+      },
+      "capacity_multiplier": 2,
+      "charge_multiplier": 0.5,
+      "shared_pool_note": "Общие баллы Coding Plan расходуются на все модели; здесь весь пул выделен GLM 5.3 Flash. Peak, mid и off-peak — альтернативные сценарии одного пула, их нельзя складывать.",
+      "component_rates": {
+        "non_cache_input": 115,
+        "cache_read": 28,
+        "cache_write": 115,
+        "answer": 400,
+        "reasoning": 400
+      },
+      "component_rate_status": {
+        "non_cache_input": "assumed",
+        "cache_read": "assumed",
+        "cache_write": "assumed",
+        "answer": "assumed",
+        "reasoning": "assumed"
+      },
+      "status": "assumed"
+    },
+    {
+      "id": "glm_coding_max_cn_new_peak::glm-5.3-flash",
+      "model_id": "glm-5.3-flash",
+      "plan": "GLM Coding Max (新客 ¥1078) 忙时",
+      "monthly_usd": 159.02754215410033,
+      "quota_unit": "points",
+      "monthly_quota": 560000,
+      "original_quota": {
+        "period": "week",
+        "amount": 140000,
+        "periods_per_month": 4,
+        "shared_pool_amount": 140000,
+        "model_pool_amount": null
+      },
+      "rate_basis": "Баллы за 1 000 000 токенов: исходные коэффициенты на 10 000 токенов × 100 / 1. Пул одинаков для всех временных сценариев.",
+      "quota_basis_status": "documented",
+      "source_urls": [
+        "https://github.com/FeiZhuLulu/real-api-pricing/blob/6489b60a14680a5ce848131d461a90eb054d03ac/scripts/build_adopted.py",
+        "https://github.com/FeiZhuLulu/real-api-pricing/blob/6489b60a14680a5ce848131d461a90eb054d03ac/data/research/quotas-web-2026-09.json",
+        "https://github.com/FeiZhuLulu/real-api-pricing/blob/6489b60a14680a5ce848131d461a90eb054d03ac/data/research/glm-adoption-round4-2026-09-07.json",
+        "https://docs.bigmodel.cn/cn/coding-plan/overview"
+      ],
+      "assumptions_ru": [
+        "Недельный пул приведён к условному месяцу из четырёх недель по конвенции RAP; это не новый официальный месячный лимит.",
+        "Отдельная ставка cache write в сохранённой таблице не указана. Принята обычная input-ставка; отсутствие отдельной записи не считается доказанным нулевым тарифом.",
+        "Reasoning-токены сопоставлены опубликованной ставке output. Отдельное подтверждение этого сопоставления в сохранённых данных канала отсутствует."
+      ],
+      "notes_ru": [
+        "Peak: пн–пт 14:00–18:00 UTC+8. В off-peak официальный расход составляет 50% базового.",
+        "Квота ограничена недельным и пятичасовым окнами; месячный результат предполагает их полное использование.",
+        "Расчёт включает только пять токенных категорий AA. Возможные отдельные расходы инструментов не восстановлены из этих категорий.",
+        "Состав AA переносится в расчёт расхода credits; воспроизведение той же доли cache hits на другом канале не гарантировано. Полное использование месячного пула является условием оценки."
+      ],
+      "source_conflicts_ru": [],
+      "additional_limits": {
+        "per_5h": 28000,
+        "per_week": 140000
+      },
+      "capacity_multiplier": 1,
+      "charge_multiplier": 1,
+      "shared_pool_note": "Общие баллы Coding Plan расходуются на все модели; здесь весь пул выделен GLM 5.3 Flash. Peak, mid и off-peak — альтернативные сценарии одного пула, их нельзя складывать.",
+      "component_rates": {
+        "non_cache_input": 230,
+        "cache_read": 56,
+        "cache_write": 230,
+        "answer": 800,
+        "reasoning": 800
+      },
+      "component_rate_status": {
+        "non_cache_input": "documented",
+        "cache_read": "documented",
+        "cache_write": "assumed",
+        "answer": "documented",
+        "reasoning": "assumed"
+      },
+      "status": "assumed"
+    },
+    {
+      "id": "glm_coding_max_cn_new_mid::glm-5.3-flash",
+      "model_id": "glm-5.3-flash",
+      "plan": "GLM Coding Max (新客 ¥1078) 中间值",
+      "monthly_usd": 159.02754215410033,
+      "quota_unit": "points",
+      "monthly_quota": 560000,
+      "original_quota": {
+        "period": "week",
+        "amount": 140000,
+        "periods_per_month": 4,
+        "shared_pool_amount": 140000,
+        "model_pool_amount": null
+      },
+      "rate_basis": "Баллы за 1 000 000 токенов: исходные коэффициенты на 10 000 токенов × 100 / 1.5. Пул одинаков для всех временных сценариев.",
+      "quota_basis_status": "documented",
+      "source_urls": [
+        "https://github.com/FeiZhuLulu/real-api-pricing/blob/6489b60a14680a5ce848131d461a90eb054d03ac/scripts/build_adopted.py",
+        "https://github.com/FeiZhuLulu/real-api-pricing/blob/6489b60a14680a5ce848131d461a90eb054d03ac/data/research/quotas-web-2026-09.json",
+        "https://github.com/FeiZhuLulu/real-api-pricing/blob/6489b60a14680a5ce848131d461a90eb054d03ac/data/research/glm-adoption-round4-2026-09-07.json",
+        "https://docs.bigmodel.cn/cn/coding-plan/overview"
+      ],
+      "assumptions_ru": [
+        "Недельный пул приведён к условному месяцу из четырёх недель по конвенции RAP; это не новый официальный месячный лимит.",
+        "Mid — сценарий RAP: среднее арифметическое ёмкостей peak/off-peak, то есть peak × 1.5. При неизменном пуле ставки равны peak × 2/3; это не официальный тариф и не смесь 50/50 токенов по времени.",
+        "Отдельная ставка cache write в сохранённой таблице не указана. Принята обычная input-ставка; отсутствие отдельной записи не считается доказанным нулевым тарифом.",
+        "Reasoning-токены сопоставлены опубликованной ставке output. Отдельное подтверждение этого сопоставления в сохранённых данных канала отсутствует."
+      ],
+      "notes_ru": [
+        "Peak: пн–пт 14:00–18:00 UTC+8. В off-peak официальный расход составляет 50% базового.",
+        "Квота ограничена недельным и пятичасовым окнами; месячный результат предполагает их полное использование.",
+        "Расчёт включает только пять токенных категорий AA. Возможные отдельные расходы инструментов не восстановлены из этих категорий.",
+        "Состав AA переносится в расчёт расхода credits; воспроизведение той же доли cache hits на другом канале не гарантировано. Полное использование месячного пула является условием оценки."
+      ],
+      "source_conflicts_ru": [],
+      "additional_limits": {
+        "per_5h": 28000,
+        "per_week": 140000
+      },
+      "capacity_multiplier": 1.5,
+      "charge_multiplier": 0.6666666666666666,
+      "shared_pool_note": "Общие баллы Coding Plan расходуются на все модели; здесь весь пул выделен GLM 5.3 Flash. Peak, mid и off-peak — альтернативные сценарии одного пула, их нельзя складывать.",
+      "component_rates": {
+        "non_cache_input": 153.33333333333331,
+        "cache_read": 37.33333333333333,
+        "cache_write": 153.33333333333331,
+        "answer": 533.3333333333333,
+        "reasoning": 533.3333333333333
+      },
+      "component_rate_status": {
+        "non_cache_input": "assumed",
+        "cache_read": "assumed",
+        "cache_write": "assumed",
+        "answer": "assumed",
+        "reasoning": "assumed"
+      },
+      "status": "assumed"
+    },
+    {
+      "id": "glm_coding_max_cn_new_offpeak::glm-5.3-flash",
+      "model_id": "glm-5.3-flash",
+      "plan": "GLM Coding Max (新客 ¥1078) 闲时",
+      "monthly_usd": 159.02754215410033,
+      "quota_unit": "points",
+      "monthly_quota": 560000,
+      "original_quota": {
+        "period": "week",
+        "amount": 140000,
+        "periods_per_month": 4,
+        "shared_pool_amount": 140000,
+        "model_pool_amount": null
+      },
+      "rate_basis": "Баллы за 1 000 000 токенов: исходные коэффициенты на 10 000 токенов × 100 / 2. Пул одинаков для всех временных сценариев.",
+      "quota_basis_status": "documented",
+      "source_urls": [
+        "https://github.com/FeiZhuLulu/real-api-pricing/blob/6489b60a14680a5ce848131d461a90eb054d03ac/scripts/build_adopted.py",
+        "https://github.com/FeiZhuLulu/real-api-pricing/blob/6489b60a14680a5ce848131d461a90eb054d03ac/data/research/quotas-web-2026-09.json",
+        "https://github.com/FeiZhuLulu/real-api-pricing/blob/6489b60a14680a5ce848131d461a90eb054d03ac/data/research/glm-adoption-round4-2026-09-07.json",
+        "https://docs.bigmodel.cn/cn/coding-plan/overview"
+      ],
+      "assumptions_ru": [
+        "Недельный пул приведён к условному месяцу из четырёх недель по конвенции RAP; это не новый официальный месячный лимит.",
+        "Отдельная ставка cache write в сохранённой таблице не указана. Принята обычная input-ставка; отсутствие отдельной записи не считается доказанным нулевым тарифом.",
+        "Reasoning-токены сопоставлены опубликованной ставке output. Отдельное подтверждение этого сопоставления в сохранённых данных канала отсутствует."
+      ],
+      "notes_ru": [
+        "Peak: пн–пт 14:00–18:00 UTC+8. В off-peak официальный расход составляет 50% базового.",
+        "Квота ограничена недельным и пятичасовым окнами; месячный результат предполагает их полное использование.",
+        "Расчёт включает только пять токенных категорий AA. Возможные отдельные расходы инструментов не восстановлены из этих категорий.",
+        "Состав AA переносится в расчёт расхода credits; воспроизведение той же доли cache hits на другом канале не гарантировано. Полное использование месячного пула является условием оценки."
+      ],
+      "source_conflicts_ru": [],
+      "additional_limits": {
+        "per_5h": 28000,
+        "per_week": 140000
+      },
+      "capacity_multiplier": 2,
+      "charge_multiplier": 0.5,
+      "shared_pool_note": "Общие баллы Coding Plan расходуются на все модели; здесь весь пул выделен GLM 5.3 Flash. Peak, mid и off-peak — альтернативные сценарии одного пула, их нельзя складывать.",
+      "component_rates": {
+        "non_cache_input": 115,
+        "cache_read": 28,
+        "cache_write": 115,
+        "answer": 400,
+        "reasoning": 400
+      },
+      "component_rate_status": {
+        "non_cache_input": "documented",
+        "cache_read": "documented",
+        "cache_write": "assumed",
+        "answer": "documented",
+        "reasoning": "assumed"
+      },
+      "status": "assumed"
+    },
+    {
+      "id": "glm_coding_max_cn_old_peak::glm-5.3-flash",
+      "model_id": "glm-5.3-flash",
+      "plan": "GLM Coding Max (老客 ¥469) 忙时",
+      "monthly_usd": 69.18730730080989,
+      "quota_unit": "points",
+      "monthly_quota": 560000,
+      "original_quota": {
+        "period": "week",
+        "amount": 140000,
+        "periods_per_month": 4,
+        "shared_pool_amount": 140000,
+        "model_pool_amount": null
+      },
+      "rate_basis": "Баллы за 1 000 000 токенов: исходные коэффициенты на 10 000 токенов × 100 / 1. Пул одинаков для всех временных сценариев.",
+      "quota_basis_status": "assumed",
+      "source_urls": [
+        "https://github.com/FeiZhuLulu/real-api-pricing/blob/6489b60a14680a5ce848131d461a90eb054d03ac/scripts/build_adopted.py",
+        "https://github.com/FeiZhuLulu/real-api-pricing/blob/6489b60a14680a5ce848131d461a90eb054d03ac/data/research/quotas-web-2026-09.json",
+        "https://github.com/FeiZhuLulu/real-api-pricing/blob/6489b60a14680a5ce848131d461a90eb054d03ac/data/research/glm-adoption-round4-2026-09-07.json",
+        "https://docs.bigmodel.cn/cn/coding-plan/overview"
+      ],
+      "assumptions_ru": [
+        "Недельный пул приведён к условному месяцу из четырёх недель по конвенции RAP; это не новый официальный месячный лимит.",
+        "Строка использует legacy V2 цену со значениями pools/rates V3, как в принятой таблице RAP. Источник отмечает различие систем квот V2/V3; перенос на старый тариф не подтверждён.",
+        "Отдельная ставка cache write в сохранённой таблице не указана. Принята обычная input-ставка; отсутствие отдельной записи не считается доказанным нулевым тарифом.",
+        "Reasoning-токены сопоставлены опубликованной ставке output. Отдельное подтверждение этого сопоставления в сохранённых данных канала отсутствует."
+      ],
+      "notes_ru": [
+        "Peak: пн–пт 14:00–18:00 UTC+8. В off-peak официальный расход составляет 50% базового.",
+        "Квота ограничена недельным и пятичасовым окнами; месячный результат предполагает их полное использование.",
+        "Расчёт включает только пять токенных категорий AA. Возможные отдельные расходы инструментов не восстановлены из этих категорий.",
+        "Состав AA переносится в расчёт расхода credits; воспроизведение той же доли cache hits на другом канале не гарантировано. Полное использование месячного пула является условием оценки."
+      ],
+      "source_conflicts_ru": [],
+      "additional_limits": {
+        "per_5h": 28000,
+        "per_week": 140000
+      },
+      "capacity_multiplier": 1,
+      "charge_multiplier": 1,
+      "shared_pool_note": "Общие баллы Coding Plan расходуются на все модели; здесь весь пул выделен GLM 5.3 Flash. Peak, mid и off-peak — альтернативные сценарии одного пула, их нельзя складывать.",
+      "component_rates": {
+        "non_cache_input": 230,
+        "cache_read": 56,
+        "cache_write": 230,
+        "answer": 800,
+        "reasoning": 800
+      },
+      "component_rate_status": {
+        "non_cache_input": "assumed",
+        "cache_read": "assumed",
+        "cache_write": "assumed",
+        "answer": "assumed",
+        "reasoning": "assumed"
+      },
+      "status": "assumed"
+    },
+    {
+      "id": "glm_coding_max_cn_old_mid::glm-5.3-flash",
+      "model_id": "glm-5.3-flash",
+      "plan": "GLM Coding Max (老客 ¥469) 中间值",
+      "monthly_usd": 69.18730730080989,
+      "quota_unit": "points",
+      "monthly_quota": 560000,
+      "original_quota": {
+        "period": "week",
+        "amount": 140000,
+        "periods_per_month": 4,
+        "shared_pool_amount": 140000,
+        "model_pool_amount": null
+      },
+      "rate_basis": "Баллы за 1 000 000 токенов: исходные коэффициенты на 10 000 токенов × 100 / 1.5. Пул одинаков для всех временных сценариев.",
+      "quota_basis_status": "assumed",
+      "source_urls": [
+        "https://github.com/FeiZhuLulu/real-api-pricing/blob/6489b60a14680a5ce848131d461a90eb054d03ac/scripts/build_adopted.py",
+        "https://github.com/FeiZhuLulu/real-api-pricing/blob/6489b60a14680a5ce848131d461a90eb054d03ac/data/research/quotas-web-2026-09.json",
+        "https://github.com/FeiZhuLulu/real-api-pricing/blob/6489b60a14680a5ce848131d461a90eb054d03ac/data/research/glm-adoption-round4-2026-09-07.json",
+        "https://docs.bigmodel.cn/cn/coding-plan/overview"
+      ],
+      "assumptions_ru": [
+        "Недельный пул приведён к условному месяцу из четырёх недель по конвенции RAP; это не новый официальный месячный лимит.",
+        "Mid — сценарий RAP: среднее арифметическое ёмкостей peak/off-peak, то есть peak × 1.5. При неизменном пуле ставки равны peak × 2/3; это не официальный тариф и не смесь 50/50 токенов по времени.",
+        "Строка использует legacy V2 цену со значениями pools/rates V3, как в принятой таблице RAP. Источник отмечает различие систем квот V2/V3; перенос на старый тариф не подтверждён.",
+        "Отдельная ставка cache write в сохранённой таблице не указана. Принята обычная input-ставка; отсутствие отдельной записи не считается доказанным нулевым тарифом.",
+        "Reasoning-токены сопоставлены опубликованной ставке output. Отдельное подтверждение этого сопоставления в сохранённых данных канала отсутствует."
+      ],
+      "notes_ru": [
+        "Peak: пн–пт 14:00–18:00 UTC+8. В off-peak официальный расход составляет 50% базового.",
+        "Квота ограничена недельным и пятичасовым окнами; месячный результат предполагает их полное использование.",
+        "Расчёт включает только пять токенных категорий AA. Возможные отдельные расходы инструментов не восстановлены из этих категорий.",
+        "Состав AA переносится в расчёт расхода credits; воспроизведение той же доли cache hits на другом канале не гарантировано. Полное использование месячного пула является условием оценки."
+      ],
+      "source_conflicts_ru": [],
+      "additional_limits": {
+        "per_5h": 28000,
+        "per_week": 140000
+      },
+      "capacity_multiplier": 1.5,
+      "charge_multiplier": 0.6666666666666666,
+      "shared_pool_note": "Общие баллы Coding Plan расходуются на все модели; здесь весь пул выделен GLM 5.3 Flash. Peak, mid и off-peak — альтернативные сценарии одного пула, их нельзя складывать.",
+      "component_rates": {
+        "non_cache_input": 153.33333333333331,
+        "cache_read": 37.33333333333333,
+        "cache_write": 153.33333333333331,
+        "answer": 533.3333333333333,
+        "reasoning": 533.3333333333333
+      },
+      "component_rate_status": {
+        "non_cache_input": "assumed",
+        "cache_read": "assumed",
+        "cache_write": "assumed",
+        "answer": "assumed",
+        "reasoning": "assumed"
+      },
+      "status": "assumed"
+    },
+    {
+      "id": "glm_coding_max_cn_old_offpeak::glm-5.3-flash",
+      "model_id": "glm-5.3-flash",
+      "plan": "GLM Coding Max (老客 ¥469) 闲时",
+      "monthly_usd": 69.18730730080989,
+      "quota_unit": "points",
+      "monthly_quota": 560000,
+      "original_quota": {
+        "period": "week",
+        "amount": 140000,
+        "periods_per_month": 4,
+        "shared_pool_amount": 140000,
+        "model_pool_amount": null
+      },
+      "rate_basis": "Баллы за 1 000 000 токенов: исходные коэффициенты на 10 000 токенов × 100 / 2. Пул одинаков для всех временных сценариев.",
+      "quota_basis_status": "assumed",
+      "source_urls": [
+        "https://github.com/FeiZhuLulu/real-api-pricing/blob/6489b60a14680a5ce848131d461a90eb054d03ac/scripts/build_adopted.py",
+        "https://github.com/FeiZhuLulu/real-api-pricing/blob/6489b60a14680a5ce848131d461a90eb054d03ac/data/research/quotas-web-2026-09.json",
+        "https://github.com/FeiZhuLulu/real-api-pricing/blob/6489b60a14680a5ce848131d461a90eb054d03ac/data/research/glm-adoption-round4-2026-09-07.json",
+        "https://docs.bigmodel.cn/cn/coding-plan/overview"
+      ],
+      "assumptions_ru": [
+        "Недельный пул приведён к условному месяцу из четырёх недель по конвенции RAP; это не новый официальный месячный лимит.",
+        "Строка использует legacy V2 цену со значениями pools/rates V3, как в принятой таблице RAP. Источник отмечает различие систем квот V2/V3; перенос на старый тариф не подтверждён.",
+        "Отдельная ставка cache write в сохранённой таблице не указана. Принята обычная input-ставка; отсутствие отдельной записи не считается доказанным нулевым тарифом.",
+        "Reasoning-токены сопоставлены опубликованной ставке output. Отдельное подтверждение этого сопоставления в сохранённых данных канала отсутствует."
+      ],
+      "notes_ru": [
+        "Peak: пн–пт 14:00–18:00 UTC+8. В off-peak официальный расход составляет 50% базового.",
+        "Квота ограничена недельным и пятичасовым окнами; месячный результат предполагает их полное использование.",
+        "Расчёт включает только пять токенных категорий AA. Возможные отдельные расходы инструментов не восстановлены из этих категорий.",
+        "Состав AA переносится в расчёт расхода credits; воспроизведение той же доли cache hits на другом канале не гарантировано. Полное использование месячного пула является условием оценки."
+      ],
+      "source_conflicts_ru": [],
+      "additional_limits": {
+        "per_5h": 28000,
+        "per_week": 140000
+      },
+      "capacity_multiplier": 2,
+      "charge_multiplier": 0.5,
+      "shared_pool_note": "Общие баллы Coding Plan расходуются на все модели; здесь весь пул выделен GLM 5.3 Flash. Peak, mid и off-peak — альтернативные сценарии одного пула, их нельзя складывать.",
+      "component_rates": {
+        "non_cache_input": 115,
+        "cache_read": 28,
+        "cache_write": 115,
+        "answer": 400,
+        "reasoning": 400
+      },
+      "component_rate_status": {
+        "non_cache_input": "assumed",
+        "cache_read": "assumed",
+        "cache_write": "assumed",
+        "answer": "assumed",
+        "reasoning": "assumed"
+      },
+      "status": "assumed"
+    },
+    {
+      "id": "opencode_go::grok-4.6",
+      "model_id": "grok-4.6",
+      "plan": "OpenCode Go",
+      "monthly_usd": 10,
+      "quota_unit": "USD",
+      "monthly_quota": 15,
+      "original_quota": {
+        "period": "month",
+        "amount": 15,
+        "periods_per_month": 1,
+        "shared_pool_amount": 60,
+        "model_pool_amount": 15
+      },
+      "rate_basis": "Ставки канала подписки в USD за 1 000 000 токенов; USD означает долларовый номинал usage credits.",
+      "quota_basis_status": "documented",
+      "source_urls": [
+        "https://github.com/FeiZhuLulu/real-api-pricing/blob/6489b60a14680a5ce848131d461a90eb054d03ac/scripts/build_adopted.py",
+        "https://github.com/FeiZhuLulu/real-api-pricing/blob/6489b60a14680a5ce848131d461a90eb054d03ac/data/research/opencode-go-round5-2026-09-06.json",
+        "https://opencode.ai/docs/go/"
+      ],
+      "assumptions_ru": [
+        "Отдельная ставка cache write в сохранённой таблице не указана. Принята обычная input-ставка; отсутствие отдельной записи не считается доказанным нулевым тарифом.",
+        "Reasoning-токены сопоставлены опубликованной ставке output. Отдельное подтверждение этого сопоставления в сохранённых данных канала отсутствует."
+      ],
+      "notes_ru": [
+        "Короткие окна: общий пул $12/5 ч и $30/неделю; для модели — 20% и 50% её месячного лимита. Месячный расчёт предполагает возможность использовать эти окна.",
+        "Принята нижняя ценовая ступень ≤200K контекста. Выше порога ставки удваиваются; распределение длины запросов AA здесь не моделируется.",
+        "Состав AA переносится в расчёт расхода credits; воспроизведение той же доли cache hits на другом канале не гарантировано. Полное использование месячного пула является условием оценки."
+      ],
+      "source_conflicts_ru": [],
+      "additional_limits": {
+        "shared_per_5h": 12,
+        "shared_per_week": 30,
+        "model_per_5h": 3,
+        "model_per_week": 7.5
+      },
+      "shared_pool_note": "Эффективная квота — min(общий месячный пул, лимит модели). Пулы моделей не независимы; их объёмы нельзя складывать.",
+      "component_rates": {
+        "non_cache_input": 2,
+        "cache_read": 0.5,
+        "cache_write": 2,
+        "answer": 6,
+        "reasoning": 6
+      },
+      "component_rate_status": {
+        "non_cache_input": "documented",
+        "cache_read": "documented",
+        "cache_write": "assumed",
+        "answer": "documented",
+        "reasoning": "assumed"
+      },
+      "status": "assumed"
+    },
+    {
+      "id": "opencode_go::gpt-5.6-luna",
+      "model_id": "gpt-5.6-luna",
+      "plan": "OpenCode Go",
+      "monthly_usd": 10,
+      "quota_unit": "USD",
+      "monthly_quota": 15,
+      "original_quota": {
+        "period": "month",
+        "amount": 15,
+        "periods_per_month": 1,
+        "shared_pool_amount": 60,
+        "model_pool_amount": 15
+      },
+      "rate_basis": "Ставки канала подписки в USD за 1 000 000 токенов; USD означает долларовый номинал usage credits.",
+      "quota_basis_status": "documented",
+      "source_urls": [
+        "https://github.com/FeiZhuLulu/real-api-pricing/blob/6489b60a14680a5ce848131d461a90eb054d03ac/scripts/build_adopted.py",
+        "https://github.com/FeiZhuLulu/real-api-pricing/blob/6489b60a14680a5ce848131d461a90eb054d03ac/data/research/opencode-go-round5-2026-09-06.json",
+        "https://opencode.ai/docs/go/"
+      ],
+      "assumptions_ru": [
+        "Reasoning-токены сопоставлены опубликованной ставке output. Отдельное подтверждение этого сопоставления в сохранённых данных канала отсутствует."
+      ],
+      "notes_ru": [
+        "Короткие окна: общий пул $12/5 ч и $30/неделю; для модели — 20% и 50% её месячного лимита. Месячный расчёт предполагает возможность использовать эти окна.",
+        "Принята нижняя ценовая ступень ≤272K контекста. Для длинных запросов ставки иные; одного суммарного количества токенов AA недостаточно для выбора ступени.",
+        "Состав AA переносится в расчёт расхода credits; воспроизведение той же доли cache hits на другом канале не гарантировано. Полное использование месячного пула является условием оценки."
+      ],
+      "source_conflicts_ru": [],
+      "additional_limits": {
+        "shared_per_5h": 12,
+        "shared_per_week": 30,
+        "model_per_5h": 3,
+        "model_per_week": 7.5
+      },
+      "shared_pool_note": "Эффективная квота — min(общий месячный пул, лимит модели). Пулы моделей не независимы; их объёмы нельзя складывать.",
+      "component_rates": {
+        "non_cache_input": 0.2,
+        "cache_read": 0.02,
+        "cache_write": 0.25,
+        "answer": 1.2,
+        "reasoning": 1.2
+      },
+      "component_rate_status": {
+        "non_cache_input": "documented",
+        "cache_read": "documented",
+        "cache_write": "documented",
+        "answer": "documented",
+        "reasoning": "assumed"
+      },
+      "status": "assumed"
+    },
+    {
+      "id": "opencode_go::glm-5.3-flash",
+      "model_id": "glm-5.3-flash",
+      "plan": "OpenCode Go",
+      "monthly_usd": 10,
+      "quota_unit": "USD",
+      "monthly_quota": 15,
+      "original_quota": {
+        "period": "month",
+        "amount": 15,
+        "periods_per_month": 1,
+        "shared_pool_amount": 60,
+        "model_pool_amount": 15
+      },
+      "rate_basis": "Ставки канала подписки в USD за 1 000 000 токенов; USD означает долларовый номинал usage credits.",
+      "quota_basis_status": "assumed",
+      "source_urls": [
+        "https://github.com/FeiZhuLulu/real-api-pricing/blob/6489b60a14680a5ce848131d461a90eb054d03ac/scripts/build_adopted.py",
+        "https://github.com/FeiZhuLulu/real-api-pricing/blob/6489b60a14680a5ce848131d461a90eb054d03ac/data/research/opencode-go-round5-2026-09-06.json",
+        "https://github.com/FeiZhuLulu/real-api-pricing/blob/6489b60a14680a5ce848131d461a90eb054d03ac/data/research/opencode-go-deepseek-round6-2026-09-10.json",
+        "https://opencode.ai/docs/go/"
+      ],
+      "assumptions_ru": [
+        "В research от 2026-09-10 отмечен новый лимит GLM Flash $60, но принятая таблица RAP сохраняет $15 из 2026-09-06. Здесь сохранён именно принятый снимок $15; актуальность лимита не подтверждена.",
+        "Отдельная ставка cache write в сохранённой таблице не указана. Принята обычная input-ставка; отсутствие отдельной записи не считается доказанным нулевым тарифом.",
+        "Reasoning-токены сопоставлены опубликованной ставке output. Отдельное подтверждение этого сопоставления в сохранённых данных канала отсутствует."
+      ],
+      "notes_ru": [
+        "Короткие окна: общий пул $12/5 ч и $30/неделю; для модели — 20% и 50% её месячного лимита. Месячный расчёт предполагает возможность использовать эти окна.",
+        "Состав AA переносится в расчёт расхода credits; воспроизведение той же доли cache hits на другом канале не гарантировано. Полное использование месячного пула является условием оценки."
+      ],
+      "source_conflicts_ru": [
+        "В research от 2026-09-10 отмечен новый лимит GLM Flash $60, но принятая таблица RAP сохраняет $15 из 2026-09-06. Здесь сохранён именно принятый снимок $15; актуальность лимита не подтверждена."
+      ],
+      "additional_limits": {
+        "shared_per_5h": 12,
+        "shared_per_week": 30,
+        "model_per_5h": 3,
+        "model_per_week": 7.5
+      },
+      "shared_pool_note": "Эффективная квота — min(общий месячный пул, лимит модели). Пулы моделей не независимы; их объёмы нельзя складывать.",
+      "component_rates": {
+        "non_cache_input": 0.15,
+        "cache_read": 0.03,
+        "cache_write": 0.15,
+        "answer": 0.5,
+        "reasoning": 0.5
+      },
+      "component_rate_status": {
+        "non_cache_input": "documented",
+        "cache_read": "documented",
+        "cache_write": "assumed",
+        "answer": "documented",
+        "reasoning": "assumed"
+      },
+      "status": "assumed"
+    },
+    {
+      "id": "opencode_go::mimo-v2.5-pro",
+      "model_id": "mimo-v2.5-pro",
+      "plan": "OpenCode Go",
+      "monthly_usd": 10,
+      "quota_unit": "USD",
+      "monthly_quota": 15,
+      "original_quota": {
+        "period": "month",
+        "amount": 15,
+        "periods_per_month": 1,
+        "shared_pool_amount": 60,
+        "model_pool_amount": 15
+      },
+      "rate_basis": "Ставки канала подписки в USD за 1 000 000 токенов; USD означает долларовый номинал usage credits.",
+      "quota_basis_status": "documented",
+      "source_urls": [
+        "https://github.com/FeiZhuLulu/real-api-pricing/blob/6489b60a14680a5ce848131d461a90eb054d03ac/scripts/build_adopted.py",
+        "https://github.com/FeiZhuLulu/real-api-pricing/blob/6489b60a14680a5ce848131d461a90eb054d03ac/data/research/opencode-go-round5-2026-09-06.json",
+        "https://opencode.ai/docs/go/"
+      ],
+      "assumptions_ru": [
+        "Отдельная ставка cache write в сохранённой таблице не указана. Принята обычная input-ставка; отсутствие отдельной записи не считается доказанным нулевым тарифом.",
+        "Reasoning-токены сопоставлены опубликованной ставке output. Отдельное подтверждение этого сопоставления в сохранённых данных канала отсутствует."
+      ],
+      "notes_ru": [
+        "Короткие окна: общий пул $12/5 ч и $30/неделю; для модели — 20% и 50% её месячного лимита. Месячный расчёт предполагает возможность использовать эти окна.",
+        "Состав AA переносится в расчёт расхода credits; воспроизведение той же доли cache hits на другом канале не гарантировано. Полное использование месячного пула является условием оценки."
+      ],
+      "source_conflicts_ru": [],
+      "additional_limits": {
+        "shared_per_5h": 12,
+        "shared_per_week": 30,
+        "model_per_5h": 3,
+        "model_per_week": 7.5
+      },
+      "shared_pool_note": "Эффективная квота — min(общий месячный пул, лимит модели). Пулы моделей не независимы; их объёмы нельзя складывать.",
+      "component_rates": {
+        "non_cache_input": 0.435,
+        "cache_read": 0.003625,
+        "cache_write": 0.435,
+        "answer": 0.87,
+        "reasoning": 0.87
+      },
+      "component_rate_status": {
+        "non_cache_input": "documented",
+        "cache_read": "documented",
+        "cache_write": "assumed",
+        "answer": "documented",
+        "reasoning": "assumed"
+      },
+      "status": "assumed"
+    },
+    {
+      "id": "opencode_go::deepseek-v4.1-flash",
+      "model_id": "deepseek-v4.1-flash",
+      "plan": "OpenCode Go",
+      "monthly_usd": 10,
+      "quota_unit": "USD",
+      "monthly_quota": 15,
+      "original_quota": {
+        "period": "month",
+        "amount": 15,
+        "periods_per_month": 1,
+        "shared_pool_amount": 60,
+        "model_pool_amount": 15
+      },
+      "rate_basis": "Ставки канала подписки в USD за 1 000 000 токенов; USD означает долларовый номинал usage credits.",
+      "quota_basis_status": "documented",
+      "source_urls": [
+        "https://github.com/FeiZhuLulu/real-api-pricing/blob/6489b60a14680a5ce848131d461a90eb054d03ac/scripts/build_adopted.py",
+        "https://github.com/FeiZhuLulu/real-api-pricing/blob/6489b60a14680a5ce848131d461a90eb054d03ac/data/research/opencode-go-round5-2026-09-06.json",
+        "https://github.com/FeiZhuLulu/real-api-pricing/blob/6489b60a14680a5ce848131d461a90eb054d03ac/data/research/opencode-go-deepseek-round6-2026-09-10.json",
+        "https://opencode.ai/docs/go/"
+      ],
+      "assumptions_ru": [
+        "Отдельная ставка cache write в сохранённой таблице не указана. Принята обычная input-ставка; отсутствие отдельной записи не считается доказанным нулевым тарифом.",
+        "Reasoning-токены сопоставлены опубликованной ставке output. Отдельное подтверждение этого сопоставления в сохранённых данных канала отсутствует."
+      ],
+      "notes_ru": [
+        "Короткие окна: общий пул $12/5 ч и $30/неделю; для модели — 20% и 50% её месячного лимита. Месячный расчёт предполагает возможность использовать эти окна.",
+        "Использованы ставки off-peak; peak — пн–пт 01:00–04:00 и 06:00–10:00 UTC, ставки вдвое выше.",
+        "Состав AA переносится в расчёт расхода credits; воспроизведение той же доли cache hits на другом канале не гарантировано. Полное использование месячного пула является условием оценки."
+      ],
+      "source_conflicts_ru": [],
+      "additional_limits": {
+        "shared_per_5h": 12,
+        "shared_per_week": 30,
+        "model_per_5h": 3,
+        "model_per_week": 7.5
+      },
+      "shared_pool_note": "Эффективная квота — min(общий месячный пул, лимит модели). Пулы моделей не независимы; их объёмы нельзя складывать.",
+      "component_rates": {
+        "non_cache_input": 0.15,
+        "cache_read": 0.003,
+        "cache_write": 0.15,
+        "answer": 0.6,
+        "reasoning": 0.6
+      },
+      "component_rate_status": {
+        "non_cache_input": "documented",
+        "cache_read": "documented",
+        "cache_write": "assumed",
+        "answer": "documented",
+        "reasoning": "assumed"
+      },
+      "status": "assumed"
+    },
+    {
+      "id": "command_code_goat::gpt-5.6-sol",
+      "model_id": "gpt-5.6-sol",
+      "plan": "Command Code GOAT",
+      "monthly_usd": 10,
+      "quota_unit": "USD",
+      "monthly_quota": 70,
+      "original_quota": {
+        "period": "month",
+        "amount": 70,
+        "periods_per_month": 1,
+        "shared_pool_amount": 70,
+        "model_pool_amount": 70
+      },
+      "rate_basis": "Ставки канала подписки в USD за 1 000 000 токенов; USD означает долларовый номинал usage credits.",
+      "quota_basis_status": "documented",
+      "source_urls": [
+        "https://github.com/FeiZhuLulu/real-api-pricing/blob/6489b60a14680a5ce848131d461a90eb054d03ac/scripts/build_adopted.py",
+        "https://github.com/FeiZhuLulu/real-api-pricing/blob/6489b60a14680a5ce848131d461a90eb054d03ac/data/research/code-subscriptions-round1-2026-09-06.json",
+        "https://commandcode.ai/docs/plans/goat",
+        "https://commandcode.ai/pricing"
+      ],
+      "assumptions_ru": [
+        "Месячная плата $10 не включает processing fee. Его точный размер не подтверждён; итоговая цена задачи без этой комиссии занижает полную оплату.",
+        "Reasoning-токены сопоставлены опубликованной ставке output. Отдельное подтверждение этого сопоставления в сохранённых данных канала отсутствует."
+      ],
+      "notes_ru": [
+        "Общий пул ограничен $14/5 ч и $35/неделю; месячный расчёт предполагает распределение запросов по окнам.",
+        "Состав AA переносится в расчёт расхода credits; воспроизведение той же доли cache hits на другом канале не гарантировано. Полное использование месячного пула является условием оценки."
+      ],
+      "source_conflicts_ru": [],
+      "additional_limits": {
+        "shared_per_5h": 14,
+        "shared_per_week": 35
+      },
+      "shared_pool_note": "Эффективная квота — min(общий месячный пул, лимит модели). Пулы моделей не независимы; их объёмы нельзя складывать.",
+      "component_rates": {
+        "non_cache_input": 5,
+        "cache_read": 0.5,
+        "cache_write": 6.25,
+        "answer": 30,
+        "reasoning": 30
+      },
+      "component_rate_status": {
+        "non_cache_input": "documented",
+        "cache_read": "documented",
+        "cache_write": "documented",
+        "answer": "documented",
+        "reasoning": "assumed"
+      },
+      "status": "assumed"
+    },
+    {
+      "id": "command_code_goat::deepseek-v4.1-flash",
+      "model_id": "deepseek-v4.1-flash",
+      "plan": "Command Code GOAT",
+      "monthly_usd": 10,
+      "quota_unit": "USD",
+      "monthly_quota": 40,
+      "original_quota": {
+        "period": "month",
+        "amount": 40,
+        "periods_per_month": 1,
+        "shared_pool_amount": 70,
+        "model_pool_amount": 40
+      },
+      "rate_basis": "Ставки канала подписки в USD за 1 000 000 токенов; USD означает долларовый номинал usage credits.",
+      "quota_basis_status": "documented",
+      "source_urls": [
+        "https://github.com/FeiZhuLulu/real-api-pricing/blob/6489b60a14680a5ce848131d461a90eb054d03ac/scripts/build_adopted.py",
+        "https://github.com/FeiZhuLulu/real-api-pricing/blob/6489b60a14680a5ce848131d461a90eb054d03ac/data/research/code-subscriptions-round1-2026-09-06.json",
+        "https://github.com/FeiZhuLulu/real-api-pricing/blob/6489b60a14680a5ce848131d461a90eb054d03ac/data/research/command-code-goat-deepseek-round1-2026-09-10.json",
+        "https://commandcode.ai/docs/plans/goat",
+        "https://commandcode.ai/pricing"
+      ],
+      "assumptions_ru": [
+        "Месячная плата $10 не включает processing fee. Его точный размер не подтверждён; итоговая цена задачи без этой комиссии занижает полную оплату.",
+        "Отдельная ставка cache write в сохранённой таблице не указана. Принята обычная input-ставка; отсутствие отдельной записи не считается доказанным нулевым тарифом.",
+        "Reasoning-токены сопоставлены опубликованной ставке output. Отдельное подтверждение этого сопоставления в сохранённых данных канала отсутствует."
+      ],
+      "notes_ru": [
+        "Общий пул ограничен $14/5 ч и $35/неделю; месячный расчёт предполагает распределение запросов по окнам.",
+        "Использованы ставки off-peak; peak — пн–пт 01:00–04:00 и 06:00–10:00 UTC, ставки вдвое выше.",
+        "Состав AA переносится в расчёт расхода credits; воспроизведение той же доли cache hits на другом канале не гарантировано. Полное использование месячного пула является условием оценки."
+      ],
+      "source_conflicts_ru": [],
+      "additional_limits": {
+        "shared_per_5h": 14,
+        "shared_per_week": 35
+      },
+      "shared_pool_note": "Эффективная квота — min(общий месячный пул, лимит модели). Пулы моделей не независимы; их объёмы нельзя складывать.",
+      "component_rates": {
+        "non_cache_input": 0.15,
+        "cache_read": 0.003,
+        "cache_write": 0.15,
+        "answer": 0.6,
+        "reasoning": 0.6
+      },
+      "component_rate_status": {
+        "non_cache_input": "documented",
+        "cache_read": "documented",
+        "cache_write": "assumed",
+        "answer": "documented",
+        "reasoning": "assumed"
+      },
+      "status": "assumed"
+    },
+    {
+      "id": "command_code_goat::glm-5.3-flash",
+      "model_id": "glm-5.3-flash",
+      "plan": "Command Code GOAT",
+      "monthly_usd": 10,
+      "quota_unit": "USD",
+      "monthly_quota": 40,
+      "original_quota": {
+        "period": "month",
+        "amount": 40,
+        "periods_per_month": 1,
+        "shared_pool_amount": 70,
+        "model_pool_amount": 40
+      },
+      "rate_basis": "Ставки канала подписки в USD за 1 000 000 токенов; USD означает долларовый номинал usage credits.",
+      "quota_basis_status": "documented",
+      "source_urls": [
+        "https://github.com/FeiZhuLulu/real-api-pricing/blob/6489b60a14680a5ce848131d461a90eb054d03ac/scripts/build_adopted.py",
+        "https://github.com/FeiZhuLulu/real-api-pricing/blob/6489b60a14680a5ce848131d461a90eb054d03ac/data/research/code-subscriptions-round1-2026-09-06.json",
+        "https://commandcode.ai/docs/plans/goat",
+        "https://commandcode.ai/pricing"
+      ],
+      "assumptions_ru": [
+        "Месячная плата $10 не включает processing fee. Его точный размер не подтверждён; итоговая цена задачи без этой комиссии занижает полную оплату.",
+        "Отдельная ставка cache write в сохранённой таблице не указана. Принята обычная input-ставка; отсутствие отдельной записи не считается доказанным нулевым тарифом.",
+        "Reasoning-токены сопоставлены опубликованной ставке output. Отдельное подтверждение этого сопоставления в сохранённых данных канала отсутствует."
+      ],
+      "notes_ru": [
+        "Общий пул ограничен $14/5 ч и $35/неделю; месячный расчёт предполагает распределение запросов по окнам.",
+        "Состав AA переносится в расчёт расхода credits; воспроизведение той же доли cache hits на другом канале не гарантировано. Полное использование месячного пула является условием оценки."
+      ],
+      "source_conflicts_ru": [],
+      "additional_limits": {
+        "shared_per_5h": 14,
+        "shared_per_week": 35
+      },
+      "shared_pool_note": "Эффективная квота — min(общий месячный пул, лимит модели). Пулы моделей не независимы; их объёмы нельзя складывать.",
+      "component_rates": {
+        "non_cache_input": 0.15,
+        "cache_read": 0.03,
+        "cache_write": 0.15,
+        "answer": 0.5,
+        "reasoning": 0.5
+      },
+      "component_rate_status": {
+        "non_cache_input": "documented",
+        "cache_read": "documented",
+        "cache_write": "assumed",
+        "answer": "documented",
+        "reasoning": "assumed"
+      },
+      "status": "assumed"
+    },
+    {
+      "id": "command_code_goat::gemini-3.8-flash",
+      "model_id": "gemini-3.8-flash",
+      "plan": "Command Code GOAT",
+      "monthly_usd": 10,
+      "quota_unit": "USD",
+      "monthly_quota": 40,
+      "original_quota": {
+        "period": "month",
+        "amount": 40,
+        "periods_per_month": 1,
+        "shared_pool_amount": 70,
+        "model_pool_amount": 40
+      },
+      "rate_basis": "Ставки канала подписки в USD за 1 000 000 токенов; USD означает долларовый номинал usage credits.",
+      "quota_basis_status": "documented",
+      "source_urls": [
+        "https://github.com/FeiZhuLulu/real-api-pricing/blob/6489b60a14680a5ce848131d461a90eb054d03ac/scripts/build_adopted.py",
+        "https://github.com/FeiZhuLulu/real-api-pricing/blob/6489b60a14680a5ce848131d461a90eb054d03ac/data/research/code-subscriptions-round1-2026-09-06.json",
+        "https://commandcode.ai/docs/plans/goat",
+        "https://commandcode.ai/pricing"
+      ],
+      "assumptions_ru": [
+        "Месячная плата $10 не включает processing fee. Его точный размер не подтверждён; итоговая цена задачи без этой комиссии занижает полную оплату.",
+        "Отдельная ставка cache write в сохранённой таблице не указана. Принята обычная input-ставка; отсутствие отдельной записи не считается доказанным нулевым тарифом.",
+        "Reasoning-токены сопоставлены опубликованной ставке output. Отдельное подтверждение этого сопоставления в сохранённых данных канала отсутствует."
+      ],
+      "notes_ru": [
+        "Общий пул ограничен $14/5 ч и $35/неделю; месячный расчёт предполагает распределение запросов по окнам.",
+        "Состав AA переносится в расчёт расхода credits; воспроизведение той же доли cache hits на другом канале не гарантировано. Полное использование месячного пула является условием оценки."
+      ],
+      "source_conflicts_ru": [],
+      "additional_limits": {
+        "shared_per_5h": 14,
+        "shared_per_week": 35
+      },
+      "shared_pool_note": "Эффективная квота — min(общий месячный пул, лимит модели). Пулы моделей не независимы; их объёмы нельзя складывать.",
+      "component_rates": {
+        "non_cache_input": 1.5,
+        "cache_read": 0.15,
+        "cache_write": 1.5,
+        "answer": 7.5,
+        "reasoning": 7.5
+      },
+      "component_rate_status": {
+        "non_cache_input": "documented",
+        "cache_read": "documented",
+        "cache_write": "assumed",
+        "answer": "documented",
+        "reasoning": "assumed"
+      },
+      "status": "assumed"
+    },
+    {
+      "id": "command_code_goat::gpt-5.6-luna",
+      "model_id": "gpt-5.6-luna",
+      "plan": "Command Code GOAT",
+      "monthly_usd": 10,
+      "quota_unit": "USD",
+      "monthly_quota": 20,
+      "original_quota": {
+        "period": "month",
+        "amount": 20,
+        "periods_per_month": 1,
+        "shared_pool_amount": 70,
+        "model_pool_amount": 20
+      },
+      "rate_basis": "Ставки канала подписки в USD за 1 000 000 токенов; USD означает долларовый номинал usage credits.",
+      "quota_basis_status": "documented",
+      "source_urls": [
+        "https://github.com/FeiZhuLulu/real-api-pricing/blob/6489b60a14680a5ce848131d461a90eb054d03ac/scripts/build_adopted.py",
+        "https://github.com/FeiZhuLulu/real-api-pricing/blob/6489b60a14680a5ce848131d461a90eb054d03ac/data/research/code-subscriptions-round1-2026-09-06.json",
+        "https://commandcode.ai/docs/plans/goat",
+        "https://commandcode.ai/pricing"
+      ],
+      "assumptions_ru": [
+        "Месячная плата $10 не включает processing fee. Его точный размер не подтверждён; итоговая цена задачи без этой комиссии занижает полную оплату.",
+        "Reasoning-токены сопоставлены опубликованной ставке output. Отдельное подтверждение этого сопоставления в сохранённых данных канала отсутствует."
+      ],
+      "notes_ru": [
+        "Общий пул ограничен $14/5 ч и $35/неделю; месячный расчёт предполагает распределение запросов по окнам.",
+        "Состав AA переносится в расчёт расхода credits; воспроизведение той же доли cache hits на другом канале не гарантировано. Полное использование месячного пула является условием оценки."
+      ],
+      "source_conflicts_ru": [],
+      "additional_limits": {
+        "shared_per_5h": 14,
+        "shared_per_week": 35
+      },
+      "shared_pool_note": "Эффективная квота — min(общий месячный пул, лимит модели). Пулы моделей не независимы; их объёмы нельзя складывать.",
+      "component_rates": {
+        "non_cache_input": 0.2,
+        "cache_read": 0.02,
+        "cache_write": 0.25,
+        "answer": 1.2,
+        "reasoning": 1.2
+      },
+      "component_rate_status": {
+        "non_cache_input": "documented",
+        "cache_read": "documented",
+        "cache_write": "documented",
+        "answer": "documented",
+        "reasoning": "assumed"
+      },
+      "status": "assumed"
+    },
+    {
+      "id": "command_code_goat::mimo-v2.5-pro",
+      "model_id": "mimo-v2.5-pro",
+      "plan": "Command Code GOAT",
+      "monthly_usd": 10,
+      "quota_unit": "USD",
+      "monthly_quota": 20,
+      "original_quota": {
+        "period": "month",
+        "amount": 20,
+        "periods_per_month": 1,
+        "shared_pool_amount": 70,
+        "model_pool_amount": 20
+      },
+      "rate_basis": "Ставки канала подписки в USD за 1 000 000 токенов; USD означает долларовый номинал usage credits.",
+      "quota_basis_status": "documented",
+      "source_urls": [
+        "https://github.com/FeiZhuLulu/real-api-pricing/blob/6489b60a14680a5ce848131d461a90eb054d03ac/scripts/build_adopted.py",
+        "https://github.com/FeiZhuLulu/real-api-pricing/blob/6489b60a14680a5ce848131d461a90eb054d03ac/data/research/code-subscriptions-round1-2026-09-06.json",
+        "https://commandcode.ai/docs/plans/goat",
+        "https://commandcode.ai/pricing"
+      ],
+      "assumptions_ru": [
+        "Месячная плата $10 не включает processing fee. Его точный размер не подтверждён; итоговая цена задачи без этой комиссии занижает полную оплату.",
+        "Отдельная ставка cache write в сохранённой таблице не указана. Принята обычная input-ставка; отсутствие отдельной записи не считается доказанным нулевым тарифом.",
+        "Reasoning-токены сопоставлены опубликованной ставке output. Отдельное подтверждение этого сопоставления в сохранённых данных канала отсутствует."
+      ],
+      "notes_ru": [
+        "Общий пул ограничен $14/5 ч и $35/неделю; месячный расчёт предполагает распределение запросов по окнам.",
+        "Состав AA переносится в расчёт расхода credits; воспроизведение той же доли cache hits на другом канале не гарантировано. Полное использование месячного пула является условием оценки."
+      ],
+      "source_conflicts_ru": [],
+      "additional_limits": {
+        "shared_per_5h": 14,
+        "shared_per_week": 35
+      },
+      "shared_pool_note": "Эффективная квота — min(общий месячный пул, лимит модели). Пулы моделей не независимы; их объёмы нельзя складывать.",
+      "component_rates": {
+        "non_cache_input": 0.435,
+        "cache_read": 0.0036,
+        "cache_write": 0.435,
+        "answer": 0.87,
+        "reasoning": 0.87
+      },
+      "component_rate_status": {
+        "non_cache_input": "documented",
+        "cache_read": "documented",
+        "cache_write": "assumed",
+        "answer": "documented",
+        "reasoning": "assumed"
+      },
+      "status": "assumed"
+    },
+    {
+      "id": "command_code_goat::grok-4.6",
+      "model_id": "grok-4.6",
+      "plan": "Command Code GOAT",
+      "monthly_usd": 10,
+      "quota_unit": "USD",
+      "monthly_quota": 20,
+      "original_quota": {
+        "period": "month",
+        "amount": 20,
+        "periods_per_month": 1,
+        "shared_pool_amount": 70,
+        "model_pool_amount": 20
+      },
+      "rate_basis": "Ставки канала подписки в USD за 1 000 000 токенов; USD означает долларовый номинал usage credits.",
+      "quota_basis_status": "documented",
+      "source_urls": [
+        "https://github.com/FeiZhuLulu/real-api-pricing/blob/6489b60a14680a5ce848131d461a90eb054d03ac/scripts/build_adopted.py",
+        "https://github.com/FeiZhuLulu/real-api-pricing/blob/6489b60a14680a5ce848131d461a90eb054d03ac/data/research/code-subscriptions-round1-2026-09-06.json",
+        "https://commandcode.ai/docs/plans/goat",
+        "https://commandcode.ai/pricing"
+      ],
+      "assumptions_ru": [
+        "Месячная плата $10 не включает processing fee. Его точный размер не подтверждён; итоговая цена задачи без этой комиссии занижает полную оплату.",
+        "Отдельная ставка cache write в сохранённой таблице не указана. Принята обычная input-ставка; отсутствие отдельной записи не считается доказанным нулевым тарифом.",
+        "Reasoning-токены сопоставлены опубликованной ставке output. Отдельное подтверждение этого сопоставления в сохранённых данных канала отсутствует."
+      ],
+      "notes_ru": [
+        "Общий пул ограничен $14/5 ч и $35/неделю; месячный расчёт предполагает распределение запросов по окнам.",
+        "Состав AA переносится в расчёт расхода credits; воспроизведение той же доли cache hits на другом канале не гарантировано. Полное использование месячного пула является условием оценки."
+      ],
+      "source_conflicts_ru": [],
+      "additional_limits": {
+        "shared_per_5h": 14,
+        "shared_per_week": 35
+      },
+      "shared_pool_note": "Эффективная квота — min(общий месячный пул, лимит модели). Пулы моделей не независимы; их объёмы нельзя складывать.",
+      "component_rates": {
+        "non_cache_input": 2,
+        "cache_read": 0.5,
+        "cache_write": 2,
+        "answer": 6,
+        "reasoning": 6
+      },
+      "component_rate_status": {
+        "non_cache_input": "documented",
+        "cache_read": "documented",
+        "cache_write": "assumed",
+        "answer": "documented",
+        "reasoning": "assumed"
+      },
+      "status": "assumed"
+    },
+    {
+      "id": "ollama_pro::deepseek-v4.1-flash",
+      "model_id": "deepseek-v4.1-flash",
+      "plan": "Ollama Pro",
+      "monthly_usd": 20,
+      "quota_unit": "USD",
+      "monthly_quota": 60,
+      "original_quota": {
+        "period": "month",
+        "amount": 60,
+        "periods_per_month": 1,
+        "shared_pool_amount": 60,
+        "model_pool_amount": null
+      },
+      "rate_basis": "Ставки канала подписки в USD за 1 000 000 токенов; USD означает долларовый номинал usage credits.",
+      "quota_basis_status": "documented",
+      "source_urls": [
+        "https://github.com/FeiZhuLulu/real-api-pricing/blob/6489b60a14680a5ce848131d461a90eb054d03ac/scripts/build_adopted.py",
+        "https://github.com/FeiZhuLulu/real-api-pricing/blob/6489b60a14680a5ce848131d461a90eb054d03ac/data/research/code-subscriptions-round1-2026-09-06.json",
+        "https://github.com/FeiZhuLulu/real-api-pricing/blob/6489b60a14680a5ce848131d461a90eb054d03ac/data/research/ollama-deepseek-v41-round1-2026-09-11.json",
+        "https://ollama.com/pricing",
+        "https://ollama.com/blog/transparent-pricing"
+      ],
+      "assumptions_ru": [
+        "Отдельная ставка cache write в сохранённой таблице не указана. Принята обычная input-ставка; отсутствие отдельной записи не считается доказанным нулевым тарифом.",
+        "Reasoning-токены сопоставлены опубликованной ставке output. Отдельное подтверждение этого сопоставления в сохранённых данных канала отсутствует."
+      ],
+      "notes_ru": [
+        "Отдельный месячный лимит модели в сохранённых официальных данных не найден; расчёт расходует на одну модель весь общий пул. Неиспользованные credits не переносятся.",
+        "Использованы ставки off-peak; peak у Ollama — пн–пт 12:00–18:00 UTC, ставки вдвое выше.",
+        "Состав AA переносится в расчёт расхода credits; воспроизведение той же доли cache hits на другом канале не гарантировано. Полное использование месячного пула является условием оценки."
+      ],
+      "source_conflicts_ru": [],
+      "additional_limits": {
+        "concurrent_requests": 3
+      },
+      "shared_pool_note": "Общий месячный пул по сценарию целиком расходуется на эту модель; объёмы разных моделей не складываются.",
+      "component_rates": {
+        "non_cache_input": 0.15,
+        "cache_read": 0.003,
+        "cache_write": 0.15,
+        "answer": 0.6,
+        "reasoning": 0.6
+      },
+      "component_rate_status": {
+        "non_cache_input": "documented",
+        "cache_read": "documented",
+        "cache_write": "assumed",
+        "answer": "documented",
+        "reasoning": "assumed"
+      },
+      "status": "assumed"
+    },
+    {
+      "id": "ollama_pro::deepseek-v4-flash",
+      "model_id": "deepseek-v4-flash",
+      "plan": "Ollama Pro",
+      "monthly_usd": 20,
+      "quota_unit": "USD",
+      "monthly_quota": 60,
+      "original_quota": {
+        "period": "month",
+        "amount": 60,
+        "periods_per_month": 1,
+        "shared_pool_amount": 60,
+        "model_pool_amount": null
+      },
+      "rate_basis": "Ставки канала подписки в USD за 1 000 000 токенов; USD означает долларовый номинал usage credits.",
+      "quota_basis_status": "documented",
+      "source_urls": [
+        "https://github.com/FeiZhuLulu/real-api-pricing/blob/6489b60a14680a5ce848131d461a90eb054d03ac/scripts/build_adopted.py",
+        "https://github.com/FeiZhuLulu/real-api-pricing/blob/6489b60a14680a5ce848131d461a90eb054d03ac/data/research/code-subscriptions-round1-2026-09-06.json",
+        "https://ollama.com/pricing",
+        "https://ollama.com/blog/transparent-pricing"
+      ],
+      "assumptions_ru": [
+        "Отдельная ставка cache write в сохранённой таблице не указана. Принята обычная input-ставка; отсутствие отдельной записи не считается доказанным нулевым тарифом.",
+        "Reasoning-токены сопоставлены опубликованной ставке output. Отдельное подтверждение этого сопоставления в сохранённых данных канала отсутствует."
+      ],
+      "notes_ru": [
+        "Отдельный месячный лимит модели в сохранённых официальных данных не найден; расчёт расходует на одну модель весь общий пул. Неиспользованные credits не переносятся.",
+        "Использованы ставки off-peak; peak у Ollama — пн–пт 12:00–18:00 UTC, ставки вдвое выше.",
+        "Состав AA переносится в расчёт расхода credits; воспроизведение той же доли cache hits на другом канале не гарантировано. Полное использование месячного пула является условием оценки."
+      ],
+      "source_conflicts_ru": [],
+      "additional_limits": {
+        "concurrent_requests": 3
+      },
+      "shared_pool_note": "Общий месячный пул по сценарию целиком расходуется на эту модель; объёмы разных моделей не складываются.",
+      "component_rates": {
+        "non_cache_input": 0.22,
+        "cache_read": 0.007,
+        "cache_write": 0.22,
+        "answer": 0.66,
+        "reasoning": 0.66
+      },
+      "component_rate_status": {
+        "non_cache_input": "documented",
+        "cache_read": "documented",
+        "cache_write": "assumed",
+        "answer": "documented",
+        "reasoning": "assumed"
+      },
+      "status": "assumed"
+    },
+    {
+      "id": "ollama_pro::glm-5.3-flash",
+      "model_id": "glm-5.3-flash",
+      "plan": "Ollama Pro",
+      "monthly_usd": 20,
+      "quota_unit": "USD",
+      "monthly_quota": 60,
+      "original_quota": {
+        "period": "month",
+        "amount": 60,
+        "periods_per_month": 1,
+        "shared_pool_amount": 60,
+        "model_pool_amount": null
+      },
+      "rate_basis": "Ставки канала подписки в USD за 1 000 000 токенов; USD означает долларовый номинал usage credits.",
+      "quota_basis_status": "documented",
+      "source_urls": [
+        "https://github.com/FeiZhuLulu/real-api-pricing/blob/6489b60a14680a5ce848131d461a90eb054d03ac/scripts/build_adopted.py",
+        "https://github.com/FeiZhuLulu/real-api-pricing/blob/6489b60a14680a5ce848131d461a90eb054d03ac/data/research/code-subscriptions-round1-2026-09-06.json",
+        "https://ollama.com/pricing",
+        "https://ollama.com/blog/transparent-pricing"
+      ],
+      "assumptions_ru": [
+        "Отдельная ставка cache write в сохранённой таблице не указана. Принята обычная input-ставка; отсутствие отдельной записи не считается доказанным нулевым тарифом.",
+        "Reasoning-токены сопоставлены опубликованной ставке output. Отдельное подтверждение этого сопоставления в сохранённых данных канала отсутствует."
+      ],
+      "notes_ru": [
+        "Отдельный месячный лимит модели в сохранённых официальных данных не найден; расчёт расходует на одну модель весь общий пул. Неиспользованные credits не переносятся.",
+        "Состав AA переносится в расчёт расхода credits; воспроизведение той же доли cache hits на другом канале не гарантировано. Полное использование месячного пула является условием оценки."
+      ],
+      "source_conflicts_ru": [],
+      "additional_limits": {
+        "concurrent_requests": 3
+      },
+      "shared_pool_note": "Общий месячный пул по сценарию целиком расходуется на эту модель; объёмы разных моделей не складываются.",
+      "component_rates": {
+        "non_cache_input": 0.15,
+        "cache_read": 0.03,
+        "cache_write": 0.15,
+        "answer": 0.5,
+        "reasoning": 0.5
+      },
+      "component_rate_status": {
+        "non_cache_input": "documented",
+        "cache_read": "documented",
+        "cache_write": "assumed",
+        "answer": "documented",
+        "reasoning": "assumed"
+      },
+      "status": "assumed"
+    },
+    {
+      "id": "ollama_max::deepseek-v4.1-flash",
+      "model_id": "deepseek-v4.1-flash",
+      "plan": "Ollama Max",
+      "monthly_usd": 100,
+      "quota_unit": "USD",
+      "monthly_quota": 300,
+      "original_quota": {
+        "period": "month",
+        "amount": 300,
+        "periods_per_month": 1,
+        "shared_pool_amount": 300,
+        "model_pool_amount": null
+      },
+      "rate_basis": "Ставки канала подписки в USD за 1 000 000 токенов; USD означает долларовый номинал usage credits.",
+      "quota_basis_status": "documented",
+      "source_urls": [
+        "https://github.com/FeiZhuLulu/real-api-pricing/blob/6489b60a14680a5ce848131d461a90eb054d03ac/scripts/build_adopted.py",
+        "https://github.com/FeiZhuLulu/real-api-pricing/blob/6489b60a14680a5ce848131d461a90eb054d03ac/data/research/code-subscriptions-round1-2026-09-06.json",
+        "https://github.com/FeiZhuLulu/real-api-pricing/blob/6489b60a14680a5ce848131d461a90eb054d03ac/data/research/ollama-deepseek-v41-round1-2026-09-11.json",
+        "https://ollama.com/pricing",
+        "https://ollama.com/blog/transparent-pricing"
+      ],
+      "assumptions_ru": [
+        "Отдельная ставка cache write в сохранённой таблице не указана. Принята обычная input-ставка; отсутствие отдельной записи не считается доказанным нулевым тарифом.",
+        "Reasoning-токены сопоставлены опубликованной ставке output. Отдельное подтверждение этого сопоставления в сохранённых данных канала отсутствует."
+      ],
+      "notes_ru": [
+        "Отдельный месячный лимит модели в сохранённых официальных данных не найден; расчёт расходует на одну модель весь общий пул. Неиспользованные credits не переносятся.",
+        "Использованы ставки off-peak; peak у Ollama — пн–пт 12:00–18:00 UTC, ставки вдвое выше.",
+        "Состав AA переносится в расчёт расхода credits; воспроизведение той же доли cache hits на другом канале не гарантировано. Полное использование месячного пула является условием оценки."
+      ],
+      "source_conflicts_ru": [],
+      "additional_limits": {
+        "concurrent_requests": 10
+      },
+      "shared_pool_note": "Общий месячный пул по сценарию целиком расходуется на эту модель; объёмы разных моделей не складываются.",
+      "component_rates": {
+        "non_cache_input": 0.15,
+        "cache_read": 0.003,
+        "cache_write": 0.15,
+        "answer": 0.6,
+        "reasoning": 0.6
+      },
+      "component_rate_status": {
+        "non_cache_input": "documented",
+        "cache_read": "documented",
+        "cache_write": "assumed",
+        "answer": "documented",
+        "reasoning": "assumed"
+      },
+      "status": "assumed"
+    },
+    {
+      "id": "ollama_max::deepseek-v4-flash",
+      "model_id": "deepseek-v4-flash",
+      "plan": "Ollama Max",
+      "monthly_usd": 100,
+      "quota_unit": "USD",
+      "monthly_quota": 300,
+      "original_quota": {
+        "period": "month",
+        "amount": 300,
+        "periods_per_month": 1,
+        "shared_pool_amount": 300,
+        "model_pool_amount": null
+      },
+      "rate_basis": "Ставки канала подписки в USD за 1 000 000 токенов; USD означает долларовый номинал usage credits.",
+      "quota_basis_status": "documented",
+      "source_urls": [
+        "https://github.com/FeiZhuLulu/real-api-pricing/blob/6489b60a14680a5ce848131d461a90eb054d03ac/scripts/build_adopted.py",
+        "https://github.com/FeiZhuLulu/real-api-pricing/blob/6489b60a14680a5ce848131d461a90eb054d03ac/data/research/code-subscriptions-round1-2026-09-06.json",
+        "https://ollama.com/pricing",
+        "https://ollama.com/blog/transparent-pricing"
+      ],
+      "assumptions_ru": [
+        "Отдельная ставка cache write в сохранённой таблице не указана. Принята обычная input-ставка; отсутствие отдельной записи не считается доказанным нулевым тарифом.",
+        "Reasoning-токены сопоставлены опубликованной ставке output. Отдельное подтверждение этого сопоставления в сохранённых данных канала отсутствует."
+      ],
+      "notes_ru": [
+        "Отдельный месячный лимит модели в сохранённых официальных данных не найден; расчёт расходует на одну модель весь общий пул. Неиспользованные credits не переносятся.",
+        "Использованы ставки off-peak; peak у Ollama — пн–пт 12:00–18:00 UTC, ставки вдвое выше.",
+        "Состав AA переносится в расчёт расхода credits; воспроизведение той же доли cache hits на другом канале не гарантировано. Полное использование месячного пула является условием оценки."
+      ],
+      "source_conflicts_ru": [],
+      "additional_limits": {
+        "concurrent_requests": 10
+      },
+      "shared_pool_note": "Общий месячный пул по сценарию целиком расходуется на эту модель; объёмы разных моделей не складываются.",
+      "component_rates": {
+        "non_cache_input": 0.22,
+        "cache_read": 0.007,
+        "cache_write": 0.22,
+        "answer": 0.66,
+        "reasoning": 0.66
+      },
+      "component_rate_status": {
+        "non_cache_input": "documented",
+        "cache_read": "documented",
+        "cache_write": "assumed",
+        "answer": "documented",
+        "reasoning": "assumed"
+      },
+      "status": "assumed"
+    },
+    {
+      "id": "ollama_max::glm-5.3-flash",
+      "model_id": "glm-5.3-flash",
+      "plan": "Ollama Max",
+      "monthly_usd": 100,
+      "quota_unit": "USD",
+      "monthly_quota": 300,
+      "original_quota": {
+        "period": "month",
+        "amount": 300,
+        "periods_per_month": 1,
+        "shared_pool_amount": 300,
+        "model_pool_amount": null
+      },
+      "rate_basis": "Ставки канала подписки в USD за 1 000 000 токенов; USD означает долларовый номинал usage credits.",
+      "quota_basis_status": "documented",
+      "source_urls": [
+        "https://github.com/FeiZhuLulu/real-api-pricing/blob/6489b60a14680a5ce848131d461a90eb054d03ac/scripts/build_adopted.py",
+        "https://github.com/FeiZhuLulu/real-api-pricing/blob/6489b60a14680a5ce848131d461a90eb054d03ac/data/research/code-subscriptions-round1-2026-09-06.json",
+        "https://ollama.com/pricing",
+        "https://ollama.com/blog/transparent-pricing"
+      ],
+      "assumptions_ru": [
+        "Отдельная ставка cache write в сохранённой таблице не указана. Принята обычная input-ставка; отсутствие отдельной записи не считается доказанным нулевым тарифом.",
+        "Reasoning-токены сопоставлены опубликованной ставке output. Отдельное подтверждение этого сопоставления в сохранённых данных канала отсутствует."
+      ],
+      "notes_ru": [
+        "Отдельный месячный лимит модели в сохранённых официальных данных не найден; расчёт расходует на одну модель весь общий пул. Неиспользованные credits не переносятся.",
+        "Состав AA переносится в расчёт расхода credits; воспроизведение той же доли cache hits на другом канале не гарантировано. Полное использование месячного пула является условием оценки."
+      ],
+      "source_conflicts_ru": [],
+      "additional_limits": {
+        "concurrent_requests": 10
+      },
+      "shared_pool_note": "Общий месячный пул по сценарию целиком расходуется на эту модель; объёмы разных моделей не складываются.",
+      "component_rates": {
+        "non_cache_input": 0.15,
+        "cache_read": 0.03,
+        "cache_write": 0.15,
+        "answer": 0.5,
+        "reasoning": 0.5
+      },
+      "component_rate_status": {
+        "non_cache_input": "documented",
+        "cache_read": "documented",
+        "cache_write": "assumed",
+        "answer": "documented",
+        "reasoning": "assumed"
+      },
+      "status": "assumed"
+    }
+  ]
+}

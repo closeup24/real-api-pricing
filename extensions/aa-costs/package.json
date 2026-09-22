@@ -1,0 +1,12 @@
+{
+  "name": "ai-price",
+  "version": "0.1.0",
+  "private": true,
+  "description": "Сравнение стоимости задач LLM по API и подпискам",
+  "type": "module",
+  "scripts": {
+    "build": "node scripts/build_report.mjs",
+    "test": "node --test tests/*.test.mjs",
+    "preview": "node scripts/preview.mjs"
+  }
+}

@@ -1,0 +1,354 @@
+{
+  "metadata": {
+    "version": "4.3.2",
+    "source_snapshot_retrieved_at": "2026-09-22T10:49:43.269Z",
+    "methodology_checked_at": "2026-09-22T11:59:35.046Z",
+    "source_file": "data/aa/selected-models-raw.json",
+    "source_sha256": "6722de95a5b9c2587d0596e6a3327cd47716497bca6c4b373332920d25bf77b1",
+    "cost_definition_url": "https://artificialanalysis.ai/#price-and-cost",
+    "weight_and_task_count_definition_url": "https://artificialanalysis.ai/methodology/intelligence-benchmarking",
+    "weight_evidence": "Сопоставлены intelligenceIndexCostPerTask.evaluations[].weightedCostPerTask и intelligenceIndexEvaluations[].costPerTask по slug; отношение проверено против опубликованных весов.",
+    "task_formula": "sum_j(weight_j * mean_cost_per_task_j)",
+    "total_definition": "Сумма стоимости всех тестов без повторных прогонов; sum_j(task_count_j * mean_cost_per_task_j) отдельно проверяется по опубликованным агрегатам.",
+    "total_task_count_excluding_repeats": 9750,
+    "benchmark_weight_sum": 1
+  },
+  "validation": {
+    "variants_checked": 39,
+    "evaluation_weight_ratios_checked": 390,
+    "max_absolute_weight_error": 2.7755575615628914e-17,
+    "weight_mismatches": []
+  },
+  "benchmarks": [
+    {
+      "slug": "aa-briefcase",
+      "name": "AA-Briefcase v1.1",
+      "task_count": 91,
+      "repeats": 1,
+      "weight": 0.15
+    },
+    {
+      "slug": "gdpval-aa",
+      "name": "GDPval-AA v2.1",
+      "task_count": 220,
+      "repeats": 1,
+      "weight": 0.1
+    },
+    {
+      "slug": "automationbench-aa",
+      "name": "AutomationBench-AA",
+      "task_count": 657,
+      "repeats": 1,
+      "weight": 0.05
+    },
+    {
+      "slug": "terminalbench-4-0",
+      "name": "Terminal-Bench 4.0",
+      "task_count": 66,
+      "repeats": 3,
+      "weight": 0.1
+    },
+    {
+      "slug": "scicode",
+      "name": "SciCode",
+      "task_count": 288,
+      "repeats": 3,
+      "weight": 0.1
+    },
+    {
+      "slug": "humanitys-last-exam",
+      "name": "HLE",
+      "task_count": 2158,
+      "repeats": 1,
+      "weight": 0.1
+    },
+    {
+      "slug": "gdp-pdf",
+      "name": "GDP.pdf",
+      "task_count": 100,
+      "repeats": 5,
+      "weight": 0.1
+    },
+    {
+      "slug": "critpt",
+      "name": "CritPt",
+      "task_count": 70,
+      "repeats": 5,
+      "weight": 0.1
+    },
+    {
+      "slug": "omniscience",
+      "name": "AA-Omniscience",
+      "task_count": 6000,
+      "repeats": 1,
+      "weight": 0.15
+    },
+    {
+      "slug": "artificial-analysis-long-context-reasoning",
+      "name": "AA-LCR v1.1",
+      "task_count": 100,
+      "repeats": 3,
+      "weight": 0.05
+    }
+  ],
+  "models": [
+    {
+      "source_id": "b8fc61f7-5e9a-49e6-8547-6ac56db24627",
+      "source_slug": "claude-opus-5",
+      "source_name": "Claude Opus 5 (Adaptive Reasoning, Max Effort)",
+      "source_url": "https://artificialanalysis.ai/models/claude-opus-5",
+      "cost_per_task_reported_usd": 5.858396237036018,
+      "cost_per_task_reconstructed_usd": 5.858396237036018,
+      "cost_per_task_delta_usd": 0,
+      "cost_total_reported_usd": 7274.7418382622345,
+      "cost_total_reconstructed_from_eval_task_costs_usd": 7274.741838262235,
+      "cost_total_reconstruction_delta_usd": 9.094947017729282e-13,
+      "cost_total_reconstruction_delta_pct": 2.220446049250313e-14,
+      "evaluations": [
+        {
+          "slug": "aa-briefcase",
+          "name": "AA-Briefcase v1.1",
+          "task_count": 91,
+          "repeats": 1,
+          "weight": 0.15,
+          "unweighted_cost_per_task_usd": 17.793315194424192,
+          "weighted_contribution_usd": 2.6689972791636283,
+          "inferred_weight": 0.14999999999999997,
+          "reconstructed_evaluation_cost_usd": 1619.1916826926015
+        },
+        {
+          "slug": "gdpval-aa",
+          "name": "GDPval-AA v2.1",
+          "task_count": 220,
+          "repeats": 1,
+          "weight": 0.1,
+          "unweighted_cost_per_task_usd": 6.766011819009691,
+          "weighted_contribution_usd": 0.6766011819009691,
+          "inferred_weight": 0.09999999999999999,
+          "reconstructed_evaluation_cost_usd": 1488.522600182132
+        },
+        {
+          "slug": "automationbench-aa",
+          "name": "AutomationBench-AA",
+          "task_count": 657,
+          "repeats": 1,
+          "weight": 0.05,
+          "unweighted_cost_per_task_usd": 1.316040562480586,
+          "weighted_contribution_usd": 0.06580202812402931,
+          "inferred_weight": 0.05000000000000001,
+          "reconstructed_evaluation_cost_usd": 864.638649549745
+        },
+        {
+          "slug": "terminalbench-4-0",
+          "name": "Terminal-Bench 4.0",
+          "task_count": 66,
+          "repeats": 3,
+          "weight": 0.1,
+          "unweighted_cost_per_task_usd": 19.289100239966007,
+          "weighted_contribution_usd": 1.9289100239966006,
+          "inferred_weight": 0.09999999999999999,
+          "reconstructed_evaluation_cost_usd": 1273.0806158377566
+        },
+        {
+          "slug": "scicode",
+          "name": "SciCode",
+          "task_count": 288,
+          "repeats": 3,
+          "weight": 0.1,
+          "unweighted_cost_per_task_usd": 0.11771310763888888,
+          "weighted_contribution_usd": 0.01177131076388889,
+          "inferred_weight": 0.1,
+          "reconstructed_evaluation_cost_usd": 33.901375
+        },
+        {
+          "slug": "humanitys-last-exam",
+          "name": "HLE",
+          "task_count": 2158,
+          "repeats": 1,
+          "weight": 0.1,
+          "unweighted_cost_per_task_usd": 0.6735533456904541,
+          "weighted_contribution_usd": 0.06735533456904541,
+          "inferred_weight": 0.1,
+          "reconstructed_evaluation_cost_usd": 1453.52812
+        },
+        {
+          "slug": "gdp-pdf",
+          "name": "GDP.pdf",
+          "task_count": 100,
+          "repeats": 5,
+          "weight": 0.1,
+          "unweighted_cost_per_task_usd": 1.08566965,
+          "weighted_contribution_usd": 0.108566965,
+          "inferred_weight": 0.09999999999999999,
+          "reconstructed_evaluation_cost_usd": 108.56696500000001
+        },
+        {
+          "slug": "critpt",
+          "name": "CritPt",
+          "task_count": 70,
+          "repeats": 5,
+          "weight": 0.1,
+          "unweighted_cost_per_task_usd": 2.884544071428571,
+          "weighted_contribution_usd": 0.28845440714285714,
+          "inferred_weight": 0.1,
+          "reconstructed_evaluation_cost_usd": 201.91808499999996
+        },
+        {
+          "slug": "omniscience",
+          "name": "AA-Omniscience",
+          "task_count": 6000,
+          "repeats": 1,
+          "weight": 0.15,
+          "unweighted_cost_per_task_usd": 0.025880409166666667,
+          "weighted_contribution_usd": 0.003882061375,
+          "inferred_weight": 0.15,
+          "reconstructed_evaluation_cost_usd": 155.282455
+        },
+        {
+          "slug": "artificial-analysis-long-context-reasoning",
+          "name": "AA-LCR v1.1",
+          "task_count": 100,
+          "repeats": 3,
+          "weight": 0.05,
+          "unweighted_cost_per_task_usd": 0.7611129,
+          "weighted_contribution_usd": 0.038055645,
+          "inferred_weight": 0.05,
+          "reconstructed_evaluation_cost_usd": 76.11129
+        }
+      ]
+    },
+    {
+      "source_id": "3e87c73e-a257-495e-9730-367a66229811",
+      "source_slug": "claude-fable-5-1",
+      "source_name": "Claude Fable 5.1 (Adaptive Reasoning, Max Effort, Default Fallback)",
+      "source_url": "https://artificialanalysis.ai/models/claude-fable-5-1",
+      "cost_per_task_reported_usd": 7.629706364004841,
+      "cost_per_task_reconstructed_usd": 7.629706364004841,
+      "cost_per_task_delta_usd": 0,
+      "cost_total_reported_usd": 13128.859210511622,
+      "cost_total_reconstructed_from_eval_task_costs_usd": 13259.517159600253,
+      "cost_total_reconstruction_delta_usd": 130.65794908863063,
+      "cost_total_reconstruction_delta_pct": 0.9951965132204199,
+      "evaluations": [
+        {
+          "slug": "aa-briefcase",
+          "name": "AA-Briefcase v1.1",
+          "task_count": 91,
+          "repeats": 1,
+          "weight": 0.15,
+          "unweighted_cost_per_task_usd": 22.71345865423513,
+          "weighted_contribution_usd": 3.4070187981352693,
+          "inferred_weight": 0.15,
+          "reconstructed_evaluation_cost_usd": 2066.9247375353966
+        },
+        {
+          "slug": "gdpval-aa",
+          "name": "GDPval-AA v2.1",
+          "task_count": 220,
+          "repeats": 1,
+          "weight": 0.1,
+          "unweighted_cost_per_task_usd": 9.774869276879294,
+          "weighted_contribution_usd": 0.9774869276879293,
+          "inferred_weight": 0.09999999999999999,
+          "reconstructed_evaluation_cost_usd": 2150.4712409134445
+        },
+        {
+          "slug": "automationbench-aa",
+          "name": "AutomationBench-AA",
+          "task_count": 657,
+          "repeats": 1,
+          "weight": 0.05,
+          "unweighted_cost_per_task_usd": 2.611294257588544,
+          "weighted_contribution_usd": 0.1305647128794272,
+          "inferred_weight": 0.05,
+          "reconstructed_evaluation_cost_usd": 1715.6203272356734
+        },
+        {
+          "slug": "terminalbench-4-0",
+          "name": "Terminal-Bench 4.0",
+          "task_count": 66,
+          "repeats": 3,
+          "weight": 0.1,
+          "unweighted_cost_per_task_usd": 19.218480031061166,
+          "weighted_contribution_usd": 1.9218480031061167,
+          "inferred_weight": 0.1,
+          "reconstructed_evaluation_cost_usd": 1268.419682050037
+        },
+        {
+          "slug": "scicode",
+          "name": "SciCode",
+          "task_count": 288,
+          "repeats": 3,
+          "weight": 0.1,
+          "unweighted_cost_per_task_usd": 0.6585189583333333,
+          "weighted_contribution_usd": 0.06585189583333334,
+          "inferred_weight": 0.10000000000000002,
+          "reconstructed_evaluation_cost_usd": 189.65346
+        },
+        {
+          "slug": "humanitys-last-exam",
+          "name": "HLE",
+          "task_count": 2158,
+          "repeats": 1,
+          "weight": 0.1,
+          "unweighted_cost_per_task_usd": 1.5858915690099744,
+          "weighted_contribution_usd": 0.15858915690099742,
+          "inferred_weight": 0.09999999999999999,
+          "reconstructed_evaluation_cost_usd": 3422.3540059235247
+        },
+        {
+          "slug": "gdp-pdf",
+          "name": "GDP.pdf",
+          "task_count": 100,
+          "repeats": 5,
+          "weight": 0.1,
+          "unweighted_cost_per_task_usd": 2.7748912999999997,
+          "weighted_contribution_usd": 0.27748913,
+          "inferred_weight": 0.1,
+          "reconstructed_evaluation_cost_usd": 277.48913
+        },
+        {
+          "slug": "critpt",
+          "name": "CritPt",
+          "task_count": 70,
+          "repeats": 5,
+          "weight": 0.1,
+          "unweighted_cost_per_task_usd": 5.713794857142857,
+          "weighted_contribution_usd": 0.5713794857142858,
+          "inferred_weight": 0.1,
+          "reconstructed_evaluation_cost_usd": 399.96564
+        },
+        {
+          "slug": "omniscience",
+          "name": "AA-Omniscience",
+          "task_count": 6000,
+          "repeats": 1,
+          "weight": 0.15,
+          "unweighted_cost_per_task_usd": 0.2683618295521425,
+          "weighted_contribution_usd": 0.040254274432821376,
+          "inferred_weight": 0.15,
+          "reconstructed_evaluation_cost_usd": 1610.170977312855
+        },
+        {
+          "slug": "artificial-analysis-long-context-reasoning",
+          "name": "AA-LCR v1.1",
+          "task_count": 100,
+          "repeats": 3,
+          "weight": 0.05,
+          "unweighted_cost_per_task_usd": 1.5844795862932,
+          "weighted_contribution_usd": 0.07922397931466,
+          "inferred_weight": 0.05,
+          "reconstructed_evaluation_cost_usd": 158.44795862932
+        }
+      ]
+    }
+  ],
+  "comparison": {
+    "total_ratio_fable_over_opus": 1.8047182295128426,
+    "task_ratio_fable_over_opus": 1.3023541009006578
+  },
+  "limitations": [
+    "Fable Default Fallback: total из суммы count*costPerTask не совпадает с опубликованным total. Это отдельное несоответствие источника; причина не установлена. Все10 весов и сумма weightedCostPerTask подтверждены независимо от этой проверки.",
+    "Веса тестов не являются долями token types и не зависят от балла интеллекта конкретной модели."
+  ]
+}

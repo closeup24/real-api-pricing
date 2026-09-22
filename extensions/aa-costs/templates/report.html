@@ -1,0 +1,765 @@
+<!doctype html>
+<html lang="ru">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="color-scheme" content="light dark">
+  <title>LLM: стоимость задач по API и подпискам</title>
+  <style>
+    :root{color-scheme:light;--bg:#f4f5f7;--surface:#fff;--ink:#182132;--muted:#606d7e;--line:#dfe4eb;--accent:#3658d3;--accent-soft:#edf1ff;--shadow:0 8px 30px #202e4910;--warning:#87611c;--warning-bg:#fff7e4}
+    :root[data-theme=dark]{color-scheme:dark;--bg:#10141c;--surface:#191f2a;--ink:#e9edf5;--muted:#a4afc1;--line:#323b4c;--accent:#a1b2ff;--accent-soft:#263255;--shadow:0 8px 30px #0002;--warning:#eed49b;--warning-bg:#302919}
+    @media(prefers-color-scheme:dark){:root:not([data-theme=light]){color-scheme:dark;--bg:#10141c;--surface:#191f2a;--ink:#e9edf5;--muted:#a4afc1;--line:#323b4c;--accent:#a1b2ff;--accent-soft:#263255;--shadow:0 8px 30px #0002;--warning:#eed49b;--warning-bg:#302919}}
+    *{box-sizing:border-box}body{margin:0;background:var(--bg);color:var(--ink);font:14px/1.55 system-ui,-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif}button,input,select{font:inherit}button,select,input{color:var(--ink);border:1px solid var(--line);border-radius:8px;background:var(--surface);min-height:39px}button{padding:7px 13px;cursor:pointer}button:hover{border-color:var(--accent);color:var(--accent)}button:focus-visible,input:focus-visible,select:focus-visible,a:focus-visible{outline:3px solid var(--accent);outline-offset:3px}input,select{width:100%;padding:7px 10px}a{color:var(--accent);text-underline-offset:3px}h1,h2,p{margin-top:0}h1{font-size:clamp(25px,3vw,39px);line-height:1.16;letter-spacing:-1px;font-weight:720;max-width:850px;margin-bottom:15px}h2{font-size:19px;line-height:1.3;letter-spacing:-.35px;margin-bottom:7px}.page{max-width:1560px;margin:auto;padding:34px 32px 55px}.topline{display:flex;justify-content:space-between;align-items:center;gap:15px;margin-bottom:24px}.eyebrow{font-size:11px;letter-spacing:1.5px;font-weight:750;text-transform:uppercase;color:var(--muted)}.theme{font-size:12px;min-height:32px}.intro{max-width:960px;color:var(--muted);font-size:16px;margin-bottom:20px}.formula{display:flex;gap:14px;align-items:center;flex-wrap:wrap;margin:20px 0 12px;padding:16px 20px;border:1px solid var(--line);background:var(--surface);border-radius:12px}.formula strong{font-size:15px}.formula .math{font-size:16px;font-weight:600;color:var(--accent)}.formula .note{font-size:12px;color:var(--muted);flex-basis:100%}.metadata{display:flex;gap:8px 20px;flex-wrap:wrap;font-size:12px;color:var(--muted);margin-bottom:26px}.filters{display:grid;grid-template-columns:1.2fr .8fr .95fr 1.2fr 1.2fr .65fr auto;gap:13px;align-items:end;padding:19px 20px;background:var(--surface);border:1px solid var(--line);border-radius:12px;box-shadow:var(--shadow)}label{font-size:12px;color:var(--muted);display:block}label span{display:block;margin-bottom:5px}.viewline{display:flex;justify-content:space-between;align-items:center;gap:16px;flex-wrap:wrap;margin:24px 0 14px}.viewline p{margin:0;color:var(--muted);font-size:13px}.view-control{display:flex;gap:9px;align-items:center;font-size:12px;color:var(--muted)}.view-control select{width:auto;min-width:190px}.charts{display:grid;grid-template-columns:1fr 1fr;gap:18px}.card{background:var(--surface);border:1px solid var(--line);border-radius:13px;box-shadow:var(--shadow);overflow:hidden}.card-head{padding:20px 22px 0}.subtitle{color:var(--muted);font-size:12px;margin-bottom:8px}.chart-scroll{max-height:620px;overflow:auto}.chart{width:100%;min-height:350px}.chart svg{display:block;width:100%;min-width:0}.chart-note{min-height:51px;padding:5px 22px 16px;color:var(--muted);font-size:11px}.chart-empty{min-height:330px;display:grid;place-items:center;text-align:center;padding:45px;color:var(--muted)}.legend{display:flex;gap:10px 20px;flex-wrap:wrap;align-items:center;padding:16px 2px 5px;color:var(--muted);font-size:11px}.legend-item{display:inline-flex;gap:6px;align-items:center}.dot{width:9px;height:9px;border-radius:50%;display:inline-block}.shape-key{margin-left:auto;display:flex;gap:15px}.model-key{display:flex;gap:10px 16px;flex-wrap:wrap}.section{margin-top:29px}.section-head{display:flex;justify-content:space-between;gap:15px;align-items:center;flex-wrap:wrap;margin-bottom:12px}.section-head h2{margin-bottom:3px}.section-head p{font-size:12px;color:var(--muted);margin:0}.table-wrap{overflow:auto;max-height:640px}.data-table{width:100%;border-collapse:collapse;white-space:nowrap;font-size:12px}.data-table th{text-align:left;background:var(--surface);position:sticky;top:0;z-index:1;border-bottom:1px solid var(--line);padding:0 11px;height:51px;color:var(--muted);font-size:11px;font-weight:650}.data-table th button{border:0;border-radius:0;background:none;min-height:45px;padding:0;color:inherit;text-align:inherit;font-size:inherit;font-weight:inherit}.data-table th button:hover{color:var(--accent)}.data-table td{border-bottom:1px solid var(--line);padding:11px}.data-table tr:last-child td{border-bottom:0}.data-table tbody tr:hover{background:var(--accent-soft)}.data-table .numeric{text-align:right;font-variant-numeric:tabular-nums}.data-table .model-cell{font-weight:650}.data-table .plan-cell{white-space:normal;min-width:200px;max-width:320px}.tag{display:inline-block;font-size:10px;padding:1px 6px;border:1px solid var(--line);border-radius:5px;color:var(--muted);margin-right:5px}.small{font-size:11px;color:var(--muted)}.budget-note{margin:11px 2px 0;font-size:12px;color:var(--muted);max-width:1050px}.coverage{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:10px}.coverage-item{padding:13px 16px;background:var(--surface);border:1px solid var(--line);border-radius:10px;font-size:12px}.coverage-title{display:flex;align-items:flex-start;justify-content:space-between;gap:10px;margin-bottom:5px}.coverage-title strong{font-size:13px}.coverage-status{font-size:10px;color:var(--muted);white-space:nowrap}.coverage-item p{color:var(--muted);margin:0}.methodology{display:grid;grid-template-columns:1.5fr 1fr;gap:30px;padding:22px;margin-top:25px;background:var(--surface);border:1px solid var(--line);border-radius:12px;font-size:12px;color:var(--muted)}.methodology h2{font-size:15px;color:var(--ink)}.methodology p:last-child{margin-bottom:0}.methodology ul{padding-left:18px;margin:0}.methodology li+li{margin-top:7px}.callout{color:var(--warning);background:var(--warning-bg);border-radius:7px;padding:9px 12px;margin-top:12px}.tooltip{position:fixed;z-index:20;pointer-events:none;max-width:340px;padding:13px 15px;border:1px solid var(--line);border-radius:10px;background:var(--surface);box-shadow:0 8px 36px #0003;font-size:12px;line-height:1.5}.tooltip strong{display:block;font-size:13px;margin-bottom:5px}.tooltip .tooltip-plan{color:var(--accent);margin-bottom:8px}.tooltip dl{display:grid;grid-template-columns:auto auto;gap:3px 16px;margin:0}.tooltip dt{color:var(--muted)}.tooltip dd{margin:0;text-align:right;font-variant-numeric:tabular-nums}.tooltip .tooltip-note{font-size:10px;color:var(--muted);margin-top:8px}.plot-point{cursor:crosshair;transition:opacity .12s}.plot-point:focus{outline:none;stroke:var(--ink);stroke-width:3}.plot-point:hover{stroke:var(--ink);stroke-width:2}.bar-hit{fill:transparent;cursor:crosshair}.bar-hit:hover,.bar-hit:focus{fill:var(--accent-soft);outline:none}.fatal{padding:25px;border:1px solid var(--line);border-radius:10px;background:var(--surface)}[hidden]{display:none!important}
+    .card{min-width:0}.chart svg{min-width:0}
+    .mix-reference{display:flex;flex-wrap:wrap;gap:8px 22px;padding:12px 16px;background:var(--accent-soft);border-radius:9px;margin:12px 0;font-size:12px}.mix-reference strong{color:var(--accent)}.mix-cell{min-width:140px}.mix-cell .small{display:block;white-space:normal;margin-top:3px;font-weight:400}.api-price-origin{display:block;max-width:215px;white-space:normal;margin-top:4px;text-align:right}.api-price-origin summary{cursor:pointer;color:var(--accent)}.api-price-origin p{margin:5px 0 0;line-height:1.5}
+    .report-tabs{display:flex;gap:8px;flex-wrap:wrap;margin:0 0 22px;padding-bottom:12px;border-bottom:1px solid var(--line);scroll-margin-top:15px}.report-tabs [aria-selected=true]{background:var(--accent-soft);border-color:var(--accent);color:var(--accent);font-weight:650}.walkthrough{max-width:1120px}.walkthrough-lead{max-width:850px;color:var(--muted)}.walkthrough-header{display:flex;gap:20px;justify-content:space-between;align-items:start;flex-wrap:wrap;margin-bottom:18px}.precision-toggle{display:flex;gap:8px;align-items:center;font-size:12px}.precision-toggle input{width:17px;min-height:17px;height:17px;margin:0}.walkthrough-context{display:flex;gap:8px;flex-wrap:wrap;margin:12px 0}.walkthrough-context span{padding:4px 9px;background:var(--accent-soft);border-radius:6px;font-size:12px}.walkthrough-step{padding:22px;margin-bottom:16px;background:var(--surface);border:1px solid var(--line);border-radius:12px;min-width:0}.walkthrough-step h3{font-size:17px;margin:0 0 12px;line-height:1.4}.walkthrough-step p{color:var(--muted);font-size:13px;margin-bottom:12px}.walkthrough-step p:last-child{margin-bottom:0}.equation-group{display:grid;gap:12px;margin:14px 0}.equation-label{font-size:12px;color:var(--muted);margin-bottom:5px}.equation{display:flex;align-items:baseline;gap:5px 9px;flex-wrap:wrap;padding:11px 13px;border-radius:8px;background:var(--bg);font-size:14px;font-variant-numeric:tabular-nums;line-height:1.7}.equation .term{overflow-wrap:anywhere;min-width:0}.equation .result{font-weight:650;color:var(--accent);overflow-wrap:anywhere;min-width:0}.equation .operator{color:var(--muted)}.walkthrough-result{padding:14px 16px;background:var(--accent-soft);border-radius:9px;margin-top:15px;display:flex;gap:12px;flex-wrap:wrap;align-items:baseline}.walkthrough-result strong{color:var(--accent);font-size:21px;font-variant-numeric:tabular-nums;overflow-wrap:anywhere}.walkthrough-result span{font-size:12px;color:var(--muted)}.walkthrough-check{padding:10px 13px;border-left:3px solid var(--accent);margin:12px 0;color:var(--muted);font-size:12px}.walkthrough-links{display:flex;gap:12px 20px;flex-wrap:wrap;font-size:12px;margin:18px 0}.walkthrough-notice{padding:12px 15px;border:1px solid var(--line);border-radius:9px;margin-bottom:16px;color:var(--muted);font-size:12px}
+    @media(max-width:650px){.walkthrough-step{padding:16px}.equation{padding:10px;font-size:12px;gap:4px 6px}.walkthrough-step h3{font-size:16px}.walkthrough-result strong{font-size:18px}.report-tabs button{flex:1;font-size:12px}.walkthrough-header{gap:8px}}
+    .report-nav{margin:-12px 0 24px;font-size:13px}.estimate-section{scroll-margin-top:20px;padding-top:15px;border-top:1px solid var(--line);margin-top:38px}.estimate-intro{max-width:1040px;font-size:13px;color:var(--muted)}.estimate-formula{display:grid;gap:4px;margin:16px 0;padding:13px 16px;border:1px solid var(--line);border-radius:10px;background:var(--surface);font-size:13px}.estimate-formula strong{color:var(--accent);font-weight:600}.estimate-controls{display:flex;gap:15px;align-items:end;flex-wrap:wrap;margin:16px 0}.estimate-controls label{min-width:180px;flex:0 1 260px}.estimate-controls button{margin-left:auto}.estimate-chart{min-height:200px}.estimate-chart svg{display:block;width:100%;min-width:0}.estimate-table{margin-top:15px}.estimate-table th{white-space:normal;min-width:110px}.estimate-table td:first-child{white-space:normal;min-width:170px}.estimate-table td:last-child{white-space:normal;min-width:190px;max-width:360px}.estimate-table details{white-space:normal;min-width:260px;max-width:460px}.estimate-table summary{cursor:pointer;color:var(--accent)}.token-details{width:100%;border-collapse:collapse;margin-top:9px;font-size:11px}.data-table .token-details th,.data-table .token-details td{position:static;min-width:0;height:auto;padding:5px 7px;background:none;white-space:normal;font-weight:400}.token-details th:first-child{min-width:100px}.estimate-note-list{padding-left:17px;margin:9px 0 0}.estimate-summary{margin-top:24px}.estimate-summary h3{font-size:15px;margin:0 0 6px}.estimate-tooltip{max-width:min(440px,calc(100vw - 16px));max-height:calc(100vh - 16px);overflow:auto;pointer-events:auto}.estimate-tooltip .tooltip-close{float:right;min-height:24px;padding:0 6px;margin:0 0 5px 8px;font-size:11px}.estimate-tooltip dl{clear:both}.estimate-status{display:block;font-size:10px;white-space:normal;color:var(--muted);max-width:180px}.estimate-details-meta{display:grid;grid-template-columns:1fr 1fr;gap:6px 15px;margin-top:10px;font-size:11px}.estimate-details-meta span{display:block;color:var(--muted)}
+    @media(max-width:650px){.estimate-controls{display:grid;grid-template-columns:minmax(0,1fr);gap:10px}.estimate-controls label{min-width:0}.estimate-controls button{margin-left:0;justify-self:start}.estimate-formula{font-size:12px}.estimate-tooltip dl{gap:3px 9px}.estimate-tooltip{font-size:11px;padding:10px 12px}.estimate-tooltip dt{max-width:170px}}
+    @media(max-width:1150px){.filters{grid-template-columns:repeat(3,minmax(0,1fr))}.charts{grid-template-columns:1fr}.chart svg{max-height:none}.coverage{grid-template-columns:repeat(2,minmax(0,1fr))}.shape-key{margin-left:0}.chart{min-height:320px}}
+    @media(max-width:650px){.page{padding:22px 15px 35px}.topline{margin-bottom:20px}.intro{font-size:14px}.filters{grid-template-columns:repeat(2,minmax(0,1fr));padding:14px;gap:10px}.formula{padding:13px 15px;gap:8px}.formula .math{font-size:13px}.coverage,.methodology{grid-template-columns:1fr}.methodology{gap:20px;padding:17px}.card-head{padding:17px 16px 0}.chart-note{padding-left:16px;padding-right:16px}.viewline{margin-top:18px}.view-control{width:100%;justify-content:space-between}.view-control select{min-width:0}.coverage-status{white-space:normal;text-align:right}.section-head{align-items:flex-start}}
+    .filters.main-filters{display:block}.filter-groups{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:10px}.multi-filter{min-width:0}.multi-filter>summary{display:flex;flex-direction:column;justify-content:center;gap:3px;min-height:59px;padding:9px 12px;border:1px solid var(--line);border-radius:8px;cursor:pointer;list-style:none}.multi-filter>summary::-webkit-details-marker{display:none}.multi-filter>summary:focus-visible{outline:3px solid var(--accent);outline-offset:2px}.multi-filter>summary>span:first-child{font-size:11px;color:var(--muted)}.multi-filter>summary>span:last-child{font-size:12px;font-weight:600;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;padding-right:12px;position:relative}.multi-filter>summary>span:last-child:after{content:'⌄';position:absolute;right:0;font-weight:400}.multi-filter[data-active=true]>summary,.multi-filter[open]>summary{border-color:var(--accent);background:var(--accent-soft)}.multi-panel{position:fixed;z-index:30;width:min(340px,calc(100vw - 24px));max-height:400px;overflow:auto;padding:12px;border:1px solid var(--line);border-radius:10px;background:var(--surface);box-shadow:0 12px 36px #0003}.multi-panel input[type=search]{min-width:0}.multi-actions{display:flex;gap:8px;margin:9px 0}.multi-actions button{font-size:11px;min-height:30px;padding:4px 9px}.multi-options{display:grid;gap:2px;max-height:240px;overflow:auto}.multi-option{display:flex;align-items:center;gap:9px;padding:6px 5px;border-radius:5px;cursor:pointer;color:var(--ink);font-size:12px}.multi-option:hover{background:var(--accent-soft)}.multi-option input{flex:0 0 16px;width:16px;height:16px;min-height:16px;margin:0;padding:0;accent-color:var(--accent)}.multi-option span{min-width:0;margin:0;overflow-wrap:anywhere}.multi-empty{margin:8px 4px;color:var(--muted);font-size:12px}.filter-controls{display:grid;grid-template-columns:1.5fr 1.25fr .7fr auto;gap:12px;align-items:end;margin-top:15px}.filter-controls>*{min-width:0}.monthly-filter{border:0;padding:0;margin:16px 0 0;min-width:0}.monthly-filter legend{padding:0;margin-bottom:7px;color:var(--muted);font-size:12px}.price-bands{display:flex;gap:7px;flex-wrap:wrap}.price-bands button{min-height:32px;font-size:12px;padding:5px 10px}.price-bands [aria-pressed=true]{border-color:var(--accent);background:var(--accent-soft);color:var(--accent);font-weight:600}.filter-help{font-size:11px;color:var(--muted);margin:10px 0 0}.sr-only{position:absolute;width:1px;height:1px;padding:0;margin:-1px;overflow:hidden;clip:rect(0,0,0,0);white-space:nowrap;border:0}
+    @media(max-width:1150px){.filter-groups{grid-template-columns:repeat(3,minmax(0,1fr))}.filter-controls{grid-template-columns:repeat(2,minmax(0,1fr))}}
+    @media(max-width:650px){.filter-groups{grid-template-columns:repeat(2,minmax(0,1fr))}.multi-filter>summary{padding:8px 9px}.filter-controls{gap:10px}.filter-controls #resetFilters{min-height:39px}.multi-panel{padding:10px}.filter-help{line-height:1.5}}
+    .token-controls{display:grid;grid-template-columns:1.1fr .8fr 1.4fr 1.1fr;gap:12px;padding:17px 20px;margin:20px 0 14px;background:var(--surface);border:1px solid var(--line);border-radius:12px}.token-controls>*{min-width:0}.token-actions{display:flex;gap:14px;align-items:center;justify-content:space-between;flex-wrap:wrap;margin:14px 0}.token-check{display:flex;gap:8px;align-items:center;color:var(--ink);font-size:12px}.token-check input{width:16px;height:16px;min-height:16px;padding:0;margin:0;accent-color:var(--accent)}.token-chart svg{display:block;width:100%;min-width:0}.token-chart{min-height:220px}.token-table th{white-space:normal;min-width:105px}.token-table .token-plan{white-space:normal;min-width:230px;max-width:350px}.token-table .token-plan details{margin-top:5px}.token-table .token-plan summary{cursor:pointer;color:var(--accent)}.token-evidence{margin-top:20px;border:1px solid var(--line);border-radius:10px;background:var(--surface);padding:14px 17px}.token-evidence>summary{font-size:14px;font-weight:600;cursor:pointer}.token-evidence .table-wrap{margin-top:13px}.token-evidence-table th{white-space:normal;min-width:95px}.token-evidence-table td{vertical-align:top}.token-evidence-table td:first-child{white-space:normal;min-width:180px;max-width:250px}.token-evidence-table .evidence-reason{min-width:260px;max-width:480px;white-space:normal;overflow-wrap:anywhere}.token-example{margin-top:25px;padding:20px;border:1px solid var(--line);border-radius:12px;background:var(--surface)}.token-example label{max-width:750px;margin:14px 0}.token-example .equation{font-size:13px}.token-example .equation-label{margin-top:12px}.token-coverage{display:flex;gap:8px 20px;flex-wrap:wrap;color:var(--muted);font-size:12px;margin:14px 0}.token-conditional{color:var(--accent)}.token-profile-note{font-size:12px;color:var(--muted);margin:12px 0}.token-evidence-table details>p{margin:6px 0;font-size:11px}.token-method{max-width:1080px}.token-tooltip{max-width:min(400px,calc(100vw - 16px));font-size:11px}.token-empty{padding:20px;border:1px solid var(--line);border-radius:10px;background:var(--surface);color:var(--muted);margin-top:16px}
+    @media(max-width:900px){.token-controls{grid-template-columns:repeat(2,minmax(0,1fr))}}@media(max-width:650px){.token-controls{padding:14px;gap:10px}.token-example{padding:15px}.token-evidence{padding:12px}.token-tooltip dl{gap:3px 9px}.token-tooltip{padding:11px 12px}.report-tabs button{flex:1 1 130px}}
+    @media print{body{background:#fff;color:#000}.page{padding:0}.filters,.theme,.view-control,#exportCsv,.token-controls,.token-actions{display:none}.charts{grid-template-columns:1fr}.card{break-inside:avoid;box-shadow:none}.table-wrap,.chart-scroll{max-height:none;overflow:visible}.tooltip{display:none}.methodology{break-inside:avoid}}
+  </style>
+</head>
+<body>
+<main class="page">
+  <header>
+    <div class="topline"><span class="eyebrow">LLM · цена полезной работы</span><button id="themeToggle" class="theme" type="button" aria-label="Переключить светлую и тёмную тему">Сменить тему</button></div>
+    <h1>Сколько стоят задачи<br>с учётом подписок</h1>
+    <p class="intro" id="pricingOverviewIntro">Два показателя Artificial Analysis, пересчитанные по эффективным ценам Real API Pricing. Сравнивайте модели, уровни reasoning effort и способы оплаты на одной шкале.</p>
+    <div class="formula" id="pricingOverviewFormula"><strong>Пересчёт для каждого тарифа</strong><span class="math">Стоимость AA × (цена тарифа / цена API той же модели)</span><span class="note">API — исходная оценка AA. Подписки — сценарий при использовании квоты на условиях Real API Pricing; качество модели сохраняется.</span></div>
+    <div class="metadata" id="metadata"></div>
+    <nav class="report-nav" aria-label="Разделы отчёта"><a href="#api-estimate">API-цена из расходов AA ↓</a></nav>
+  </header>
+
+  <div id="reportError" class="fatal" hidden></div>
+  <div id="reportContent">
+    <div class="report-tabs" id="reportTabs" role="tablist" aria-label="Представление отчёта">
+      <button type="button" id="comparisonTab" role="tab" aria-controls="comparison" aria-selected="true">Сравнение моделей</button>
+      <button type="button" id="calculationTab" role="tab" aria-controls="calculation" aria-selected="false" tabindex="-1">Расчёт по шагам</button>
+      <button type="button" id="token-scenarioTab" role="tab" aria-controls="token-scenario" aria-selected="false" tabindex="-1">По токенам AA</button>
+    </div>
+    <div id="comparison" role="tabpanel" aria-labelledby="comparisonTab">
+    <section class="filters main-filters" id="mainFilters" aria-label="Фильтры данных">
+      <div class="filter-groups" id="filterGroups"></div>
+      <div class="filter-controls">
+        <label><span>Поиск по модели, каналу и тарифу</span><input id="planFilter" type="search" placeholder="Например, Max 20x" autocomplete="off"></label>
+        <label><span>API-база для коэффициента</span><select id="apiBase"><option value="aa">Artificial Analysis</option><option value="rap">Real API Pricing</option></select></label>
+        <label><span>Бюджет, $</span><input id="budget" type="number" min="0" step="10" value="100" inputmode="decimal"></label>
+        <button type="button" id="resetFilters">Сбросить</button>
+      </div>
+      <fieldset class="monthly-filter"><legend>Цена подписки за месяц, $</legend><div class="price-bands" id="monthlyPriceBands" role="group" aria-label="Диапазон месячной цены"><button type="button" data-band="all" aria-pressed="true">Любая</button><button type="button" data-band="0-30" aria-pressed="false" title="От $0 до $30 включительно">$0–30</button><button type="button" data-band="30-100" aria-pressed="false" title="Больше $30, до $100 включительно">$30–100</button><button type="button" data-band="100-300" aria-pressed="false" title="Больше $100, до $300 включительно">$100–300</button><button type="button" data-band="300+" aria-pressed="false" title="Больше $300">$300+</button></div></fieldset>
+      <p class="filter-help">Внутри группы подходит любой выбранный вариант; между группами должны совпасть все условия. Если снять всю группу, результатов не будет.</p>
+      <p class="filter-help">Диапазон цены действует только на подписки; API проходит по остальным фильтрам, если выбран в «Оплата». Подписки без месячной цены при ограничении скрываются. Уверенность квоты берётся из источника; для API — «Не применимо».</p>
+    </section>
+    <p class="budget-note">База AA согласует коэффициент с API-ценами бенчмарка; RAP воспроизводит исходное отношение цен Real API Pricing.</p>
+
+    <div class="viewline"><p id="resultCount" aria-live="polite"></p><label class="view-control">Вид обоих графиков<select id="chartMode"><option value="scatter">Цена и интеллект</option><option value="bar">Стоимость по возрастанию</option></select></label></div>
+    <section class="charts" aria-label="Сравнение стоимости">
+      <article class="card"><div class="card-head"><h2>Стоимость одной задачи</h2><p class="subtitle">Cost per Intelligence Index Task · доллары США</p></div><div class="chart-scroll"><div class="chart" id="taskChart"></div></div><div class="chart-note" id="taskChartNote"></div></article>
+      <article class="card"><div class="card-head"><h2>Стоимость полного набора</h2><p class="subtitle">Cost to Run Artificial Analysis Intelligence Index · доллары США</p></div><div class="chart-scroll"><div class="chart" id="totalChart"></div></div><div class="chart-note" id="totalChartNote"></div></article>
+    </section>
+    <div class="legend"><div class="model-key" id="modelLegend"></div><div class="shape-key"><span>● API</span><span>◆ Подписка</span></div></div>
+
+    <section class="section" aria-labelledby="tableTitle">
+      <div class="section-head"><div><h2 id="tableTitle">Значения</h2><p>Нажмите заголовок столбца для сортировки. Фильтры применяются к графикам, таблице и CSV.</p></div><button type="button" id="exportCsv">Скачать CSV</button></div>
+      <div class="card table-wrap"><table class="data-table"><thead><tr>
+        <th scope="col" data-key="model"><button type="button">Модель</button></th>
+        <th scope="col" data-key="effort"><button type="button">Effort</button></th>
+        <th scope="col" data-key="plan"><button type="button">Тариф / источник</button></th>
+        <th scope="col" class="numeric" data-key="intelligence_index"><button type="button">Индекс AA</button></th>
+        <th scope="col" class="numeric" data-key="real_price_usd_per_million"><button type="button">$ / 1 млн токенов</button></th>
+        <th scope="col" class="numeric" data-key="discount_factor"><button type="button">API / тариф, ×</button></th>
+        <th scope="col" class="numeric" data-key="cost_per_task_usd"><button type="button">$ / задачу</button></th>
+        <th scope="col" class="numeric" data-key="cost_total_usd"><button type="button">$ / полный набор</button></th>
+        <th scope="col" class="numeric" data-key="tasks_for_budget"><button id="tasksHeader" type="button">Задач / $100</button></th>
+        <th scope="col" class="numeric" data-key="monthly_usd"><button type="button">Подписка, $ / мес.</button></th>
+      </tr></thead><tbody id="tableBody"></tbody></table></div>
+      <p class="budget-note">«Задач на бюджет» = бюджет / стоимость задачи. Это условный объём оплаченных попыток по профилю AA, без поправки на успешность. Для подписок — нормировка стоимости при расходовании квоты, а не возможность купить часть месячного тарифа.</p>
+    </section>
+
+    <section class="section estimate-section" id="api-estimate" aria-labelledby="apiEstimateTitle">
+      <div class="section-head"><div><h2 id="apiEstimateTitle">API-цена из расходов AA</h2><p>Средняя цена миллиона токенов в нагрузке бенчмарка — отдельно для каждого effort.</p></div></div>
+      <p class="estimate-intro">Для задачи восстанавливаем токены каждой категории из расходов AA и API-тарифов. Для полного набора делим расходы на опубликованное число входных и выходных токенов. Эффективная цена может меняться с effort из-за долей входа, кэша, ответа и reasoning; это другая смесь токенов, чем фиксированный профиль Real API Pricing.</p>
+      <div class="estimate-formula"><strong>Токены категории = расход / тариф × 1 000 000</strong><strong>Средняя цена = все расходы / все токены × 1 000 000</strong><span class="small">Для задачи знаменатель восстановлен по категориям; для набора использован опубликованный AA total. Сверка с опубликованными output задачи и total набора проверяет согласованность данных AA, но не заменяет проверку по журналу биллинга.</span></div>
+      <p class="small" id="estimateMetadata"></p>
+      <div class="estimate-controls"><label><span>Модель в этом разделе</span><select id="estimateModel"><option value="">Все модели</option></select></label><label><span>Профиль для графика и долей</span><select id="estimateMetric"><option value="task">По задаче</option><option value="suite">По полному набору</option></select></label><button type="button" id="estimateExport">Скачать CSV оценок</button></div>
+      <div class="card"><div class="card-head"><h2 id="estimateChartTitle">Цена миллиона токенов по расходам на задачу</h2><p class="subtitle" id="estimateCount" aria-live="polite"></p></div><div class="estimate-chart" id="estimateChart"></div><div class="chart-note" id="estimateChartNote"></div></div>
+      <div class="legend" id="estimateLegend" aria-label="Цвета reasoning effort"></div>
+      <div class="estimate-summary"><h3>Диапазоны между уровнями effort</h3><p class="small">Цена за 1 млн токенов, USD. Разброс = (максимум / минимум − 1) × 100%. В диапазон входят только доступные оценки.</p><div class="card table-wrap"><table class="data-table estimate-table" style="margin-top:0"><thead><tr><th scope="col">Модель</th><th scope="col" class="numeric">Вариантов</th><th scope="col" class="numeric">По задаче: min — max</th><th scope="col" class="numeric">Разброс, %</th><th scope="col" class="numeric">По набору: min — max</th><th scope="col" class="numeric">Разброс, %</th></tr></thead><tbody id="estimateSummaryBody"></tbody></table></div></div>
+      <div class="section-head" style="margin-top:24px"><div><h2>Оценки и проверка токенов</h2><p>Одна строка на модель и effort. Доли в трёх колонках относятся к количеству токенов, а не к расходам.</p></div></div>
+      <div class="mix-reference" id="estimateMixReference"></div>
+      <p class="budget-note" id="estimateMixCaption" aria-live="polite"></p>
+      <div class="card table-wrap"><table class="data-table estimate-table" style="margin-top:0"><thead><tr><th scope="col">Модель</th><th scope="col">Effort</th><th scope="col" class="numeric">Чтение кэша, % токенов</th><th scope="col" class="numeric">Вход + запись кэша, % токенов</th><th scope="col" class="numeric">Выход, % токенов</th><th scope="col" class="numeric">AA $/MTok · задача (расчёт)</th><th scope="col" class="numeric">AA $/MTok · набор (прямой)</th><th scope="col" class="numeric">Ставки AA × смесь RAP, $/MTok</th><th scope="col" class="numeric">API-база из RAP, $/MTok</th><th scope="col" class="numeric">Сверка output задачи, %</th><th scope="col" class="numeric">Сверка total набора, %</th><th scope="col">Токены и примечания</th></tr></thead><tbody id="estimateTableBody"></tbody></table></div>
+      <p class="budget-note">Три доли суммируются в 100% до округления. Во входе отдельно подписаны обычный вход и запись кэша: тарифы у них могут различаться. Выход включает ответ и reasoning. Доли считаются по восстановленной разбивке; «≈» отмечает расхождение со счётчиками AA. API-база, дополненная из AA, показана в колонке «Ставки AA × смесь RAP»; в колонке RAP для неё указано «Нет в RAP». Для набора прямая цена использует опубликованный total, даже если восстановленная разбивка приближённая.</p>
+    </section>
+
+    <section class="section" aria-labelledby="coverageTitle"><div class="section-head"><div><h2 id="coverageTitle">Покрытие запрошенных моделей</h2><p>Отсутствующие данные не заменяются нулями или оценками по другой модели.</p></div></div><div class="coverage" id="coverage"></div></section>
+
+    <section class="methodology" aria-label="Методика и источники"><div><h2>Как читать оценки</h2><p id="methodologyText"></p><p>Один и тот же коэффициент тарифа применяется ко всем доступным effort модели. Intelligence Index и исходный профиль задач наследуются из AA; коэффициент не добавляет модели интеллекта.</p><p>Цена задачи AA — взвешенная оценка по тестам, полная стоимость — цена прохождения набора. Между этими величинами нет одного общего количества задач для всех моделей.</p><div class="callout">Пересчёт приблизителен: структура токенов, кэш и использование квоты в Real API Pricing могут отличаться от нагрузки AA. При меньшем использовании квоты фактическая цена подписки на задачу будет выше.</div></div><div><h2>Источники и дата среза</h2><ul id="sources"></ul><p class="small" style="margin-top:15px">Пустое значение означает, что показатель не опубликован или не сопоставлен. На логарифмических графиках отображаются только положительные цены и известный индекс.</p></div></section>
+    </div>
+    <section id="calculation" class="walkthrough" role="tabpanel" aria-labelledby="calculationTab" hidden>
+      <div class="walkthrough-header"><div><h2>Расчёт от исходных чисел до результата</h2><p class="walkthrough-lead">Один пример: Claude Opus 5 · effort max · Claude Max 20x. Все деления, умножения и сложения показаны ниже.</p></div><label class="precision-toggle"><input id="calculationPrecision" type="checkbox">Полная точность чисел</label></div>
+      <div id="calculationSteps"></div>
+    </section>
+    <section id="token-scenario" role="tabpanel" aria-labelledby="token-scenarioTab" hidden>
+      <h2>Если измеренный объём токенов доступен при нагрузке AA</h2>
+      <p class="estimate-intro token-method" id="tokenScenarioMethod">Делим месячную плату на наблюдённый объём токенов, затем умножаем на количество токенов задачи или полного набора AA. API-смесь RAP в этом расчёте не используется.</p>
+      <div class="callout token-method" id="tokenScenarioAssumption">Условный перенос измеренной ёмкости на нагрузку AA. Независимость квоты от состава токенов не подтверждена.</div>
+      <div class="token-coverage" id="tokenScenarioCoverage"></div>
+      <p class="small" id="tokenScenarioOfficial"></p>
+      <p class="small token-method" id="tokenScenarioEligibility">Объёмы из фиксированной смеси API, переносы между тарифами, калибровки и слабые исходные данные исключены.</p>
+      <div id="tokenScenarioUnavailable" class="token-empty" hidden></div>
+      <div id="tokenScenarioResults">
+        <div class="token-controls" aria-label="Фильтры сценария по токенам">
+          <label><span>Модель</span><select id="tokenModel"><option value="">Все модели</option></select></label>
+          <label><span>Effort</span><select id="tokenEffort"><option value="">Все уровни</option></select></label>
+          <label><span>Тариф</span><select id="tokenPlan"><option value="">Все тарифы</option></select></label>
+          <label><span>Смесь и эффективная API-цена</span><select id="tokenProfile"><option value="task">Задача AA</option><option value="suite">Полный набор AA</option></select></label>
+        </div>
+        <div class="token-actions"><label class="token-check"><input id="tokenShowApi" type="checkbox" checked>API на графиках</label><p class="small" id="tokenResultCount" aria-live="polite" style="margin:0"></p><div><button type="button" id="tokenReset">Сбросить</button> <button type="button" id="tokenExport">CSV таблицы</button></div></div>
+        <section class="charts" aria-label="Затраты при переносе измеренной ёмкости">
+          <article class="card"><div class="card-head"><h2>Стоимость задачи AA</h2><p class="subtitle">API — опубликованные расходы; подписки — условный перенос токенов</p></div><div class="chart-scroll"><div class="token-chart" id="tokenTaskChart"></div></div><div class="chart-note" id="tokenTaskChartNote"></div></article>
+          <article class="card"><div class="card-head"><h2>Стоимость полного набора AA</h2><p class="subtitle">API — опубликованные расходы; подписки — условный перенос токенов</p></div><div class="chart-scroll"><div class="token-chart" id="tokenSuiteChart"></div></div><div class="chart-note" id="tokenSuiteChartNote"></div></article>
+        </section>
+        <div class="legend"><span>● API AA</span><span>◇ Подписка: условная стоимость</span><span>Стоимость растёт вправо · логарифмическая шкала</span></div>
+        <div class="section-head" style="margin-top:24px"><div><h2>Расчёт по измеренной ёмкости</h2><p>Знак «≈» отмечает условные цены и объёмы работы по подписке. API-переключатель влияет только на графики.</p></div></div>
+        <p class="token-profile-note" id="tokenProfileNote" aria-live="polite"></p>
+        <div class="card table-wrap"><table class="data-table token-table"><thead><tr><th scope="col">Модель / effort</th><th scope="col">Тариф / источник</th><th scope="col" class="numeric">Плата, $ / мес.</th><th scope="col" class="numeric">Измеренная ёмкость, токенов / мес.</th><th scope="col" class="numeric">Чтение кэша, %</th><th scope="col" class="numeric">Вход без чтения кэша, %</th><th scope="col" class="numeric">Выход, %</th><th scope="col" class="numeric">API на смеси AA, $/MTok</th><th scope="col" class="numeric">Подписка, условные $/MTok</th><th scope="col" class="numeric">Задача, $</th><th scope="col" class="numeric">Набор, $</th><th scope="col" class="numeric">Задач / мес.</th><th scope="col" class="numeric">Задач / $100</th></tr></thead><tbody id="tokenTableBody"></tbody></table></div>
+        <p class="budget-note">Цена подписки за миллион токенов одинакова для всех effort одного тарифа. Меняется число токенов на задачу и, следовательно, её стоимость. «Задач / $100» — нормировка расходов, а не покупка части подписки или обещанное число успешных задач.</p>
+        <section class="token-example" aria-labelledby="tokenExampleTitle"><h2 id="tokenExampleTitle">Пример с конкретными числами</h2><label><span>Подписка и effort из текущей выборки</span><select id="tokenExampleRow"></select></label><div id="tokenExampleBody"></div></section>
+      </div>
+      <details class="token-evidence" id="tokenIncluded"><summary id="tokenIncludedSummary">Основания включённых сценариев</summary><p class="small" style="margin:10px 0 0">Это наблюдения за доступным объёмом, а не таблица гарантированных лимитов.</p><div class="table-wrap"><table class="data-table token-evidence-table"><thead><tr><th scope="col">Модель / тариф</th><th scope="col" class="numeric">$ / мес.</th><th scope="col" class="numeric">Токенов / мес.</th><th scope="col">Уверенность</th><th scope="col">Основание и источник</th></tr></thead><tbody id="tokenIncludedBody"></tbody></table></div></details>
+      <details class="token-evidence" id="tokenExcluded"><summary id="tokenExcludedSummary">Исключённые тарифы и причины</summary><div class="table-wrap"><table class="data-table token-evidence-table"><thead><tr><th scope="col">Модель / тариф</th><th scope="col">Уверенность</th><th scope="col">Причина исключения</th></tr></thead><tbody id="tokenExcludedBody"></tbody></table></div></details>
+    </section>
+  </div>
+</main>
+<div class="tooltip" id="tooltip" role="tooltip" hidden></div>
+<div class="tooltip estimate-tooltip" id="estimateTooltip" role="tooltip" hidden></div>
+<div class="tooltip token-tooltip" id="tokenTooltip" role="tooltip" hidden></div>
+<script id="report-data" type="application/json">__REPORT_DATA__</script>
+<script>
+'use strict';
+(() => {
+  const $ = id => document.getElementById(id);
+  const themeToggle = $('themeToggle');
+  try { const saved = localStorage.getItem('llm-report-theme'); if (saved === 'light' || saved === 'dark') document.documentElement.dataset.theme = saved; } catch (_) {}
+  themeToggle.addEventListener('click', () => {
+    const dark = document.documentElement.dataset.theme === 'dark' || (!document.documentElement.dataset.theme && matchMedia('(prefers-color-scheme: dark)').matches);
+    document.documentElement.dataset.theme = dark ? 'light' : 'dark';
+    try { localStorage.setItem('llm-report-theme', dark ? 'light' : 'dark'); } catch (_) {}
+  });
+
+  let data;
+  try { data = JSON.parse($('report-data').textContent); if (!data || !Array.isArray(data.rows)) throw new Error('Отсутствует массив rows'); }
+  catch (_) { $('reportContent').hidden = true; $('reportError').hidden = false; $('reportError').textContent = 'Данные отчёта ещё не вставлены или имеют неверный формат. Выполните сборку отчёта.'; return; }
+
+  const rows = data.rows;
+  const metadata = data.metadata || {};
+  const palette = ['#526bd8','#db7b3c','#32958a','#ba5d9a','#94923c','#9861cf','#378ec1','#bc695e','#65945e','#b58a2e','#758094','#bd64c5','#449ba5','#b96939','#668dcf'];
+  const models = [...new Set(rows.map(row => String(row.model || 'Без названия')))].sort((a,b) => a.localeCompare(b,'ru'));
+  const colorByModel = new Map(models.map((name,index) => [name,palette[index % palette.length]]));
+  const isNumber = value => typeof value === 'number' && Number.isFinite(value);
+  const positive = value => isNumber(value) && value > 0;
+  const num = (value, maximumFractionDigits = 2) => !isNumber(value) ? '—' : value !== 0 && Math.abs(value)<10**(-Math.min(maximumFractionDigits,9)) ? new Intl.NumberFormat('ru-RU',{notation:'scientific',maximumSignificantDigits:6}).format(value) : new Intl.NumberFormat('ru-RU',{maximumFractionDigits}).format(value);
+  const significant = value => isNumber(value) ? new Intl.NumberFormat('ru-RU',{maximumSignificantDigits:6,...(value !== 0 && Math.abs(value)<.00001 ? {notation:'scientific'} : {})}).format(value) : '—';
+  const money = value => isNumber(value) ? '$' + significant(value) : '—';
+  const labelOfEffort = value => value == null || value === '' ? 'Не указан' : String(value);
+  const kindLabel = kind => kind === 'api' ? 'API' : kind === 'subscription' ? 'Подписка' : String(kind || '');
+  const shortMoney = value => value >= 1000000 ? '$' + num(value/1000000,2) + ' млн' : value >= 1000 ? '$' + num(value/1000,2) + ' тыс.' : '$' + num(value,6);
+  const escapeHtml = value => String(value ?? '').replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+  const svgNode = (name, attrs = {}, text) => { const node = document.createElementNS('http://www.w3.org/2000/svg',name); Object.entries(attrs).forEach(([key,value]) => node.setAttribute(key,value)); if (text != null) node.textContent = text; return node; };
+  const safeUrl = value => { try { const url = new URL(typeof value === 'string' ? value : (value?.url || value?.href || '')); return ['http:','https:'].includes(url.protocol) ? url.href : null; } catch (_) { return null; } };
+  const sourceLink = (source,label) => { const url = safeUrl(source); if (!url) return null; const link = document.createElement('a'); link.href = url; link.target = '_blank'; link.rel = 'noopener noreferrer'; link.textContent = label; return link; };
+  const quotaLabels={high:'Высокая',medium:'Средняя',low:'Низкая',not_applicable:'Не применимо — API',unknown:'Нет данных'};
+  const quotaValue=row=>row.kind==='api'?'not_applicable':Object.prototype.hasOwnProperty.call(quotaLabels,row.quota_confidence)?row.quota_confidence:'unknown';
+  const textValue=value=>value==null||value===''?'Не указан':String(value);
+  const effortOrder=['none','non-reasoning','minimal','low','medium','high','xhigh','max','ultra','Не указан'];
+  const mainFilterDefinitions=[
+    {id:'modelFilter',label:'Модели',get:row=>String(row.model||'Без названия')},
+    {id:'providerFilter',label:'Разработчик модели',get:row=>textValue(row.model_provider)},
+    {id:'channelFilter',label:'Канал доступа',get:row=>textValue(row.access_channel)},
+    {id:'planSelectFilter',label:'Тариф',get:row=>textValue(row.plan)},
+    {id:'kindFilter',label:'Оплата',get:row=>textValue(row.kind),labelFor:kindLabel,order:['api','subscription']},
+    {id:'effortFilter',label:'Effort',get:row=>labelOfEffort(row.effort),order:effortOrder},
+    {id:'quotaFilter',label:'Уверенность квоты',get:quotaValue,labelFor:value=>quotaLabels[value],order:['high','medium','low','not_applicable','unknown']},
+  ];
+  const mainFilterGroups=[];
+  let monthlyPriceBand='all';
+  const closeMainFilterGroups=except=>mainFilterGroups.forEach(group=>{if(group.details!==except)group.details.open=false;});
+  const positionFilterPanel=group=>{
+    const rect=group.details.querySelector('summary').getBoundingClientRect(),panel=group.panel;
+    const panelWidth=Math.min(340,innerWidth-24),below=innerHeight-rect.bottom-16,above=rect.top-16;
+    const useAbove=below<190&&above>below,maxHeight=Math.max(120,Math.min(400,useAbove?above:below));
+    panel.style.width=panelWidth+'px';panel.style.maxHeight=maxHeight+'px';panel.style.left=Math.max(12,Math.min(rect.left,innerWidth-panelWidth-12))+'px';
+    panel.style.top=(useAbove?Math.max(12,rect.top-Math.min(panel.scrollHeight,maxHeight)-8):Math.max(12,Math.min(rect.bottom+7,innerHeight-maxHeight-12)))+'px';
+  };
+  const refreshFilterSummary=group=>{
+    const count=group.selected.size,total=group.values.length;
+    const value=count===total?'Все · '+total:count===0?'Ничего не выбрано':count===1?group.labelFor([...group.selected][0]):'Выбрано '+count+' из '+total;
+    group.summaryValue.textContent=value;group.summaryValue.title=count&&count<total?[...group.selected].map(group.labelFor).join(', '):value;
+    group.details.dataset.active=String(count!==total);
+    group.options.forEach(option=>option.checkbox.checked=group.selected.has(option.value));
+  };
+  const refreshFilterSearch=group=>{
+    const query=group.search.value.trim().toLocaleLowerCase('ru');let visible=0;
+    group.options.forEach(option=>{option.label.hidden=!!query&&!group.labelFor(option.value).toLocaleLowerCase('ru').includes(query);if(!option.label.hidden)visible++;});
+    group.empty.hidden=visible>0;group.allButton.textContent=query?'Все найденные':'Все';group.noneButton.textContent=query?'Снять найденные':'Снять';
+    if(group.details.open)positionFilterPanel(group);
+  };
+  mainFilterDefinitions.forEach(definition=>{
+    const labelFor=definition.labelFor||String;
+    const values=[...new Set(rows.map(definition.get))].sort((a,b)=>{if(definition.order){const ai=definition.order.indexOf(a),bi=definition.order.indexOf(b);const difference=(ai<0?99:ai)-(bi<0?99:bi);if(difference)return difference;}return labelFor(a).localeCompare(labelFor(b),'ru',{numeric:true});});
+    const details=document.createElement('details');details.className='multi-filter';details.id=definition.id;
+    const summary=document.createElement('summary'),title=document.createElement('span'),summaryValue=document.createElement('span');title.textContent=definition.label;summaryValue.id=definition.id+'Summary';summary.append(title,summaryValue);details.append(summary);
+    const panel=document.createElement('div');panel.className='multi-panel';panel.setAttribute('role','group');panel.setAttribute('aria-label',definition.label);
+    const searchLabel=document.createElement('label'),searchCaption=document.createElement('span'),search=document.createElement('input');searchCaption.className='sr-only';searchCaption.textContent='Поиск: '+definition.label;search.type='search';search.placeholder='Найти вариант';search.autocomplete='off';search.id=definition.id+'Search';searchLabel.append(searchCaption,search);panel.append(searchLabel);
+    const actions=document.createElement('div');actions.className='multi-actions';const allButton=document.createElement('button'),noneButton=document.createElement('button');allButton.type=noneButton.type='button';allButton.textContent='Все';noneButton.textContent='Снять';allButton.id=definition.id+'All';noneButton.id=definition.id+'None';actions.append(allButton,noneButton);panel.append(actions);
+    const optionList=document.createElement('div');optionList.className='multi-options';optionList.id=definition.id+'Options';panel.append(optionList);
+    const empty=document.createElement('p');empty.className='multi-empty';empty.textContent='Ничего не найдено';empty.hidden=true;panel.append(empty);details.append(panel);$('filterGroups').append(details);
+    const group={...definition,labelFor,values,selected:new Set(values),details,panel,summaryValue,search,allButton,noneButton,empty,options:[]};
+    values.forEach((value,index)=>{const label=document.createElement('label');label.className='multi-option';const checkbox=document.createElement('input'),caption=document.createElement('span');checkbox.type='checkbox';checkbox.value=value;checkbox.name=definition.id;checkbox.id=definition.id+'Option'+index;checkbox.checked=true;caption.textContent=labelFor(value);label.append(checkbox,caption);optionList.append(label);group.options.push({value,label,checkbox});checkbox.addEventListener('change',()=>{if(checkbox.checked)group.selected.add(value);else group.selected.delete(value);refreshFilterSummary(group);render();});});
+    const selectVisible=select=>{group.options.filter(option=>!option.label.hidden).forEach(option=>{if(select)group.selected.add(option.value);else group.selected.delete(option.value);});refreshFilterSummary(group);render();};
+    allButton.addEventListener('click',()=>selectVisible(true));noneButton.addEventListener('click',()=>selectVisible(false));search.addEventListener('input',()=>refreshFilterSearch(group));
+    details.addEventListener('toggle',()=>{if(details.open){closeMainFilterGroups(details);positionFilterPanel(group);}});
+    panel.addEventListener('keydown',event=>{if(event.key==='Escape'){event.preventDefault();details.open=false;summary.focus();}});
+    mainFilterGroups.push(group);refreshFilterSummary(group);
+  });
+  document.addEventListener('pointerdown',event=>{if(!event.target.closest('.multi-filter'))closeMainFilterGroups();});
+  document.addEventListener('keydown',event=>{if(event.key==='Escape')closeMainFilterGroups();});
+  window.addEventListener('resize',()=>closeMainFilterGroups());
+  window.addEventListener('scroll',event=>{if(!(event.target instanceof Element)||!event.target.closest('.multi-panel'))closeMainFilterGroups();},true);
+  const matchesMonthlyPrice=row=>{
+    if(monthlyPriceBand==='all'||row.kind==='api')return true;
+    const value=row.monthly_usd;if(!isNumber(value)||value<0)return false;
+    return monthlyPriceBand==='0-30'?value<=30:monthlyPriceBand==='30-100'?value>30&&value<=100:monthlyPriceBand==='100-300'?value>100&&value<=300:value>300;
+  };
+  const refreshPriceBands=()=>document.querySelectorAll('#monthlyPriceBands button').forEach(button=>button.setAttribute('aria-pressed',String(button.dataset.band===monthlyPriceBand)));
+  document.querySelectorAll('#monthlyPriceBands button').forEach(button=>button.addEventListener('click',()=>{monthlyPriceBand=button.dataset.band;refreshPriceBands();render();}));
+  const metaParts = [];
+  if (metadata.generated_at) { const date = new Date(metadata.generated_at); metaParts.push('Срез: ' + (Number.isNaN(date.getTime()) ? metadata.generated_at : date.toLocaleString('ru-RU',{dateStyle:'long',timeStyle:'short'}))); }
+  if (metadata.aa_version) metaParts.push('Индекс: ' + metadata.aa_version);
+  metaParts.push('Цены в USD');
+  metaParts.forEach(part => { const span = document.createElement('span'); span.textContent = part; $('metadata').append(span); });
+  $('methodologyText').textContent = typeof metadata.methodology === 'string' ? metadata.methodology : 'Для каждой модели цена тарифа за миллион токенов делится на сопоставимую API-цену Real API Pricing. Полученный множитель применяется к обеим исходным оценкам стоимости Artificial Analysis.';
+  const defaultSources = [{name:'Artificial Analysis — цена и стоимость',url:'https://artificialanalysis.ai/#price-and-cost'},{name:'Real API Pricing — данные и допущения',url:'https://github.com/FeiZhuLulu/real-api-pricing'}];
+  const sources = Array.isArray(data.sources) && data.sources.length ? data.sources : defaultSources;
+  sources.forEach(source => { const li = document.createElement('li'); const label = typeof source === 'string' ? source : source.name || source.title || source.label || source.url || 'Источник'; const link = sourceLink(source,label); if (link) li.append(link); else li.textContent = label; if(source && typeof source === 'object' && source.date) li.append(document.createTextNode(' · '+source.date)); $('sources').append(li); });
+  const statusLabels = {complete:'Есть данные',available:'Есть данные',matched:'Сопоставлено',supported:'Есть данные',partial:'Частично',missing:'Нет данных',not_found:'Не найдено',unavailable:'Недоступно',ambiguous:'Нужна сверка'};
+  (Array.isArray(data.coverage) ? data.coverage : []).forEach(item => { const card = document.createElement('div'); card.className = 'coverage-item'; const title = document.createElement('div'); title.className = 'coverage-title'; const name = document.createElement('strong'); name.textContent = item.requested || 'Модель'; const status = document.createElement('span'); status.className = 'coverage-status'; status.textContent = statusLabels[item.status] || item.status || 'Не указано'; title.append(name,status); const details = document.createElement('p'); details.textContent = item.details || 'Дополнительных сведений нет.'; card.append(title,details); $('coverage').append(card); });
+  if (!$('coverage').children.length) $('coverage').textContent = 'Сведения о покрытии не предоставлены.';
+
+  let filteredRows = [];
+  let sortKey = 'cost_per_task_usd';
+  let sortAscending = true;
+  const getBudget = () => { const value = Number($('budget').value); return $('budget').value !== '' && Number.isFinite(value) && value >= 0 ? value : null; };
+  const getRowValue = (row,key) => key === 'tasks_for_budget' ? (getBudget() != null && positive(row.cost_per_task_usd) ? getBudget()/row.cost_per_task_usd : null) : row[key];
+  const compareRows = (a,b) => { const av = getRowValue(a,sortKey), bv = getRowValue(b,sortKey); const aMissing = av == null || (typeof av === 'number' && !Number.isFinite(av)); const bMissing = bv == null || (typeof bv === 'number' && !Number.isFinite(bv)); if (aMissing || bMissing) return aMissing === bMissing ? 0 : aMissing ? 1 : -1; const comparison = typeof av === 'number' && typeof bv === 'number' ? av-bv : String(av).localeCompare(String(bv),'ru',{numeric:true}); return sortAscending ? comparison : -comparison; };
+  const tooltip = $('tooltip');
+  const hideTooltip = () => { tooltip.hidden = true; };
+  const positionTooltip = event => { const width = tooltip.offsetWidth, height = tooltip.offsetHeight; const rect = event.currentTarget?.getBoundingClientRect(); const x = isNumber(event.clientX) ? event.clientX : (rect?.left || 20); const y = isNumber(event.clientY) ? event.clientY : (rect?.bottom || 20); tooltip.style.left = Math.max(8,Math.min(x+15,innerWidth-width-8))+'px'; tooltip.style.top = Math.max(8,Math.min(y+15,innerHeight-height-8))+'px'; };
+  const showTooltip = (row,event,overlapCount=1,overlapIndex=0) => {
+    tooltip.innerHTML = '<strong>'+escapeHtml(row.model)+' · '+escapeHtml(labelOfEffort(row.effort))+'</strong><div class="tooltip-plan">'+escapeHtml(row.plan || kindLabel(row.kind))+' · '+escapeHtml(kindLabel(row.kind))+'</div><dl><dt>Intelligence Index</dt><dd>'+num(row.intelligence_index)+'</dd><dt>Стоимость задачи</dt><dd>'+money(row.cost_per_task_usd)+'</dd><dt>Полный набор</dt><dd>'+money(row.cost_total_usd)+'</dd><dt>Цена / 1 млн токенов</dt><dd>'+money(row.real_price_usd_per_million)+'</dd><dt>Базовая цена API</dt><dd>'+money(row.api_price_usd_per_million)+'</dd><dt>Множитель к цене AA</dt><dd>'+significant(row.multiplier)+'×</dd><dt>Подписка / месяц</dt><dd>'+money(row.monthly_usd)+'</dd></dl>'+(row.kind === 'subscription' ? '<div class="tooltip-note">Расчётный сценарий по эффективной цене подписки.</div>' : '')+(row.notes ? '<div class="tooltip-note">'+escapeHtml(row.notes)+'</div>' : '')+(row.confidence ? '<div class="tooltip-note">'+escapeHtml(row.confidence)+'</div>' : '')+(overlapCount>1 ? '<div class="tooltip-note"><b>Совпадают '+overlapCount+' вариантов; показан '+(overlapIndex+1)+'.</b> Нажмите на точку или Enter, чтобы посмотреть следующий. Все варианты доступны в таблице.</div>' : '');
+    tooltip.hidden = false; positionTooltip(event);
+  };
+  const bindTooltip = (node,rowOrGroup) => { const group=Array.isArray(rowOrGroup)?rowOrGroup:[rowOrGroup];let index=0;const show=event=>showTooltip(group[index],event,group.length,index);node.addEventListener('pointerenter',show);node.addEventListener('pointermove',positionTooltip);node.addEventListener('pointerleave',hideTooltip);node.addEventListener('focus',show);node.addEventListener('blur',hideTooltip);if(group.length>1){const cycle=event=>{index=(index+1)%group.length;show(event);};node.addEventListener('click',cycle);node.addEventListener('keydown',event=>{if(event.key==='Enter'||event.key===' '){event.preventDefault();cycle(event);}});} };
+  document.addEventListener('keydown',event => { if (event.key === 'Escape') hideTooltip(); });
+  window.addEventListener('scroll',hideTooltip,true);
+
+  function renderScatter(container,note,key) {
+    const candidates = filteredRows.filter(row => positive(row[key]));
+    const plotted = candidates.filter(row => isNumber(row.intelligence_index));
+    container.replaceChildren();
+    if (!plotted.length) { emptyChart(container,'Нет точек с положительной ценой и известным индексом. Переключитесь на стоимость по возрастанию, чтобы увидеть строки без индекса.'); note.textContent = 'Фильтр: '+filteredRows.length+' строк. Доступная положительная цена: '+candidates.length+'.'; return; }
+    const width=Math.max(1,Math.round(container.clientWidth || 760)),compact=width<460,height=compact?330:400,margin={left:compact?42:56,right:compact?18:28,top:28,bottom:compact?59:67},plotWidth=Math.max(1,width-margin.left-margin.right),plotHeight=height-margin.top-margin.bottom;
+    const values = plotted.map(row => row[key]);
+    const xMin = Math.min(...values), xMax = Math.max(...values);
+    let logMin = Math.log10(xMin), logMax = Math.log10(xMax);
+    const logPad = Math.max(.12,(logMax-logMin)*.07); logMin-=logPad; logMax+=logPad;
+    const indices = plotted.map(row => row.intelligence_index);
+    const yLowest=Math.min(...indices),yHighest=Math.max(...indices),yPadding=Math.max(3,(yHighest-yLowest)*.1);
+    const yMin=Math.max(0,Math.floor((yLowest-yPadding)/5)*5),yMax=Math.ceil((yHighest+yPadding)/5)*5;
+    const x = value => margin.left+(Math.log10(value)-logMin)/(logMax-logMin)*plotWidth;
+    const y = value => margin.top+(yMax-value)/(yMax-yMin)*plotHeight;
+    const svg=svgNode('svg',{viewBox:`0 0 ${width} ${height}`,role:'img','aria-label':`${key === 'cost_per_task_usd' ? 'Стоимость задачи' : 'Стоимость полного набора'} и Intelligence Index, ${plotted.length} точек`});
+    svg.append(svgNode('text',{x:margin.left,y:14,fill:'var(--muted)','font-size':11},compact?'Индекс AA ↑':'Intelligence Index ↑'));
+    const ticks=[];
+    const span=logMax-logMin;
+    for (let exp=Math.floor(logMin);exp<=Math.ceil(logMax);exp++) { for (const multiplier of span>3 ? [1] : span>1.6 ? [1,5] : [1,2,5]) { const value=multiplier*10**exp; if (Math.log10(value)>=logMin && Math.log10(value)<=logMax) ticks.push(value); } }
+    if (ticks.length < 2) { ticks.length=0; [0,.25,.5,.75,1].forEach(fraction => ticks.push(10**(logMin+fraction*(logMax-logMin)))); }
+    const maxTicks=Math.max(2,Math.min(6,Math.floor(plotWidth/85)+1));
+    if(ticks.length>maxTicks){const reduced=Array.from({length:maxTicks},(_,index)=>ticks[Math.round(index*(ticks.length-1)/(maxTicks-1))]);ticks.splice(0,ticks.length,...reduced);}
+    ticks.forEach(value => { const px=x(value); svg.append(svgNode('line',{x1:px,x2:px,y1:margin.top,y2:height-margin.bottom,stroke:'var(--line)'})); svg.append(svgNode('text',{x:px,y:height-margin.bottom+23,'text-anchor':'middle',fill:'var(--muted)','font-size':11},shortMoney(value))); });
+    for (let index=0;index<=5;index++) { const value=yMin+(yMax-yMin)*index/5,py=y(value); svg.append(svgNode('line',{x1:margin.left,x2:width-margin.right,y1:py,y2:py,stroke:'var(--line)'})); svg.append(svgNode('text',{x:margin.left-12,y:py+4,'text-anchor':'end',fill:'var(--muted)','font-size':11},num(value,1))); }
+    svg.append(svgNode('text',{x:margin.left+plotWidth/2,y:height-16,'text-anchor':'middle',fill:'var(--muted)','font-size':11},compact?'← дешевле · лог. шкала, $':'← дешевле · стоимость, $ · логарифмическая шкала'));
+    const sorted=[...plotted].sort((a,b) => (a.kind === 'api' ? 1 : 0)-(b.kind === 'api' ? 1 : 0));
+    const groups=new Map();sorted.forEach(row=>{const id=row[key]+'|'+row.intelligence_index;if(!groups.has(id))groups.set(id,[]);groups.get(id).push(row);});
+    groups.forEach(group => { const row=group[0],px=x(row[key]),py=y(row.intelligence_index),size=group.length>1?7:5; const common={fill:colorByModel.get(String(row.model)) || palette[0],stroke:'var(--surface)','stroke-width':1.2,opacity:.88,tabindex:0,class:'plot-point','aria-label':`${row.model}, ${labelOfEffort(row.effort)}, ${row.plan}: ${money(row[key])}, индекс ${num(row.intelligence_index)}${group.length>1?'. Совпадают '+group.length+' вариантов. Enter: следующий вариант.':''}`}; const point=row.kind === 'subscription' ? svgNode('path',{...common,d:`M ${px} ${py-size-1} L ${px+size+1} ${py} L ${px} ${py+size+1} L ${px-size-1} ${py} Z`}) : svgNode('circle',{...common,cx:px,cy:py,r:size}); bindTooltip(point,group); svg.append(point); });
+    container.append(svg);
+    const hidden=filteredRows.length-plotted.length;
+    note.textContent='Выше — более высокий индекс; левее — дешевле. Наведите на точку для деталей.'+(hidden ? ` Не показано: ${hidden} строк без положительной цены или индекса.` : '')+' Совпадающие варианты переключаются кликом на точке или Enter; все строки есть в таблице.';
+  }
+
+  function emptyChart(container,message) { const div=document.createElement('div'); div.className='chart-empty'; div.textContent=message; container.append(div); }
+
+  function renderBars(container,note,key) {
+    const plotted=filteredRows.filter(row => isNumber(row[key]) && row[key] >= 0).sort((a,b) => a[key]-b[key]);
+    container.replaceChildren();
+    if (!plotted.length) { emptyChart(container,'Нет опубликованных цен для выбранных фильтров.'); note.textContent='Строки без стоимости доступны в таблице.'; return; }
+    const width=960,rowHeight=35,margin={left:355,right:130,top:36,bottom:18},height=margin.top+plotted.length*rowHeight+margin.bottom,plotWidth=width-margin.left-margin.right,max=Math.max(...plotted.map(row=>row[key])) || 1;
+    const svg=svgNode('svg',{viewBox:`0 0 ${width} ${height}`,role:'img','aria-label':`Стоимость по возрастанию, ${plotted.length} вариантов`});
+    svg.style.minWidth='780px';
+    [0,.25,.5,.75,1].forEach(fraction=>{const x=margin.left+plotWidth*fraction;svg.append(svgNode('line',{x1:x,x2:x,y1:margin.top-8,y2:height-margin.bottom,stroke:'var(--line)'}));svg.append(svgNode('text',{x,y:18,'text-anchor':'middle',fill:'var(--muted)','font-size':11},shortMoney(max*fraction)));});
+    plotted.forEach((row,index)=>{
+      const y=margin.top+index*rowHeight;
+      const hit=svgNode('rect',{x:0,y:y-3,width,height:rowHeight,class:'bar-hit',tabindex:0,'aria-label':`${row.model}, ${labelOfEffort(row.effort)}, ${row.plan}: ${money(row[key])}`}); bindTooltip(hit,row);svg.append(hit);
+      const label=`${row.model} · ${labelOfEffort(row.effort)} · ${row.plan || kindLabel(row.kind)}`;
+      svg.append(svgNode('text',{x:margin.left-12,y:y+16,'text-anchor':'end',fill:'var(--ink)','font-size':11,'pointer-events':'none'},label.length>55 ? label.slice(0,52)+'…' : label));
+      const barWidth=row[key]/max*plotWidth;
+      svg.append(svgNode('rect',{x:margin.left,y:y+3,width:barWidth,height:18,rx:3,fill:colorByModel.get(String(row.model)) || palette[0],opacity:row.kind==='api' ? .65 : .95,'pointer-events':'none'}));
+      svg.append(svgNode('text',{x:margin.left+barWidth+8,y:y+17,fill:'var(--ink)','font-size':11,'pointer-events':'none'},money(row[key])));
+    });
+    container.append(svg);
+    note.textContent=`${plotted.length} вариантов по возрастанию стоимости. Линейная шкала; прокрутите график для просмотра всех тарифов.`+(filteredRows.length>plotted.length ? ` Нет цены у ${filteredRows.length-plotted.length} строк.` : '');
+  }
+
+  function renderTable() {
+    $('tableBody').replaceChildren();
+    const budget=getBudget();
+    $('tasksHeader').textContent='Задач / '+(budget == null ? 'бюджет' : money(budget));
+    document.querySelectorAll('th[data-key]').forEach(th=>{ const active=th.dataset.key===sortKey; th.setAttribute('aria-sort',active ? (sortAscending?'ascending':'descending') : 'none'); const button=th.querySelector('button'); if (!button.dataset.label || th.dataset.key==='tasks_for_budget') button.dataset.label=th.dataset.key==='tasks_for_budget' ? $('tasksHeader').textContent : button.textContent.replace(/ [↑↓]$/,''); button.textContent=button.dataset.label+(active ? (sortAscending?' ↑':' ↓'):''); });
+    const displayed=[...filteredRows].sort(compareRows);
+    if (!displayed.length) { const tr=document.createElement('tr'),td=document.createElement('td');td.colSpan=10;td.textContent='Нет вариантов, соответствующих фильтрам.';td.style.padding='30px';tr.append(td);$('tableBody').append(tr);return; }
+    const fragment=document.createDocumentFragment();
+    displayed.forEach(row=>{
+      const tr=document.createElement('tr');
+      const model=document.createElement('td');model.className='model-cell';model.textContent=row.model || '—';
+      const effort=document.createElement('td');effort.textContent=labelOfEffort(row.effort);
+      const plan=document.createElement('td');plan.className='plan-cell';const name=document.createElement('div');name.textContent=row.plan || kindLabel(row.kind);plan.append(name);
+      const detail=document.createElement('div');detail.className='small';const tag=document.createElement('span');tag.className='tag';tag.textContent=kindLabel(row.kind);detail.append(tag);
+      const pricing=sourceLink(row.pricing_source,'Цена'); const aa=sourceLink(row.aa_source,'AA'); if(pricing)detail.append(pricing);if(pricing&&aa)detail.append(document.createTextNode(' · '));if(aa)detail.append(aa);if(row.estimated){const estimated=document.createElement('span');estimated.className='tag';estimated.textContent='Оценка';estimated.style.marginLeft='6px';detail.append(estimated);}plan.append(detail);
+      if(row.notes){const notes=document.createElement('details');notes.className='small';const summary=document.createElement('summary');summary.textContent='Допущения';summary.style.cursor='pointer';const text=document.createElement('div');text.textContent=row.notes;notes.append(summary,text);plan.append(notes);}
+      tr.append(model,effort,plan);
+      const values=[num(row.intelligence_index,2),money(row.real_price_usd_per_million),significant(row.discount_factor),money(row.cost_per_task_usd),money(row.cost_total_usd),num(getRowValue(row,'tasks_for_budget'),2),money(row.monthly_usd)];
+      values.forEach((value,index)=>{const td=document.createElement('td');td.className='numeric';td.textContent=value;
+        if(index===1&&row.plan_id==='api-aa'){
+          const origin=document.createElement('details');origin.className='small api-price-origin';const summary=document.createElement('summary');
+          const fromAa=$('apiBase').value!=='rap'||row.api_baseline_origin==='aa_prices_rap_mix';
+          summary.textContent=fromAa?'Расчёт: ставки AA × смесь RAP':'API-база из RAP';origin.append(summary);
+          const description=document.createElement('p');const mix=metadata.pricing_metadata?.standard_token_mix,prices=row.aa_api_price_components;
+          description.textContent=fromAa&&prices&&mix?`${num(mix.cache,4)} × ${money(prices.cache)} + ${num(mix.input,4)} × ${money(prices.input)} + ${num(mix.output,4)} × ${money(prices.output)} = ${money(row.real_price_usd_per_million)}/MTok. Ставки: чтение кэша, обычный вход, выход.`:'Фиксированная смесь токенов Real API Pricing.';
+          origin.append(description);if(row.api_baseline_origin==='aa_prices_rap_mix'){const absent=document.createElement('p');absent.textContent='Готовой API-базы в снимке RAP нет.';origin.append(absent);}td.append(origin);
+        }
+        tr.append(td);});
+      fragment.append(tr);
+    });
+    $('tableBody').append(fragment);
+  }
+
+  function render() {
+    hideTooltip();
+    const searchTerms=$('planFilter').value.trim().toLocaleLowerCase('ru').split(/\s+/).filter(Boolean);
+    const useRap=$('apiBase').value==='rap';
+    const activeRows=useRap ? rows.map(row=>{const active={...row};['cost_per_task_usd','cost_total_usd','multiplier','discount_factor','api_price_usd_per_million','real_price_usd_per_million'].forEach(key=>{if(Object.prototype.hasOwnProperty.call(row,'rap_'+key))active[key]=row['rap_'+key];});return active;}) : rows;
+    filteredRows=activeRows.filter(row=>mainFilterGroups.every(group=>group.selected.has(group.get(row)))&&matchesMonthlyPrice(row)&&(!searchTerms.length||searchTerms.every(term=>[row.model,row.model_provider,row.access_channel,row.plan,row.effort].filter(Boolean).join(' ').toLocaleLowerCase('ru').includes(term))));
+    const countApi=filteredRows.filter(row=>row.kind==='api').length,countSubscription=filteredRows.filter(row=>row.kind==='subscription').length;
+    $('resultCount').textContent=`Показано ${filteredRows.length} из ${rows.length} вариантов · API: ${countApi} · подписки: ${countSubscription} · база: ${useRap?'Real API Pricing':'AA'}`;
+    const renderChart=$('chartMode').value==='bar' ? renderBars : renderScatter;
+    renderChart($('taskChart'),$('taskChartNote'),'cost_per_task_usd');renderChart($('totalChart'),$('totalChartNote'),'cost_total_usd');
+    $('modelLegend').replaceChildren();
+    models.filter(model=>filteredRows.some(row=>String(row.model)===model)).forEach(model=>{const item=document.createElement('span');item.className='legend-item';const dot=document.createElement('i');dot.className='dot';dot.style.background=colorByModel.get(model);item.append(dot,document.createTextNode(model));$('modelLegend').append(item);});
+    renderTable();
+  }
+
+  ['chartMode','apiBase'].forEach(id=>$(id).addEventListener('change',render));
+  $('planFilter').addEventListener('input',render);
+  $('budget').addEventListener('input',renderTable);
+  $('resetFilters').addEventListener('click',()=>{mainFilterGroups.forEach(group=>{group.selected=new Set(group.values);group.search.value='';refreshFilterSummary(group);refreshFilterSearch(group);});closeMainFilterGroups();monthlyPriceBand='all';refreshPriceBands();$('planFilter').value='';$('budget').value='100';$('chartMode').value='scatter';$('apiBase').value='aa';sortKey='cost_per_task_usd';sortAscending=true;render();});
+  document.querySelectorAll('th[data-key] button').forEach(button=>button.addEventListener('click',()=>{const key=button.closest('th').dataset.key;if(key===sortKey)sortAscending=!sortAscending;else{sortKey=key;sortAscending=true;}renderTable();}));
+  $('exportCsv').addEventListener('click',()=>{
+    const columns=[['model','Модель'],['model_provider','Разработчик модели'],['access_channel','Канал доступа'],['effort','Effort'],['plan','Тариф'],['kind','Вид оплаты'],['quota_confidence','Уверенность квоты'],['api_base','API-база коэффициента'],['monthly_usd','Подписка USD/мес'],['intelligence_index','Intelligence Index'],['real_price_usd_per_million','Цена тарифа USD/1M'],['api_price_usd_per_million','Базовая API цена USD/1M'],['multiplier','Множитель к AA'],['discount_factor','API / тариф'],['aa_cost_per_task_usd','Исходная AA цена задачи USD'],['cost_per_task_usd','Цена задачи USD'],['aa_cost_total_usd','Исходная AA цена набора USD'],['cost_total_usd','Цена набора USD'],['tasks_for_budget','Задач на бюджет'],['budget_usd','Бюджет USD'],['pricing_source','Источник цены'],['aa_source','Источник AA'],['estimated','Расчётная оценка'],['notes','Допущения'],['confidence','Уверенность']];
+    const cell=value=>{let text=value==null?'':typeof value==='object'?JSON.stringify(value):String(value);if(/^[=+@\-\t\r]/.test(text)&&typeof value!=='number')text="'"+text;return '"'+text.replace(/"/g,'""')+'"';};
+    const records=[columns.map(([,label])=>cell(label)).join(';'),...[...filteredRows].sort(compareRows).map(row=>columns.map(([key])=>cell(key==='budget_usd'?getBudget():key==='api_base'?$('apiBase').value:getRowValue(row,key))).join(';'))];
+    const url=URL.createObjectURL(new Blob(['\ufeff'+records.join('\r\n')],{type:'text/csv;charset=utf-8'}));const link=document.createElement('a');link.href=url;link.download='llm-cost-comparison.csv';document.body.append(link);link.click();link.remove();setTimeout(()=>URL.revokeObjectURL(url),1000);
+  });
+  function initializeApiEstimate() {
+    const estimate=data.api_estimate || {};
+    const estimateRows=Array.isArray(estimate.rows)?estimate.rows:[];
+    const estimateSummary=Array.isArray(estimate.summary)?estimate.summary:[];
+    const estimateTooltip=$('estimateTooltip');
+    const metricLabels={task:'Задача · расчёт по категориям',suite:'Полный набор · прямой расчёт'};
+    const estimateStatusLabels={consistent:'Согласовано',approximate:'Приближённая оценка',missing:'Нет данных',unavailable:'Расчёт недоступен'};
+    const componentLabels={non_cache_input:'Вход без кэша',cache_read:'Чтение кэша',cache_write:'Запись кэша',answer:'Ответ',reasoning:'Reasoning'};
+    const usable=value=>value && ['consistent','approximate'].includes(value.status) && positive(value.price_usd_per_million);
+    const isDirect=value=>value?.price_method==='published_total_cost_divided_by_published_total_tokens';
+    const estimateStatus=value=>value?.status==='approximate'&&isDirect(value)?'Прямая цена; разбивка приближённая':estimateStatusLabels[value?.status]||'Нет данных';
+    const estimatePrice=value=>usable(value)?(value.status==='approximate'&&!isDirect(value)?'≈ ':'')+money(value.price_usd_per_million):'—';
+    const rapReference=row=>row.rap_independent_reference===false?'Нет в RAP':money(row.rap_price_usd_per_million);
+    const percent=value=>isNumber(value)?num(value,2)+'%':'—';
+    const comparisonTolerance=positive(estimate.metadata?.tolerance_pct)?estimate.metadata.tolerance_pct:.000001;
+    const comparisonPercent=value=>isNumber(value)&&Math.abs(value)<=comparisonTolerance?'0%':percent(value);
+    const share=value=>isNumber(value)?percent(value*100):'—';
+    const notesOf=value=>Array.isArray(value)?value.filter(Boolean).map(String):value?[String(value)]:[];
+    const effortOf=row=>String(row.effort || 'Не указан');
+    const modelOf=row=>String(row.model_id || row.model || 'Без названия');
+    const estimateModels=[...new Map(estimateRows.map(row=>[modelOf(row),row.model || modelOf(row)])).entries()].sort((a,b)=>a[1].localeCompare(b[1],'ru'));
+    const effortRank=['none','non-reasoning','minimal','low','medium','high','xhigh','max','ultra'];
+    const estimateEfforts=[...new Set(estimateRows.map(effortOf))].sort((a,b)=>{const ai=effortRank.indexOf(a.toLowerCase()),bi=effortRank.indexOf(b.toLowerCase());return (ai<0?99:ai)-(bi<0?99:bi)||a.localeCompare(b,'ru');});
+    const effortColors=new Map(estimateEfforts.map((effort,index)=>[effort,palette[index%palette.length]]));
+    estimateModels.forEach(([id,name])=>{const option=document.createElement('option');option.value=id;option.textContent=name;$('estimateModel').append(option);});
+    const estimateMeta=estimate.metadata || {};
+    $('estimateMetadata').textContent=[estimateMeta.generated_at||estimateMeta.source_retrieved_at?'Срез: '+(estimateMeta.generated_at||estimateMeta.source_retrieved_at):'',estimateMeta.source_version?'Версия AA: '+estimateMeta.source_version:'',typeof estimateMeta.methodology==='string'?estimateMeta.methodology:''].filter(Boolean).join(' · ');
+    let displayedEstimateRows=[];
+    let tooltipHideTimer=0;
+    const hideEstimateTooltip=()=>{clearTimeout(tooltipHideTimer);estimateTooltip.hidden=true;};
+    const deferHideEstimateTooltip=()=>{clearTimeout(tooltipHideTimer);tooltipHideTimer=setTimeout(hideEstimateTooltip,180);};
+    estimateTooltip.addEventListener('pointerenter',()=>clearTimeout(tooltipHideTimer));
+    estimateTooltip.addEventListener('pointerleave',deferHideEstimateTooltip);
+    document.addEventListener('keydown',event=>{if(event.key==='Escape')hideEstimateTooltip();});
+    window.addEventListener('scroll',event=>{if(!estimateTooltip.contains(event.target))hideEstimateTooltip();},true);
+    const estimateDetailsRows=(row,metric)=>{
+      const value=row[metric] || {};
+      const pairs=[['Цена / 1 млн токенов',estimatePrice(value)],['Статус',estimateStatus(value)],['Все расходы',money(value.cost_usd)],['Токены: восстановлено',num(value.total_tokens,0)],['Output: восстановлено',num(value.output_tokens,0)],['Чтение кэша',share(value.cache_read_share)],['Вход + запись кэша',share(value.input_without_cache_read_share)],['Обычный вход',share(value.non_cache_input_share)],['Запись кэша',share(value.cache_write_share)],['Выход',share(value.output_share)]];
+      if(metric==='task')pairs.push(['Output: опубликовано',num(value.reported_output_tokens,0)],['Отклонение output',comparisonPercent(value.output_relative_error_pct)]);
+      else pairs.push(['Total: опубликовано',num(value.reported_total_tokens,0)],['Отклонение total',comparisonPercent(value.total_relative_error_pct)],['Цена по обратному расчёту',money(value.inverse_price_usd_per_million)]);
+      Object.entries(componentLabels).forEach(([key,label])=>pairs.push([label,num(value.component_tokens?.[key],0)]));
+      pairs.push(['AA fixed mix / 1 млн',money(row.aa_fixed_mix_price_usd_per_million)],['RAP / 1 млн',rapReference(row)]);
+      return pairs;
+    };
+    const showEstimateTooltip=(row,event)=>{
+      clearTimeout(tooltipHideTimer);
+      const metric=$('estimateMetric').value,value=row[metric] || {};
+      const notes=[...notesOf(row.notes),...notesOf(value.notes),...(row.rap_independent_reference===false?['AA→RAP: тарифы AA в фиксированной смеси RAP; независимой RAP-цены для этой модели нет.']:[])];
+      estimateTooltip.innerHTML='<button type="button" class="tooltip-close" aria-label="Закрыть сведения о точке">×</button><strong>'+escapeHtml(row.model)+' · '+escapeHtml(labelOfEffort(row.effort))+'</strong><div class="tooltip-plan">'+metricLabels[metric]+'</div><dl>'+estimateDetailsRows(row,metric).map(([label,value])=>'<dt>'+escapeHtml(label)+'</dt><dd>'+escapeHtml(value)+'</dd>').join('')+'</dl>'+(notes.length?'<div class="tooltip-note">'+notes.map(escapeHtml).join('<br>')+'</div>':'');
+      estimateTooltip.querySelector('button').addEventListener('click',hideEstimateTooltip);
+      estimateTooltip.hidden=false;
+      const rect=event.currentTarget.getBoundingClientRect();
+      const x=isNumber(event.clientX)?event.clientX:rect.left;
+      const y=isNumber(event.clientY)?event.clientY:rect.bottom;
+      estimateTooltip.style.left=Math.max(8,Math.min(x+12,innerWidth-estimateTooltip.offsetWidth-8))+'px';
+      estimateTooltip.style.top=Math.max(8,Math.min(y+12,innerHeight-estimateTooltip.offsetHeight-8))+'px';
+    };
+    function renderEstimateChart() {
+      hideEstimateTooltip();
+      const container=$('estimateChart'),metric=$('estimateMetric').value;
+      container.replaceChildren();
+      const selectedModels=estimateModels.filter(([id])=>displayedEstimateRows.some(row=>modelOf(row)===id));
+      const plotted=displayedEstimateRows.filter(row=>usable(row[metric]));
+      const approximateCount=plotted.filter(row=>row[metric].status==='approximate').length;
+      $('estimateChartTitle').textContent=metric==='task'?'Цена миллиона токенов по расходам на задачу':'Цена миллиона токенов по полному набору AA';
+      $('estimateCount').textContent=`${selectedModels.length} моделей · ${displayedEstimateRows.length} вариантов effort · ${plotted.length} оценок${approximateCount?' · приближённых: '+approximateCount:''}`;
+      $('estimateChartNote').textContent='Каждая точка — уровень effort. '+(metric==='task'?'Полая точка — приближённая оценка.':'Полая точка — расхождение в восстановленных категориях; цена рассчитана прямо по опубликованному total.')+' Наведите или нажмите для сведений; все варианты сохранены в таблице.'+(displayedEstimateRows.length>plotted.length?' Не показано цен: '+(displayedEstimateRows.length-plotted.length)+'.':'');
+      $('estimateLegend').replaceChildren();
+      estimateEfforts.filter(effort=>displayedEstimateRows.some(row=>effortOf(row)===effort)).forEach(effort=>{const item=document.createElement('span');item.className='legend-item';const dot=document.createElement('i');dot.className='dot';dot.style.background=effortColors.get(effort);item.append(dot,document.createTextNode(effort));$('estimateLegend').append(item);});
+      if(!plotted.length){emptyChart(container,'Для выбранных моделей нет доступной оценки цены. Причины и исходные показатели приведены в таблице.');return;}
+      const width=Math.max(1,Math.round(container.clientWidth || 760)),compact=width<600;
+      const rowHeight=compact?67:43,margin={left:compact?28:205,right:compact?18:28,top:36,bottom:56};
+      const height=margin.top+selectedModels.length*rowHeight+margin.bottom,plotWidth=Math.max(1,width-margin.left-margin.right);
+      const prices=plotted.map(row=>row[metric].price_usd_per_million);
+      let logMin=Math.log10(Math.min(...prices)),logMax=Math.log10(Math.max(...prices));
+      const pad=Math.max(.1,(logMax-logMin)*.08);logMin-=pad;logMax+=pad;
+      const x=value=>margin.left+(Math.log10(value)-logMin)/(logMax-logMin)*plotWidth;
+      const svg=svgNode('svg',{viewBox:`0 0 ${width} ${height}`,role:'img','aria-label':`Средняя API-цена миллиона токенов: ${selectedModels.length} моделей, ${plotted.length} оценок`});
+      const ticks=[];
+      for(let exponent=Math.floor(logMin);exponent<=Math.ceil(logMax);exponent++){for(const multiplier of logMax-logMin>2?[1]:[1,2,5]){const value=multiplier*10**exponent;if(Math.log10(value)>=logMin&&Math.log10(value)<=logMax)ticks.push(value);}}
+      if(ticks.length<2){ticks.length=0;[0,.5,1].forEach(fraction=>ticks.push(10**(logMin+fraction*(logMax-logMin))));}
+      const maxTicks=Math.max(2,Math.min(7,Math.floor(plotWidth/85)+1));
+      const visibleTicks=ticks.length>maxTicks?Array.from({length:maxTicks},(_,index)=>ticks[Math.round(index*(ticks.length-1)/(maxTicks-1))]):ticks;
+      visibleTicks.forEach(value=>{const px=x(value);svg.append(svgNode('line',{x1:px,x2:px,y1:margin.top-10,y2:height-margin.bottom,stroke:'var(--line)','stroke-dasharray':'3 4'}));svg.append(svgNode('text',{x:px,y:19,'text-anchor':'middle',fill:'var(--muted)','font-size':11},shortMoney(value)));svg.append(svgNode('text',{x:px,y:height-margin.bottom+20,'text-anchor':'middle',fill:'var(--muted)','font-size':11},shortMoney(value)));});
+      selectedModels.forEach(([id,name],modelIndex)=>{
+        const rowTop=margin.top+modelIndex*rowHeight,baseline=rowTop+(compact?39:20);
+        svg.append(svgNode('line',{x1:margin.left,x2:width-margin.right,y1:baseline,y2:baseline,stroke:'var(--line)'}));
+        svg.append(svgNode('text',{x:compact?18:margin.left-14,y:compact?rowTop+10:baseline+4,'text-anchor':compact?'start':'end',fill:'var(--ink)','font-size':compact?12:11,'font-weight':550},name.length>(compact?44:29)?name.slice(0,compact?41:26)+'…':name));
+        const group=displayedEstimateRows.filter(row=>modelOf(row)===id&&usable(row[metric]));
+        if(!group.length)svg.append(svgNode('text',{x:margin.left+8,y:baseline+4,fill:'var(--muted)','font-size':11},'Нет оценки'));
+        group.forEach((row,index)=>{
+          const value=row[metric],color=effortColors.get(effortOf(row)),offset=group.length>1?(index-(group.length-1)/2)*Math.min(4,20/(group.length-1)):0;
+          const point=svgNode('circle',{cx:x(value.price_usd_per_million),cy:baseline+offset,r:5,fill:value.status==='approximate'?'var(--surface)':color,stroke:color,'stroke-width':2,tabindex:0,class:'plot-point','aria-label':`${row.model}, ${labelOfEffort(row.effort)}, ${estimatePrice(value)} за миллион токенов, ${estimateStatus(value)}`});
+          point.addEventListener('pointerenter',event=>showEstimateTooltip(row,event));point.addEventListener('pointerleave',deferHideEstimateTooltip);point.addEventListener('focus',event=>showEstimateTooltip(row,event));point.addEventListener('blur',deferHideEstimateTooltip);point.addEventListener('click',event=>showEstimateTooltip(row,event));point.addEventListener('keydown',event=>{if(event.key==='Enter'||event.key===' '){event.preventDefault();showEstimateTooltip(row,event);}});
+          svg.append(point);
+        });
+      });
+      svg.append(svgNode('text',{x:margin.left+plotWidth/2,y:height-12,'text-anchor':'middle',fill:'var(--muted)','font-size':11},compact?'$/MTok · лог. шкала':'USD за 1 млн токенов · логарифмическая шкала'));
+      container.append(svg);
+    }
+    function renderEstimateTables() {
+      $('estimateTableBody').replaceChildren();$('estimateSummaryBody').replaceChildren();
+      const metric=$('estimateMetric').value,mix=metadata.pricing_metadata?.standard_token_mix;
+      $('estimateMixCaption').textContent='Доли AA: '+(metric==='task'?'взвешенная задача':'полный набор')+'. Чтение кэша / (обычный вход + запись кэша) / выход. Переключатель «Профиль для графика и долей» меняет эти три колонки.';
+      $('estimateMixReference').textContent=mix?`Для сравнения, фиксированная смесь RAP: чтение кэша ${share(mix.cache)} · обычный вход ${share(mix.input)} · выход ${share(mix.output)}. Отдельная запись кэша не выделена.`:'';
+      const appendCell=(tr,text,numeric=false)=>{const td=document.createElement('td');if(numeric)td.className='numeric';td.textContent=text;tr.append(td);return td;};
+      const fragment=document.createDocumentFragment();
+      displayedEstimateRows.forEach(row=>{
+        const tr=document.createElement('tr'),task=row.task||{},suite=row.suite||{};
+        const modelCell=appendCell(tr,row.model||'—');modelCell.className='model-cell';const link=sourceLink(row.source_url,'Источник AA');if(link){const source=document.createElement('div');source.className='small';source.append(link);modelCell.append(source);}
+        appendCell(tr,labelOfEffort(row.effort));
+        const profile=row[metric]||{},approximate=profile.status==='approximate'?'≈ ':'';
+        const shareCell=field=>{const td=appendCell(tr,isNumber(profile[field])?approximate+share(profile[field]):'—',true);td.classList.add('mix-cell');return td;};
+        shareCell('cache_read_share');
+        const inputCell=shareCell('input_without_cache_read_share');
+        if(isNumber(profile.non_cache_input_share)&&isNumber(profile.cache_write_share)){const split=document.createElement('span');split.className='small';split.textContent=`обычный ${share(profile.non_cache_input_share)} + запись ${share(profile.cache_write_share)}`;inputCell.append(split);}
+        shareCell('output_share');
+        [task,suite].forEach(value=>{const td=appendCell(tr,estimatePrice(value),true);if(value.status!=='consistent'){const status=document.createElement('span');status.className='estimate-status';status.textContent=estimateStatus(value);td.append(status);}});
+        [money(row.aa_fixed_mix_price_usd_per_million),rapReference(row),comparisonPercent(task.output_relative_error_pct),comparisonPercent(suite.total_relative_error_pct)].forEach(value=>appendCell(tr,value,true));
+        const detailCell=appendCell(tr,''),details=document.createElement('details'),summary=document.createElement('summary');summary.textContent='Категории токенов и сверка';details.append(summary);
+        for(const [metric,value] of [['task',task],['suite',suite]]){const componentTable=document.createElement('table');componentTable.className='token-details';const caption=document.createElement('caption');caption.style.textAlign='left';caption.style.fontWeight='650';caption.textContent=metric==='task'?'Задача: восстановление токенов':'Набор: восстановление токенов';componentTable.append(caption);const head=document.createElement('thead');head.innerHTML='<tr><th scope="col">Категория</th><th scope="col">Расход, $</th><th scope="col">Ставка, $/MTok</th><th scope="col">Токены</th></tr>';componentTable.append(head);const components=document.createElement('tbody');Object.entries(componentLabels).forEach(([key,label])=>{const componentTr=document.createElement('tr');appendCell(componentTr,label);appendCell(componentTr,money(value.component_costs_usd?.[key]),true);appendCell(componentTr,money(value.rates_usd_per_million?.[key]),true);appendCell(componentTr,num(value.component_tokens?.[key],0),true);components.append(componentTr);});const totalTr=document.createElement('tr');appendCell(totalTr,'Итого');appendCell(totalTr,money(value.cost_usd),true);appendCell(totalTr,'—',true);appendCell(totalTr,num(value.total_tokens,0),true);components.append(totalTr);componentTable.append(components);details.append(componentTable);}
+        const tokenTable=document.createElement('table');tokenTable.className='token-details';tokenTable.innerHTML='<thead><tr><th scope="col">Сверка токенов</th><th scope="col">Задача</th><th scope="col">Набор</th></tr></thead>';const body=document.createElement('tbody');
+        const tokenRows=[['Всего: восстановлено',task.total_tokens,suite.total_tokens],['Output: восстановлено',task.output_tokens,suite.output_tokens],['Output: опубликовано',task.reported_output_tokens,suite.reported_output_tokens],['Total: опубликовано',task.reported_total_tokens,suite.reported_total_tokens]];
+        tokenRows.forEach(([label,taskValue,suiteValue])=>{const tokenTr=document.createElement('tr');appendCell(tokenTr,label);appendCell(tokenTr,num(taskValue,0),true);appendCell(tokenTr,num(suiteValue,0),true);body.append(tokenTr);});tokenTable.append(body);details.append(tokenTable);
+        const extra=document.createElement('div');extra.className='estimate-details-meta';
+        [['Output задачи',share(task.output_share)],['Output набора',share(suite.output_share)],['Кэш задачи',share(task.cache_read_share)],['Кэш набора',share(suite.cache_read_share)],['Цена набора: обратный расчёт',money(suite.inverse_price_usd_per_million)],['Цена набора: прямой расчёт',estimatePrice(suite)]].forEach(([label,value])=>{const item=document.createElement('div'),caption=document.createElement('span');caption.textContent=label;item.append(caption,document.createTextNode(value));extra.append(item);});details.append(extra);
+        const notes=[...notesOf(row.notes),...notesOf(task.notes).map(note=>'Задача: '+note),...notesOf(suite.notes).map(note=>'Набор: '+note),...(row.rap_independent_reference===false?['AA→RAP: тарифы AA в фиксированной смеси RAP; независимой RAP-цены для этой модели нет.']:[])];
+        if(notes.length){const list=document.createElement('ul');list.className='estimate-note-list small';notes.forEach(note=>{const li=document.createElement('li');li.textContent=note;list.append(li);});details.append(list);}
+        detailCell.append(details);fragment.append(tr);
+      });
+      $('estimateTableBody').append(fragment);
+      const modelFilter=$('estimateModel').value;
+      estimateSummary.filter(row=>!modelFilter||modelOf(row)===modelFilter).forEach(row=>{const tr=document.createElement('tr');const modelCell=appendCell(tr,row.model||'—');const notes=notesOf(row.notes);if(notes.length){const note=document.createElement('div');note.className='small';note.textContent=notes.join(' ');modelCell.append(note);}appendCell(tr,num(row.variants,0),true);['task','suite'].forEach(metric=>{const rangeCell=appendCell(tr,positive(row[metric+'_min'])&&positive(row[metric+'_max'])?money(row[metric+'_min'])+' — '+money(row[metric+'_max']):'—',true);if(isNumber(row[metric+'_variants'])){const count=document.createElement('div');count.className='small';count.textContent='Оценок: '+num(row[metric+'_variants'],0);rangeCell.append(count);}appendCell(tr,percent(row[metric+'_spread_pct']),true);});$('estimateSummaryBody').append(tr);});
+      if(!displayedEstimateRows.length){const tr=document.createElement('tr'),td=appendCell(tr,'Данные для раздела пока не добавлены.');td.colSpan=12;$('estimateTableBody').append(tr);}
+      if(!$('estimateSummaryBody').children.length){const tr=document.createElement('tr'),td=appendCell(tr,'Диапазоны не предоставлены.');td.colSpan=6;$('estimateSummaryBody').append(tr);}
+    }
+    function renderEstimate() {const selected=$('estimateModel').value;displayedEstimateRows=estimateRows.filter(row=>!selected||modelOf(row)===selected);renderEstimateChart();renderEstimateTables();}
+    $('estimateModel').addEventListener('change',renderEstimate);
+    $('estimateMetric').addEventListener('change',renderEstimate);
+    $('estimateExport').addEventListener('click',()=>{
+      const columns=[['model','Модель'],['effort','Effort'],['effort_level','Уровень effort'],['rap_price_usd_per_million','API-база RAP или дополнение из AA USD/MTok'],['rap_price_origin','Происхождение API-базы'],['rap_independent_reference','Независимая цена RAP'],['aa_fixed_mix_price_usd_per_million','AA fixed mix USD/MTok'],['task.status','Задача: статус'],['task.price_usd_per_million','Задача: расчётная USD/MTok'],['suite.status','Набор: статус'],['suite.price_usd_per_million','Набор: прямая USD/MTok'],['suite.inverse_price_usd_per_million','Набор: обратная USD/MTok']];
+      for(const metric of ['task','suite']){for(const field of ['cost_usd','total_tokens','output_tokens','output_share','cache_read_share','non_cache_input_share','cache_write_share','input_without_cache_read_share','reported_output_tokens','reported_total_tokens','output_relative_error_pct','total_relative_error_pct'])columns.push([metric+'.'+field,metric+'.'+field]);for(const category of ['component_tokens','component_costs_usd','rates_usd_per_million'])for(const key of Object.keys(componentLabels))columns.push([metric+'.'+category+'.'+key,metric+'.'+category+'.'+key]);columns.push([metric+'.notes',metric+'.notes']);}columns.push(['source_url','Источник AA'],['notes','Примечания']);
+      const cell=value=>{let text=value==null?'':typeof value==='object'?JSON.stringify(value):String(value);if(/^[=+@\-\t\r]/.test(text)&&typeof value!=='number')text="'"+text;return '"'+text.replace(/"/g,'""')+'"';};
+      const records=[columns.map(([,label])=>cell(label)).join(';'),...displayedEstimateRows.map(row=>columns.map(([key])=>cell(key.split('.').reduce((value,part)=>value?.[part],row))).join(';'))];
+      const url=URL.createObjectURL(new Blob(['\ufeff'+records.join('\r\n')],{type:'text/csv;charset=utf-8'})),link=document.createElement('a');link.href=url;link.download='aa-api-price-estimate.csv';document.body.append(link);link.click();link.remove();setTimeout(()=>URL.revokeObjectURL(url),1000);
+    });
+    renderEstimate();
+    if(typeof ResizeObserver!=='undefined'){let priorWidth=Math.round($('estimateChart').clientWidth),frame=0;const observer=new ResizeObserver(entries=>{const width=Math.round(entries[0].contentRect.width);if(width<=0||width===priorWidth)return;priorWidth=width;cancelAnimationFrame(frame);frame=requestAnimationFrame(renderEstimateChart);});observer.observe($('estimateChart'));}
+  }
+
+  function initializeWalkthrough() {
+    const example=data.api_estimate?.rows?.find(row=>row.model_id==='claude-opus-5'&&row.effort==='max');
+    const plan=rows.find(row=>row.model_id==='claude-opus-5'&&row.effort==='max'&&row.plan_id==='claude_max_20x');
+    const mix=metadata.pricing_metadata?.standard_token_mix;
+    const container=$('calculationSteps');
+    if(!example || !plan || !mix || !example.task?.component_tokens || !example.suite?.reported_total_tokens){container.textContent='В этом снимке нет полных данных для примера Opus 5 max и Claude Max 20x.';return;}
+    const categories=[['non_cache_input','Вход без кэша'],['cache_read','Чтение кэша'],['cache_write','Запись кэша'],['answer','Ответ'],['reasoning','Reasoning']];
+    const keys=categories.map(([key])=>key),task=example.task,suite=example.suite;
+    const draw=()=>{
+      const full=$('calculationPrecision').checked;
+      const number=value=>!isNumber(value)?'—':full?String(value).replace('.',','):new Intl.NumberFormat('ru-RU',{maximumFractionDigits:6}).format(value);
+      const term=(value,unit='')=>'<span class="term">'+escapeHtml(number(value)+(unit?' '+unit:''))+'</span>';
+      const op=value=>'<span class="operator">'+escapeHtml(value)+'</span>';
+      const result=(value,unit='')=>'<span class="result">'+escapeHtml(number(value)+(unit?' '+unit:''))+'</span>';
+      const equation=(label,body)=>'<div><div class="equation-label">'+escapeHtml(label)+'</div><div class="equation">'+body+'</div></div>';
+      const addition=(values,total,unit)=>values.map(value=>term(value)).join(op('+'))+op('≈')+result(total,unit);
+      const step=(index,title,body)=>'<article class="walkthrough-step"><h3>'+index+'. '+escapeHtml(title)+'</h3>'+body+'</article>';
+      const equations=body=>'<div class="equation-group">'+body+'</div>';
+      const highlight=(value,unit,label)=>'<div class="walkthrough-result"><strong>'+escapeHtml(number(value)+' '+unit)+'</strong><span>'+escapeHtml(label)+'</span></div>';
+      const inputKeys=keys.slice(0,3),outputKeys=keys.slice(3);
+      const costs=task.component_costs_usd,rates=task.rates_usd_per_million,tokens=task.component_tokens;
+      const rateNotes={non_cache_input:'Обычный input-тариф.',cache_read:'Тариф cache hit.',cache_write:'Полная ставка записи кэша: 6,25, уже включает обычный input. Ещё 5 долларов прибавлять не нужно.',answer:'Output-тариф для видимого ответа.',reasoning:'Тот же output-тариф; отдельную цену reasoning AA не публикует.'};
+      const taskOutputDifference=Math.abs(task.output_relative_error_pct)<=data.api_estimate.metadata.tolerance_pct?0:task.output_relative_error_pct;
+      const suiteDifference=Math.abs(suite.total_relative_error_pct)<=data.api_estimate.metadata.tolerance_pct?0:suite.total_relative_error_pct;
+      const fixedTerms=[mix.cache*rates.cache_read,mix.input*rates.non_cache_input,mix.output*rates.answer];
+      const coefficient=plan.multiplier;
+      const parts=[];
+      parts.push('<div class="walkthrough-context"><span>'+escapeHtml(example.model)+' · '+escapeHtml(example.effort)+'</span><span>AA '+escapeHtml(metadata.aa_version)+'</span><span>Срез: '+escapeHtml(metadata.aa_retrieved_at?.slice(0,10)||'—')+'</span></div>');
+      parts.push('<p class="walkthrough-notice">Доллары США; MTok — миллион токенов. Исходные расходы, ставки и опубликованные счётчики взяты из AA. На экране '+(full?'показана сохранённая точность чисел':'числа округлены до 6 знаков после запятой')+'; промежуточные результаты считаются без округления. Знак ≈ учитывает округление. Дробные токены допустимы: задача AA — взвешенное среднее по тестам. Пример фиксирован и не зависит от фильтров соседней вкладки.</p>');
+      const weighting=data.aa_task_weighting,weightedModel=weighting?.models?.find(row=>row.source_id===example.source_id);
+      if(weightedModel){
+        const benchmarkRows=weightedModel.evaluations;
+        const cells=benchmarkRows.map(row=>'<tr><td>'+escapeHtml(row.name)+'</td><td class="numeric">'+number(row.task_count)+'</td><td class="numeric">'+number(row.weight*100)+'%</td><td class="numeric">$'+number(row.unweighted_cost_per_task_usd)+'</td><td class="numeric">'+number(row.weight)+' × '+number(row.unweighted_cost_per_task_usd)+' ≈ $'+number(row.weighted_contribution_usd)+'</td><td class="numeric">'+number(row.task_count)+' × '+number(row.unweighted_cost_per_task_usd)+' ≈ $'+number(row.reconstructed_evaluation_cost_usd)+'</td></tr>').join('');
+        parts.push(step(0,'Как AA взвешивает задачи разных тестов',
+          '<p>Сначала берут среднюю цену одной задачи внутри каждого теста. Для Cost per Intelligence Index Task умножают её на вес теста и складывают десять вкладов. Веса одинаковы для всех моделей и effort; балл интеллекта конкретной модели не используется. В полном наборе тест представлен фактическим количеством своих задач.</p>'+
+          '<div class="card table-wrap"><table class="data-table"><thead><tr><th>Тест</th><th class="numeric">Задач без повторов</th><th class="numeric">Вес</th><th class="numeric">Цена одной задачи теста</th><th class="numeric">Вклад в среднюю: вес × цена</th><th class="numeric">Вклад в полный набор: число × цена</th></tr></thead><tbody>'+cells+'</tbody></table></div>'+
+          equations(equation('Взвешенная стоимость задачи: сумма десяти вкладов',addition(benchmarkRows.map(row=>row.weighted_contribution_usd),weightedModel.cost_per_task_reconstructed_usd,'$ / задачу'))+
+          equation('Полный набор: сумма расходов тестов без повторов',addition(benchmarkRows.map(row=>row.reconstructed_evaluation_cost_usd),weightedModel.cost_total_reconstructed_from_eval_task_costs_usd,'$')))+
+          '<div class="walkthrough-check">На этом примере обе суммы совпадают с опубликованными итогами AA. Веса отдельно проверены по '+number(weighting.validation.evaluation_weight_ratios_checked)+' отношениям расходов у '+number(weighting.validation.variants_checked)+' вариантов моделей.</div>'+
+          '<p>Например, в полном наборе 6 000 из 9 750 задач принадлежат Omniscience (61,54%), а Terminal-Bench содержит только 66 задач (0,68%). Во взвешенной задаче их веса — 15% и 10%. Если модели по-разному расходуют токены на этих тестах, отношение их цен меняется при таком усреднении.</p>'+
+          '<p><a href="https://artificialanalysis.ai/#price-and-cost" target="_blank" rel="noopener noreferrer">Определение стоимости AA</a> · <a href="https://artificialanalysis.ai/methodology/intelligence-benchmarking" target="_blank" rel="noopener noreferrer">Таблица весов и числа задач</a></p>'));
+      }
+      parts.push(step(1,'Из расходов каждой категории получаем токены',
+        '<p>Берём расход категории в долларах, делим на её тариф за миллион токенов и умножаем на 1 000 000. В каждой строке первые два числа — исходные данные AA.</p>'+equations(categories.map(([key,label])=>equation(label+' · '+rateNotes[key],term(costs[key],'$')+op('÷')+term(rates[key],'$/MTok')+op('×')+term(1e6)+op('≈')+result(tokens[key],'токенов'))).join(''))));
+      parts.push(step(2,'Складываем токены и расходы',
+        '<p>Input состоит из обычного входа, чтения и записи кэша. Output состоит из ответа и reasoning. В общий итог каждая категория входит один раз.</p>'+equations(
+          equation('Вход: без кэша + чтение кэша + запись кэша',addition(inputKeys.map(key=>tokens[key]),task.input_tokens,'токенов'))+
+          equation('Выход: ответ + reasoning',addition(outputKeys.map(key=>tokens[key]),task.output_tokens,'токенов'))+
+          equation('Все токены: вход + выход',addition([task.input_tokens,task.output_tokens],task.total_tokens,'токенов'))+
+          equation('Все расходы: пять категорий в том же порядке',addition(keys.map(key=>costs[key]),task.cost_usd,'$ / задачу')))));
+      parts.push(step(3,'Получаем API-цену миллиона токенов задачи',
+        '<p>Общие расходы делим на все токены, включая кэш, и умножаем на миллион.</p>'+equations(
+          equation('Стоимость задачи ÷ токены задачи × миллион',term(task.cost_usd,'$')+op('÷')+term(task.total_tokens)+op('×')+term(1e6)+op('≈')+result(task.price_usd_per_million,'$/MTok'))+
+          equation('Доля output в этой задаче',term(task.output_tokens)+op('÷')+term(task.total_tokens)+op('×')+term(100)+op('≈')+result(task.output_share*100,'%'))+
+          equation('Доля чтения кэша в этой задаче',term(tokens.cache_read)+op('÷')+term(task.total_tokens)+op('×')+term(100)+op('≈')+result(task.cache_read_share*100,'%')))+
+        highlight(task.price_usd_per_million,'$/MTok','Средняя API-цена на профиле взвешенной задачи AA.')));
+      parts.push(step(4,'Сверяем восстановленный output с опубликованным',
+        '<p>В шаге 2 получили '+escapeHtml(number(task.output_tokens))+' output-токенов. AA отдельно публикует '+escapeHtml(number(task.reported_output_tokens))+'. Проверяем относительное отклонение.</p>'+equations(
+          equation('(Восстановлено ÷ опубликовано − 1) × 100%',op('(')+term(task.output_tokens)+op('÷')+term(task.reported_output_tokens)+op('−')+term(1)+op(') ×')+term(100)+op('≈')+result(taskOutputDifference,'%')))+
+        '<div class="walkthrough-check">В этом примере счётчики совпали. Это проверка согласованности данных AA. Для взвешенной задачи отдельного полного input-счётчика нет, поэтому весь знаменатель этим сравнением не проверяется.</div>'));
+      parts.push(step(5,'Отдельно считаем цену полного набора AA',
+        '<p>Для полного набора есть опубликованные input и output. Здесь можно получить среднюю цену напрямую, без восстановления токенов через тарифы. Расходы в следующей строке идут в порядке: обычный вход, чтение кэша, запись кэша, ответ, reasoning.</p>'+equations(
+          equation('Расходы полного набора: сумма пяти категорий',addition(keys.map(key=>suite.component_costs_usd[key]),suite.cost_usd,'$'))+
+          equation('Опубликованные токены: input + output',addition([suite.reported_input_tokens,suite.reported_output_tokens],suite.reported_total_tokens,'токенов'))+
+          equation('Стоимость набора ÷ опубликованные токены × миллион',term(suite.cost_usd,'$')+op('÷')+term(suite.reported_total_tokens)+op('×')+term(1e6)+op('≈')+result(suite.price_usd_per_million,'$/MTok'))+
+          equation('Проверка: восстанавливаем токены всех пяти категорий набора',keys.map(key=>op('(')+term(suite.component_costs_usd[key])+op('÷')+term(suite.rates_usd_per_million[key])+op('×')+term(1e6)+op(')')).join(op('+'))+op('≈')+result(suite.total_tokens,'токенов'))+
+          equation('Отклонение восстановленного total от опубликованного',op('(')+term(suite.total_tokens)+op('÷')+term(suite.reported_total_tokens)+op('−')+term(1)+op(') ×')+term(100)+op('≈')+result(suiteDifference,'%')))+
+        highlight(suite.price_usd_per_million,'$/MTok','Средняя API-цена полного набора AA.')+
+        '<p style="margin-top:12px">Цена задачи и цена набора различаются, поскольку тесты в них имеют разные веса. Нельзя делить стоимость взвешенной задачи на токены полного набора или наоборот.</p>'));
+      parts.push(step(6,'Получаем API-базу в фиксированной смеси RAP',
+        '<p>Для пересчёта подписок текущие графики используют другую среднюю: '+escapeHtml(number(mix.cache*100))+'% чтения кэша, '+escapeHtml(number(mix.input*100))+'% обычного входа и '+escapeHtml(number(mix.output*100))+'% выхода. Отдельной записи кэша в этой смеси нет.</p>'+equations(
+          equation('Сумма долей',addition([mix.cache,mix.input,mix.output],mix.cache+mix.input+mix.output,''))+
+          equation('Чтение кэша: доля × тариф',term(mix.cache)+op('×')+term(rates.cache_read)+op('≈')+result(fixedTerms[0],'$/MTok'))+
+          equation('Обычный вход: доля × тариф',term(mix.input)+op('×')+term(rates.non_cache_input)+op('≈')+result(fixedTerms[1],'$/MTok'))+
+          equation('Выход: доля × тариф',term(mix.output)+op('×')+term(rates.answer)+op('≈')+result(fixedTerms[2],'$/MTok'))+
+          equation('API-база: сумма трёх вкладов',addition(fixedTerms,example.aa_fixed_mix_price_usd_per_million,'$/MTok')))+
+        '<div class="walkthrough-check">Для Opus 5 база AA в этой смеси совпадает с RAP: '+escapeHtml(number(example.rap_price_usd_per_million))+' $/MTok. Значения '+escapeHtml(number(task.price_usd_per_million))+' из шага 3 и '+escapeHtml(number(suite.price_usd_per_million))+' из шага 5 относятся к нагрузке AA; у фиксированной смеси другой состав токенов.</div>'));
+      parts.push(step(7,'Считаем эффективную цену подписки',
+        '<p>Тариф: '+escapeHtml(plan.plan)+'. В RAP указаны '+escapeHtml(number(plan.monthly_usd))+' $ в месяц и оценка доступного объёма '+escapeHtml(number(plan.monthly_tokens))+' токенов в месяц. Делим плату на объём и приводим к миллиону токенов.</p>'+equations(
+          equation('Плата за месяц ÷ месячные токены × миллион',term(plan.monthly_usd,'$')+op('÷')+term(plan.monthly_tokens)+op('×')+term(1e6)+op('≈')+result(plan.real_price_usd_per_million,'$/MTok')))+
+        '<p>Эта цена предполагает полное использование оценённой квоты. Квота RAP — оценка по наблюдениям; её расход для каждого effort отдельно не подтверждён.</p>'));
+      parts.push(step(8,'Находим коэффициент пересчёта на подписку',
+        '<p>Чтобы воспроизвести текущие графики, берём цену подписки из шага 7 и API-базу фиксированной смеси из шага 6. Получаем множитель к стоимости AA.</p>'+equations(
+          equation('Множитель: цена подписки ÷ API-база',term(plan.real_price_usd_per_million)+op('÷')+term(plan.api_price_usd_per_million)+op('≈')+result(coefficient))+
+          equation('Обратное отношение: во сколько раз API дороже',term(plan.api_price_usd_per_million)+op('÷')+term(plan.real_price_usd_per_million)+op('≈')+result(plan.discount_factor,'раза')))+
+        '<p>Перенос этого множителя на задачи AA — сценарное предположение. Новые средние из шагов 3 и 5 в знаменатель этого сценария не подставляются: они описывают другой состав нагрузки.</p>'));
+      parts.push(step(9,'Пересчитываем задачи и бюджет',
+        '<p>Умножаем обе исходные стоимости AA на один коэффициент. Затем делим условный бюджет 100 долларов на полученную стоимость одной задачи.</p>'+equations(
+          equation('Задача на подписке: стоимость задачи AA × множитель',term(task.cost_usd,'$')+op('×')+term(coefficient)+op('≈')+result(plan.cost_per_task_usd,'$ / задачу'))+
+          equation('Полный набор на подписке: стоимость набора AA × множитель',term(suite.cost_usd,'$')+op('×')+term(coefficient)+op('≈')+result(plan.cost_total_usd,'$ / набор'))+
+          equation('Задач на $100: бюджет ÷ цена задачи',term(100,'$')+op('÷')+term(plan.cost_per_task_usd)+op('≈')+result(100/plan.cost_per_task_usd,'задачи')))+
+        highlight(100/plan.cost_per_task_usd,'задачи / $100','Условная нормировка при полном использовании квоты.')+
+        '<p style="margin-top:12px">Подписка стоит '+escapeHtml(number(plan.monthly_usd))+' долларов в месяц: расчёт на $100 не означает возможность купить её половину. Считаются попытки задач по профилю AA, без поправки на успешность.</p>'));
+      container.innerHTML=parts.join('');
+      const links=document.createElement('div');links.className='walkthrough-links';
+      [[example.source_url,'Модель и расходы AA'],[plan.pricing_source,'Тариф и квота RAP'],['https://artificialanalysis.ai/models/caching','Тарифы записи и чтения кэша']].forEach(([url,label])=>{const link=sourceLink(url,label);if(link)links.append(link);});container.append(links);
+    };
+    $('calculationPrecision').addEventListener('change',draw);
+    draw();
+  }
+
+  function initializeTokenScenario() {
+    const scenario=data.token_scenario || {},scenarioRows=Array.isArray(scenario.rows)?scenario.rows:[];
+    const scenarioMetadata=scenario.metadata || {},coverage=scenario.coverage || {};
+    const quotas=Array.isArray(scenario.quotas)?scenario.quotas:[],excluded=Array.isArray(scenario.excluded)?scenario.excluded:[];
+    const modelId=row=>String(row.model_id||row.model||'Без названия');
+    const effort=row=>labelOfEffort(row.effort),effortLabel=row=>labelOfEffort(row.effort_label||row.effort);
+    const notes=value=>Array.isArray(value)?value.filter(Boolean).map(String):value?[String(value)]:[];
+    const confidence=value=>quotaLabels[value]||textValue(value);
+    const evidenceLabel=value=>({direct_measurement:'Прямое измерение',pooled_measurements:'Объединённые измерения',calibrated_measurement:'Измерение с поправками',plan_extrapolation:'Перенос между тарифами или моделями',synthetic_mix:'Расчёт через заданную смесь',aa:'Опубликованные данные AA',unknown:'Нет данных'}[value]||textValue(value));
+    const validMetric=value=>value&&!['missing','unavailable','invalid'].includes(value.status)&&isNumber(value.cost_usd)&&value.cost_usd>=0;
+    const conditional=(row,value,formatter=money)=>isNumber(value)?(row.kind==='subscription'?'≈ ':'')+formatter(value):'—';
+    const metricCost=(row,key)=>validMetric(row[key])?conditional(row,row[key].cost_usd):'—';
+    const share=(metric,value)=>isNumber(value)?((metric.mixture_status||metric.status)==='approximate'?'≈ ':'')+num(value*100,2)+'%':'—';
+    const appendCell=(tr,value,numeric=false)=>{const td=document.createElement('td');td.textContent=value;if(numeric)td.className='numeric';tr.append(td);return td;};
+    const addSource=(container,url,label)=>{const link=sourceLink(url,label);if(link){if(container.childNodes.length)container.append(document.createTextNode(' · '));container.append(link);}};
+    if(typeof scenarioMetadata.method_ru==='string')$('tokenScenarioMethod').textContent=scenarioMetadata.method_ru;
+    if(typeof scenarioMetadata.eligibility_ru==='string')$('tokenScenarioEligibility').textContent=scenarioMetadata.eligibility_ru+' Фиксированная смесь API в этом расчёте не используется.';
+    $('tokenScenarioAssumption').textContent='Условный перенос измеренной ёмкости на нагрузку AA. Независимость квоты от состава токенов не подтверждена.';
+    const coverageLabels=[['eligible_subscription_plans','Допущено тарифов'],['total_subscription_plans','Проверено тарифов'],['excluded_subscription_plans','Исключено'],['subscription_rows','Сценариев подписок'],['api_rows','Вариантов API']];
+    coverageLabels.forEach(([key,label])=>{if(isNumber(coverage[key])){const span=document.createElement('span');span.textContent=label+': '+num(coverage[key],0);$('tokenScenarioCoverage').append(span);}});
+    $('tokenScenarioOfficial').textContent=coverage.official_token_caps===0?'В этой выборке нет официально подтверждённых фиксированных лимитов сырых токенов. Включены наблюдения за измеренной ёмкостью.':isNumber(coverage.official_token_caps)?'Официальных фиксированных лимитов токенов в выборке: '+num(coverage.official_token_caps,0)+'.':'Официальный статус лимитов не указан в срезе.';
+    function renderEvidence(items,bodyId,isExcluded) {
+      const body=$(bodyId);body.replaceChildren();
+      items.forEach(item=>{const tr=document.createElement('tr');const title=appendCell(tr,(item.model||item.model_id||'—')+' · '+(item.plan||item.id||'—'));title.style.fontWeight='600';if(!isExcluded){appendCell(tr,money(item.monthly_usd),true);appendCell(tr,num(item.monthly_tokens,0),true);}appendCell(tr,confidence(item.confidence));const reason=appendCell(tr,item.reason_ru||(!isExcluded?'Включено как условный перенос измеренной ёмкости.':'Причина не указана.'));reason.className='evidence-reason';const source=document.createElement('div');source.className='small';addSource(source,item.source_url,'Источник');reason.append(source);const extra=[...notes(item.caveats_ru)];if(item.evidence_method)extra.unshift('Метод наблюдения: '+evidenceLabel(item.evidence_method));if(item.observed_mix!=null)extra.push('Состав токенов в наблюдении: '+(typeof item.observed_mix==='object'?JSON.stringify(item.observed_mix):String(item.observed_mix)));if(extra.length){const details=document.createElement('details'),summary=document.createElement('summary');summary.textContent='Подробнее';details.append(summary);extra.forEach(text=>{const p=document.createElement('p');p.textContent=text;details.append(p);});reason.append(details);}body.append(tr);});
+      if(!items.length){const tr=document.createElement('tr'),td=appendCell(tr,isExcluded?'Исключённые тарифы не указаны.':'Наблюдения для переноса ёмкости не указаны.');td.colSpan=isExcluded?3:5;body.append(tr);}
+    }
+    renderEvidence(quotas,'tokenIncludedBody',false);renderEvidence(excluded,'tokenExcludedBody',true);
+    $('tokenIncludedSummary').textContent='Основания включённых сценариев · '+quotas.length;
+    $('tokenExcludedSummary').textContent='Исключённые тарифы и причины · '+excluded.length;
+    if(!scenarioRows.length){$('tokenScenarioResults').hidden=true;$('tokenScenarioUnavailable').hidden=false;$('tokenScenarioUnavailable').textContent='Данные для сценария по токенам пока недоступны. Остальные вкладки работают независимо.';return;}
+    if(scenarioMetadata.audit_valid===false){$('tokenScenarioUnavailable').hidden=false;$('tokenScenarioUnavailable').textContent='Происхождение квот требует повторной проверки для этого снимка. Подписки исключены; исходные расходы API AA доступны.';}
+    const modelOptions=[...new Map(scenarioRows.map(row=>[modelId(row),row.model||modelId(row)])).entries()].sort((a,b)=>a[1].localeCompare(b[1],'ru'));
+    const fillOptions=(id,options)=>options.forEach(([value,label])=>{const option=document.createElement('option');option.value=value;option.textContent=label;$(id).append(option);});
+    fillOptions('tokenModel',modelOptions);
+    const effortOptions=[...new Set(scenarioRows.map(effort))].sort((a,b)=>{const ai=effortOrder.indexOf(a),bi=effortOrder.indexOf(b);return(ai<0?99:ai)-(bi<0?99:bi)||a.localeCompare(b,'ru');});
+    fillOptions('tokenEffort',effortOptions.map(value=>[value,value]));
+    fillOptions('tokenPlan',[...new Set(scenarioRows.map(row=>String(row.plan||kindLabel(row.kind))))].sort((a,b)=>a.localeCompare(b,'ru',{numeric:true})).map(value=>[value,value]));
+    let visibleRows=[];
+    const tokenTooltip=$('tokenTooltip'),hideTokenTooltip=()=>{tokenTooltip.hidden=true;};
+    function showTokenTooltip(row,event) {
+      const profile=$('tokenProfile').value,metric=row[profile]||{};
+      const values=[['Тариф',row.plan||kindLabel(row.kind)],['Плата в месяц',money(row.monthly_usd)],['Ёмкость, токенов / мес.',num(row.monthly_tokens,0)],['Токенов AA в профиле',num(metric.total_tokens,0)],['API на смеси AA / MTok',money(metric.api_price_usd_per_million)],['Подписка / MTok',conditional(row,row.subscription_price_usd_per_million)],['Стоимость задачи',metricCost(row,'task')],['Стоимость набора',metricCost(row,'suite')],['Задач / месяц',conditional(row,row.task?.tasks_per_month,value=>num(value,2))],['Задач / $100',conditional(row,row.task?.tasks_per_100_usd,value=>num(value,2))],['Чтение кэша',share(metric,metric.cache_read_share)],['Вход без чтения кэша',share(metric,metric.input_without_cache_read_share)],['Выход',share(metric,metric.output_share)]];
+      tokenTooltip.innerHTML='<strong>'+escapeHtml(row.model)+' · '+escapeHtml(effortLabel(row))+'</strong><div class="tooltip-plan">'+(row.kind==='subscription'?'Условный перенос ёмкости':'Опубликованные расходы API AA')+'</div><dl>'+values.map(([label,value])=>'<dt>'+escapeHtml(label)+'</dt><dd>'+escapeHtml(value)+'</dd>').join('')+'</dl>'+(row.kind==='subscription'?'<div class="tooltip-note">Измеренная ёмкость не является гарантированным лимитом. Примечания и источники — в таблице.</div>':'');
+      tokenTooltip.hidden=false;const rect=event.currentTarget.getBoundingClientRect(),x=isNumber(event.clientX)?event.clientX:rect.left,y=isNumber(event.clientY)?event.clientY:rect.bottom;tokenTooltip.style.left=Math.max(8,Math.min(x+12,innerWidth-tokenTooltip.offsetWidth-8))+'px';tokenTooltip.style.top=Math.max(8,Math.min(y+12,innerHeight-tokenTooltip.offsetHeight-8))+'px';
+    }
+    document.addEventListener('keydown',event=>{if(event.key==='Escape')hideTokenTooltip();});window.addEventListener('scroll',hideTokenTooltip,true);
+    function renderTokenChart(containerId,noteId,key) {
+      const container=$(containerId),showApi=$('tokenShowApi').checked,candidates=visibleRows.filter(row=>showApi||row.kind!=='api'),plotted=candidates.filter(row=>validMetric(row[key])&&positive(row[key].cost_usd)).sort((a,b)=>a[key].cost_usd-b[key].cost_usd);
+      container.replaceChildren();$(noteId).textContent='Показано '+plotted.length+' вариантов по возрастанию стоимости. '+(candidates.length>plotted.length?'Нет положительной цены у '+(candidates.length-plotted.length)+' вариантов. ':'')+'Все строки доступны в таблице.';
+      if(!plotted.length){emptyChart(container,'Нет положительных цен для выбранных фильтров.');return;}
+      const width=Math.max(1,Math.round(container.clientWidth||700)),compact=width<480,rowHeight=compact?77:45,margin={left:compact?28:Math.min(300,Math.round(width*.44)),right:compact?20:28,top:37,bottom:43},height=margin.top+rowHeight*plotted.length+margin.bottom,plotWidth=Math.max(1,width-margin.left-margin.right);
+      const prices=plotted.map(row=>row[key].cost_usd);let logMin=Math.log10(Math.min(...prices)),logMax=Math.log10(Math.max(...prices));const padding=Math.max(.12,(logMax-logMin)*.06);logMin-=padding;logMax+=padding;const x=value=>margin.left+(Math.log10(value)-logMin)/(logMax-logMin)*plotWidth;
+      const svg=svgNode('svg',{viewBox:`0 0 ${width} ${height}`,role:'img','aria-label':(key==='task'?'Стоимость задачи':'Стоимость полного набора')+', сценарий по токенам, '+plotted.length+' вариантов'}),ticks=[];
+      for(let exponent=Math.floor(logMin);exponent<=Math.ceil(logMax);exponent++){for(const factor of logMax-logMin>2?[1]:[1,2,5]){const value=factor*10**exponent;if(Math.log10(value)>=logMin&&Math.log10(value)<=logMax)ticks.push(value);}}
+      if(ticks.length<2){ticks.length=0;[0,.5,1].forEach(fraction=>ticks.push(10**(logMin+fraction*(logMax-logMin))));}const maximumTicks=Math.max(2,Math.min(5,Math.floor(plotWidth/90)+1)),shownTicks=ticks.length>maximumTicks?Array.from({length:maximumTicks},(_,index)=>ticks[Math.round(index*(ticks.length-1)/(maximumTicks-1))]):ticks;
+      shownTicks.forEach(value=>{const px=x(value);svg.append(svgNode('line',{x1:px,x2:px,y1:margin.top-9,y2:height-margin.bottom,stroke:'var(--line)','stroke-dasharray':'3 4'}));svg.append(svgNode('text',{x:px,y:20,'text-anchor':'middle',fill:'var(--muted)','font-size':11},shortMoney(value)));});
+      plotted.forEach((row,index)=>{const top=margin.top+index*rowHeight,py=top+(compact?53:23),px=x(row[key].cost_usd),color=colorByModel.get(String(row.model))||palette[index%palette.length];const labelWidth=compact?width-32:margin.left-25,maxChars=Math.max(12,Math.floor(labelWidth/6.1)),shorten=value=>String(value).length>maxChars?String(value).slice(0,maxChars-1)+'…':String(value);svg.append(svgNode('text',{x:16,y:top+12,fill:'var(--ink)','font-size':11,'font-weight':600},shorten((row.model||'—')+' · '+effortLabel(row))));svg.append(svgNode('text',{x:16,y:top+28,fill:'var(--muted)','font-size':11},shorten(row.plan||kindLabel(row.kind))));svg.append(svgNode('line',{x1:margin.left,x2:width-margin.right,y1:py,y2:py,stroke:'var(--line)'}));const attrs={fill:row.kind==='subscription'?'var(--surface)':color,stroke:color,'stroke-width':2,tabindex:0,class:'plot-point','aria-label':`${row.model}, ${effortLabel(row)}, ${row.plan}: ${metricCost(row,key)}`};const point=row.kind==='subscription'?svgNode('path',{...attrs,d:`M ${px} ${py-6} L ${px+6} ${py} L ${px} ${py+6} L ${px-6} ${py} Z`}):svgNode('circle',{...attrs,cx:px,cy:py,r:5});point.addEventListener('pointerenter',event=>showTokenTooltip(row,event));point.addEventListener('pointerleave',hideTokenTooltip);point.addEventListener('focus',event=>showTokenTooltip(row,event));point.addEventListener('blur',hideTokenTooltip);point.addEventListener('click',event=>showTokenTooltip(row,event));svg.append(point);const alignLeft=px>width-105;svg.append(svgNode('text',{x:px+(alignLeft?-10:10),y:py-10,'text-anchor':alignLeft?'end':'start',fill:'var(--ink)','font-size':11,'pointer-events':'none'},metricCost(row,key)));});
+      svg.append(svgNode('text',{x:margin.left+plotWidth/2,y:height-12,'text-anchor':'middle',fill:'var(--muted)','font-size':11},'Стоимость, $ · лог. шкала'));container.append(svg);
+    }
+    function renderTokenCharts(){hideTokenTooltip();renderTokenChart('tokenTaskChart','tokenTaskChartNote','task');renderTokenChart('tokenSuiteChart','tokenSuiteChartNote','suite');}
+    function renderTokenTable(){
+      const profile=$('tokenProfile').value;$('tokenTableBody').replaceChildren();$('tokenProfileNote').textContent=(profile==='task'?'Доли и эффективная API-цена: профиль задачи AA. Токены задачи восстановлены по категориям расходов.':'Доли и эффективная API-цена: полный набор AA. Число токенов для цены набора — опубликованные AA input + output.')+' Три доли относятся к токенам, не к расходам; «≈» у долей отмечает приближённую разбивку.';
+      visibleRows.forEach(row=>{const tr=document.createElement('tr'),metric=row[profile]||{};const model=appendCell(tr,row.model||'—');model.className='model-cell';const level=document.createElement('div');level.className='small';level.textContent=effortLabel(row);model.append(level);const plan=appendCell(tr,row.plan||kindLabel(row.kind));plan.className='token-plan';const source=document.createElement('div');source.className='small';const tag=document.createElement('span');tag.className='tag';tag.textContent=row.kind==='subscription'?'Условный сценарий':'API AA';source.append(tag);addSource(source,row.source_url,'Ёмкость / источник');addSource(source,row.aa_source_url,'AA');plan.append(source);const rowNotes=[...notes(row.notes),...(row.kind==='subscription'?['Уверенность наблюдения: '+confidence(row.confidence)+'.','Измеренный месячный объём переносится на нагрузку AA условно.']:[])];if(row.evidence_method)rowNotes.push('Метод наблюдения: '+evidenceLabel(row.evidence_method));if(rowNotes.length){const details=document.createElement('details'),summary=document.createElement('summary');summary.textContent='Основания';details.className='small';details.append(summary);rowNotes.forEach(text=>{const p=document.createElement('p');p.textContent=text;details.append(p);});plan.append(details);}const apiPrice=isNumber(metric.api_price_usd_per_million)?(profile==='task'&&metric.status==='approximate'?'≈ ':'')+money(metric.api_price_usd_per_million):'—';[money(row.monthly_usd),num(row.monthly_tokens,0),share(metric,metric.cache_read_share),share(metric,metric.input_without_cache_read_share),share(metric,metric.output_share),apiPrice,conditional(row,row.subscription_price_usd_per_million),metricCost(row,'task'),metricCost(row,'suite'),conditional(row,row.task?.tasks_per_month,value=>num(value,2)),conditional(row,row.task?.tasks_per_100_usd,value=>num(value,2))].forEach(value=>appendCell(tr,value,true));$('tokenTableBody').append(tr);});
+      if(!visibleRows.length){const tr=document.createElement('tr'),td=appendCell(tr,'Нет строк для выбранных фильтров.');td.colSpan=13;$('tokenTableBody').append(tr);}
+    }
+    function renderTokenExample(){
+      const selected=$('tokenExampleRow').value,row=visibleRows.find(candidate=>String(candidate.id)===selected&&candidate.kind==='subscription'),body=$('tokenExampleBody');body.replaceChildren();
+      if(!row){body.textContent='В текущей выборке нет подписки с доступными данными для примера.';return;}
+      if(!positive(row.monthly_tokens)||!isNumber(row.monthly_usd)){body.textContent='Месячная плата или измеренный объём не позволяют показать расчёт.';return;}
+      const addEquation=(label,pieces)=>{const caption=document.createElement('div');caption.className='equation-label';caption.textContent=label;const equation=document.createElement('div');equation.className='equation';pieces.forEach((piece,index)=>{const span=document.createElement('span');span.className=index===pieces.length-1?'result':'term';span.textContent=piece;equation.append(span);});body.append(caption,equation);};
+      addEquation('Условная цена подписки за миллион токенов',[money(row.monthly_usd),'÷',num(row.monthly_tokens,0),'×','1 000 000','≈',money(row.subscription_price_usd_per_million)+' / MTok']);
+      if(validMetric(row.task)&&positive(row.task.total_tokens)){addEquation('Стоимость одной задачи AA',[money(row.monthly_usd),'×',num(row.task.total_tokens,2)+' токенов','÷',num(row.monthly_tokens,0),'≈',money(row.task.cost_usd)]);addEquation('Условное число задач за месяц',[num(row.monthly_tokens,0),'÷',num(row.task.total_tokens,2),'≈',num(row.task.tasks_per_month,2)+' задач']);}
+      if(validMetric(row.suite)&&positive(row.suite.total_tokens))addEquation('Стоимость полного набора AA',[money(row.monthly_usd),'×',num(row.suite.total_tokens,0)+' опубликованных токенов','÷',num(row.monthly_tokens,0),'≈',money(row.suite.cost_usd)]);
+      const note=document.createElement('p');note.className='budget-note';note.textContent='Это расчёт при условии, что измеренная ёмкость доступна и с составом токенов AA. Независимость квоты от cache read, input и output не подтверждена. Плата делится на весь месячный объём; неполное использование увеличит фактическую цену.';body.append(note);
+    }
+    function refreshTokenExampleOptions(){const prior=$('tokenExampleRow').value;$('tokenExampleRow').replaceChildren();visibleRows.filter(row=>row.kind==='subscription'&&positive(row.monthly_tokens)).forEach(row=>{const option=document.createElement('option');option.value=String(row.id);option.textContent=(row.model||'—')+' · '+effortLabel(row)+' · '+row.plan;$('tokenExampleRow').append(option);});if([...$('tokenExampleRow').options].some(option=>option.value===prior))$('tokenExampleRow').value=prior;$('tokenExampleRow').disabled=!$('tokenExampleRow').options.length;renderTokenExample();}
+    function renderTokenScenario(){const model=$('tokenModel').value,level=$('tokenEffort').value,plan=$('tokenPlan').value;visibleRows=scenarioRows.filter(row=>(!model||modelId(row)===model)&&(!level||effort(row)===level)&&(!plan||String(row.plan||kindLabel(row.kind))===plan));const subscriptionCount=visibleRows.filter(row=>row.kind==='subscription').length;$('tokenResultCount').textContent='В таблице '+visibleRows.length+' вариантов · подписки: '+subscriptionCount+' · API: '+(visibleRows.length-subscriptionCount);renderTokenCharts();renderTokenTable();refreshTokenExampleOptions();}
+    ['tokenModel','tokenEffort','tokenPlan'].forEach(id=>$(id).addEventListener('change',renderTokenScenario));$('tokenProfile').addEventListener('change',()=>{hideTokenTooltip();renderTokenTable();});$('tokenShowApi').addEventListener('change',renderTokenCharts);$('tokenExampleRow').addEventListener('change',renderTokenExample);
+    $('tokenReset').addEventListener('click',()=>{['tokenModel','tokenEffort','tokenPlan'].forEach(id=>$(id).value='');$('tokenProfile').value='task';$('tokenShowApi').checked=true;renderTokenScenario();});
+    $('tokenExport').addEventListener('click',()=>{const columns=[['id','ID'],['model','Модель'],['effort','Effort'],['plan','Тариф'],['kind','Оплата'],['selected_profile','Профиль долей'],['monthly_usd','Плата USD/мес'],['monthly_tokens','Измеренная ёмкость токенов/мес'],['subscription_price_usd_per_million','Условная цена подписки USD/MTok'],['confidence','Уверенность наблюдения'],['evidence_method','Метод наблюдения'],['transfer_status','Статус переноса']];for(const key of ['task','suite'])for(const field of ['status','mixture_status','tokens_method','total_tokens','api_price_usd_per_million','cost_usd','tasks_per_month','tasks_per_100_usd','suites_per_month','suites_per_100_usd','multiplier','cache_read_share','input_without_cache_read_share','output_share'])columns.push([key+'.'+field,key+'.'+field]);columns.push(['source_url','Источник ёмкости'],['aa_source_url','Источник AA'],['notes','Примечания']);const cell=value=>{let text=value==null?'':typeof value==='object'?JSON.stringify(value):String(value);if(/^[=+@\-\t\r]/.test(text)&&typeof value!=='number')text="'"+text;return '"'+text.replace(/"/g,'""')+'"';};const records=[columns.map(([,label])=>cell(label)).join(';'),...visibleRows.map(row=>columns.map(([key])=>cell(key==='selected_profile'?$('tokenProfile').value:key.split('.').reduce((value,part)=>value?.[part],row))).join(';'))];const url=URL.createObjectURL(new Blob(['\ufeff'+records.join('\r\n')],{type:'text/csv;charset=utf-8'})),link=document.createElement('a');link.href=url;link.download='aa-token-capacity-scenario.csv';document.body.append(link);link.click();link.remove();setTimeout(()=>URL.revokeObjectURL(url),1000);});
+    renderTokenScenario();
+    document.addEventListener('report-tab-change',event=>{if(event.detail==='token-scenario')requestAnimationFrame(renderTokenCharts);else hideTokenTooltip();});
+    if(typeof ResizeObserver!=='undefined'){const containers=[$('tokenTaskChart'),$('tokenSuiteChart')],widths=new Map(containers.map(container=>[container,Math.round(container.clientWidth)]));let frame=0;const observer=new ResizeObserver(entries=>{let changed=false;entries.forEach(entry=>{const width=Math.round(entry.contentRect.width);if(width>0&&widths.get(entry.target)!==width){widths.set(entry.target,width);changed=true;}});if(changed){cancelAnimationFrame(frame);frame=requestAnimationFrame(renderTokenCharts);}});containers.forEach(container=>observer.observe(container));}
+  }
+
+  function initializeReportTabs() {
+    const names=['comparison','calculation','token-scenario'];
+    const selectTab=(name,changeHash=false)=>{
+      for(const candidate of names){const active=candidate===name;$(candidate).hidden=!active;$(candidate+'Tab').setAttribute('aria-selected',String(active));$(candidate+'Tab').tabIndex=active?0:-1;}
+      $('tooltip').hidden=true;$('estimateTooltip').hidden=true;$('tokenTooltip').hidden=true;
+      $('pricingOverviewIntro').hidden=name==='token-scenario';$('pricingOverviewFormula').hidden=name==='token-scenario';
+      if(changeHash)history.replaceState(null,'','#'+name);
+      document.dispatchEvent(new CustomEvent('report-tab-change',{detail:name}));
+    };
+    const route=()=>{const requested=location.hash.slice(1);selectTab(names.includes(requested)?requested:'comparison');if(location.hash==='#api-estimate')requestAnimationFrame(()=>$('api-estimate').scrollIntoView({block:'start'}));};
+    names.forEach((name,index)=>{
+      const button=$(name+'Tab');button.addEventListener('click',()=>selectTab(name,true));
+      button.addEventListener('keydown',event=>{if(!['ArrowLeft','ArrowRight','Home','End'].includes(event.key))return;event.preventDefault();const next=event.key==='Home'?0:event.key==='End'?names.length-1:(index+(event.key==='ArrowRight'?1:-1)+names.length)%names.length;selectTab(names[next],true);$(names[next]+'Tab').focus();});
+    });
+    window.addEventListener('hashchange',route);route();
+    if(['#calculation','#token-scenario'].includes(location.hash))requestAnimationFrame(()=>$('reportTabs').scrollIntoView({block:'start'}));
+  }
+
+  render();
+  initializeApiEstimate();
+  initializeWalkthrough();
+  initializeTokenScenario();
+  initializeReportTabs();
+  if(typeof ResizeObserver!=='undefined'){
+    const chartContainers=[$('taskChart'),$('totalChart')];
+    const observedWidths=new Map(chartContainers.map(container=>[container,Math.round(container.clientWidth)]));
+    let resizeFrame=0;
+    const resizeObserver=new ResizeObserver(entries=>{
+      let widthChanged=false;
+      entries.forEach(entry=>{const width=Math.round(entry.contentRect.width);if(width>0&&observedWidths.get(entry.target)!==width){observedWidths.set(entry.target,width);widthChanged=true;}});
+      if(!widthChanged||$('chartMode').value!=='scatter')return;
+      cancelAnimationFrame(resizeFrame);
+      resizeFrame=requestAnimationFrame(()=>{hideTooltip();renderScatter($('taskChart'),$('taskChartNote'),'cost_per_task_usd');renderScatter($('totalChart'),$('totalChartNote'),'cost_total_usd');});
+    });
+    chartContainers.forEach(container=>resizeObserver.observe(container));
+  }
+})();
+</script>
+</body>
+</html>

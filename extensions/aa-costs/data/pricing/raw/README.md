@@ -1,12 +1,4 @@
-## Форк: стоимость задач Artificial Analysis
-
-Этот форк добавляет вкладку **«Задачи AA»** к исходному интерфейсу Real API Pricing. Она использует состав токенов каждой модели и effort из Artificial Analysis и исходные ставки списания подписок. Исходная вкладка цен токенов сохранена.
-
-Запуск из `web`: `npm ci`, затем `npm run dev -- --host 127.0.0.1`. Вкладка доступна по `/?view=aa`. Проверки: `npm test`; сборка: `npm run build`. Предыдущие методы сравнения, оценка API и расчёт по шагам доступны по ссылке внутри новой вкладки.
-
-Метод, источники и ограничения: [AA_COSTS.md](AA_COSTS.md). Код и закреплённые снимки расширения находятся в `extensions/aa-costs/`. [Репозиторий форка](https://github.com/closeup24/real-api-pricing) · [Исходный проект](https://github.com/FeiZhuLulu/real-api-pricing). Дальше приведена исходная документация проекта.
-
-## [Explore the upstream interactive website →](https://real-api-pricing.vercel.app)
+## [Explore the interactive website →](https://real-api-pricing.vercel.app)
 
 Compare models, prices and allowances · English / 中文
 

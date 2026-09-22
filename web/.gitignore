@@ -1,6 +1,7 @@
 node_modules/
 dist/
 public/data/
+public/aa-archive/
 .vercel/
 *.tsbuildinfo
 src/assets/provider-logos/_fetch/
