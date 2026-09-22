@@ -21,6 +21,21 @@ const cache = new Map();
 const sourceUrl = path => `https://github.com/FeiZhuLulu/real-api-pricing/blob/${sourceRevision}/${path}`;
 const unique = values => [...new Set(values.filter(Boolean))];
 
+// Отдельный проверенный первоисточник дополняет закреплённый пересказ, не меняя его байты.
+const claudeMaxReviewPath = 'data/pricing/claude-max-source-review.json';
+const claudeMaxReviewBytes = readFileSync(resolve(root, claudeMaxReviewPath));
+const claudeMaxReview = JSON.parse(claudeMaxReviewBytes.toString('utf8'));
+const claudeMaxReviewHash = sha256(claudeMaxReviewBytes);
+assert.equal(claudeMaxReview.schema_version, 1);
+assert.equal(claudeMaxReview.pinned_summary.revision, sourceRevision);
+assert.equal(claudeMaxReview.current_observation.reported_api_equivalent_usd, 1222);
+assert.equal(claudeMaxReview.current_observation.quota_fraction_used, .52);
+assert.equal(claudeMaxReview.current_observation.window_start_date, '2026-09-17');
+assert.deepEqual(claudeMaxReview.current_observation.source_model_ids, ['Opus 4.6', 'Fable 5.1']);
+assert.equal(claudeMaxReview.audit_conclusion.direct_opus_5_measurement, false);
+assert.equal(claudeMaxReview.current_observation.normalization.promotion_correction, 1);
+assert.equal(claudeMaxReview.counterfactual_not_observed.use_as_measured_cost, false);
+
 function pinned(path) {
   if (!cache.has(path)) {
     const raw = execFileSync('git', ['-c', `safe.directory=${rapRoot.replaceAll('\\', '/')}`, '-C', rapRoot, 'show', `${sourceRevision}:${path}`], { maxBuffer: 32e6 });
@@ -71,6 +86,7 @@ const methodLabels = {
   plan_extrapolation: 'Перенос практического измерения между тарифами',
 };
 const calibrationNote = 'API-эквивалент наблюдения делится на долю квоты и приводится к месяцу. Перенос на AA предполагает пропорциональность списания квоты API-стоимости; отдельные внутренние веса подписки этим не доказаны.';
+const claudeProDateCaveat = 'recordedAt 20 сентября — дата аудита RAP, а не подтверждённая дата сеанса Pro. Дополнительная промокоррекция не применяется без основания.';
 const missingWeightsNote = 'Наблюдённый общий объём токенов не задаёт расход квоты на другой смеси. Для цены задачи AA нужны ставки по категориям либо API-стоимость полного замера и соответствующая доля квоты.';
 
 function references(row) {
@@ -251,6 +267,7 @@ const rows = audit.rows.filter(row => !present.has(row.id) && auditedMethods.has
         'Один MED-сеанс; 7% взято из текста автора, недельная полоса на кадре обрезана. Это округлённое наблюдение, не официальный лимит.',
         'Сумма включает Opus 5, небольшую примесь Haiku и web search; их стоимость не вычитается из общего расхода общей квоты.',
         'В исходном сеансе cache write имеет TTL 1 час ($10/M); AA может использовать другой TTL. Полная сумма панели округлена до центов.',
+        claudeProDateCaveat,
       ]);
   }
 
@@ -289,19 +306,29 @@ const rows = audit.rows.filter(row => !present.has(row.id) && auditedMethods.has
     ], [sourceUrl(paths.fablePolicy)]);
   }
   if (row.model_id === 'claude-opus-5' && plan.plan_id.startsWith('claude_max_')) {
-    const item = data.claudeMaxCheck.items.find(item => item.id === 'reddit-audit-two-accounts');
-    assert.match(item.tokens, /21亿=周52%/);
+    const sample = claudeMaxReview.current_observation;
     const multiplier = plan.plan_id === 'claude_max_20x' ? 1 : .5;
     row.evidence_method = multiplier === 1 ? 'calibrated_measurement' : 'plan_extrapolation';
     scenario(row, {
-      observed_api_usd: 2100 * .5, quota_fraction: .52, periods_per_month: 4, plan_multiplier: multiplier,
-      sample_components: [component('Известная часть замера: чтение кэша', 2_100_000_000, .5)],
-    }, 'Claude Max: известны 2.1 млрд токенов чтения кэша за 52% недельной квоты; стоимость восстановлена только для этой категории.', [
-      'Вход, запись кэша и выход отсутствуют в этом срезе. Они не считаются измеренными нулями: их стоимость опущена. При прочих равных это занижает пул и завышает цену задачи.',
-      'Срез относится к неделе после изменения лимитов; дополнительная промопоправка не применяется. Чистота нагрузки и бухгалтерия по Opus-ценам не подтверждены независимо.',
-      multiplier === 1 ? 'Принят Max 20x; исходник — сохранённый пересказ пользовательского наблюдения.' : 'Max 5x получает половину недельного пула Max 20x по принятому RAP отношению; это перенос, а не независимый замер.',
-      'Квота переносится с почти полностью кэшированной нагрузки на состав AA при гипотезе API-пропорционального списания.',
-    ]);
+      observed_api_usd: sample.reported_api_equivalent_usd,
+      quota_fraction: sample.quota_fraction_used,
+      periods_per_month: sample.normalization.four_weeks_multiplier, plan_multiplier: multiplier,
+      quota_assumption: 'unobserved_target_model',
+      source_models: [...sample.source_model_ids], source_model_id_kind: sample.source_model_id_kind,
+      source_model_spend_shares: sample.model_spend_shares,
+      window_start_date: sample.window_start_date, quota_scope: sample.quota_scope,
+      source_review: {path: claudeMaxReviewPath, sha256: claudeMaxReviewHash},
+    }, 'Claude Max 20x: автор сообщает $1222 API-эквивалента за 52% общей недельной квоты. Нагрузка — 93% стоимости Opus 4.6 и 7% Fable 5.1; равный денежный пул для Opus 5 принят как гипотеза.', [
+      'В пересказе RAP потеряно точное название модели: первоисточник называет Opus 4.6, а не Opus 5. Это не прямой замер целевой модели; буквальные названия источника не заменены проверенными API ID.',
+      'Используется полный сообщённый автором API-эквивалент $1222. Таблица округлённых категорий даёт $1223, а её пересчёт по единым указанным Opus-ставкам — $1223.875; суммы не выравниваются. Полной разбивки категорий по моделям и TTL нет.',
+      '$1306 — гипотетическая переоценка кэша Fable по $1/M вместо $0.25/M; это не измеренный расход и не поправка TTL. Она не используется.',
+      'Текущая неделя началась со сброса 17 сентября; дополнительная промопоправка 1.25/1.5 не применяется. Предыдущая неделя пересекала 14 сентября и в этот расчёт не входит.',
+      multiplier === 1 ? 'Исходник — сообщение автора Siigari и его уточнения в той же ветке для одного аккаунта Max 20x.' : 'Max 5x получает половину пула Max 20x по ранее принятой гипотезе RAP; это не официальный коэффициент и не независимый замер Max 5x.',
+      'Для переноса на Opus 5 предполагается равный денежный пул и API-пропорциональность списания на составе AA. Автор не установил надёжного соответствия между API-стоимостью и счётчиком квоты. Доли 93%/7% относятся к API-стоимости; помодельное списание квоты не измерено.',
+    ], [claudeMaxReview.sources.post_url, claudeMaxReview.sources.comments_read_url,
+      claudeMaxReview.sources.model_mix_comment_url, claudeMaxReview.sources.category_table_comment_url,
+      claudeMaxReview.sources.cache_repricing_comment_url]);
+    row.source_urls = unique([claudeMaxReview.sources.post_url, ...row.source_urls]);
   }
   if (plan.plan_id === 'cursor_pro_plus') {
     const item = data.grokCheck.items[0];
@@ -349,7 +376,11 @@ const rows = audit.rows.filter(row => !present.has(row.id) && auditedMethods.has
       extrapolated ? 'Квота получена переносом с другого тарифа, а не независимым замером этой подписки.' : 'Есть связанный практический замер расхода и доли квоты; охват аккаунтов и повторов ограничен.',
       lowSource ? 'Исходный источник RAP также имеет низкую оценку надёжности.' : '',
       calibrationNote,
+      row.id === 'claude_pro::claude-opus-5' ? claudeProDateCaveat : '',
     ])};
+  }
+  if (row.model_id === 'claude-opus-5' && ['claude_pro', 'claude_max_5x', 'claude_max_20x'].includes(plan.plan_id)) {
+    row.quality.reasons = unique([...row.quality.reasons, 'Сравнение Pro и Max использует разные аккаунты и модельные нагрузки; полученное преимущество Pro по цене задачи не подтверждено сопоставимым замером.']);
   }
   row.source_urls = unique(row.source_urls);
   return row;
@@ -426,8 +457,8 @@ for (const planId of ['claude_pro', 'claude_max_5x', 'claude_max_20x']) {
     transfer: {source_pricing_id: sourceId, source_model_id: 'claude-opus-5', confidence: 'medium', assumption_ru: assumption},
     source_urls: sourceUrls,
     notes_ru: [
-      'Перенос имеет среднюю уверенность как гипотеза, а итоговая надёжность не выше исходного замера Opus 5. Эта оценка не подтверждает наличие прямого измерения Opus 5.5.',
-      'Пул восстанавливается по старым ставкам и наблюдениям Opus 5; расходы новых задач — по собственным категориям и ставкам Opus 5.5 из AA.',
+      'Перенос имеет среднюю уверенность как гипотеза, а итоговая надёжность не выше исходного основания Opus 5. Эта оценка не подтверждает наличие прямого измерения Opus 5.5.',
+      planId === 'claude_pro' ? 'Пул восстанавливается по старым ставкам и наблюдениям Opus 5; расходы новых задач — по собственным категориям и ставкам Opus 5.5 из AA.' : 'Денежный пул Opus 5 сам принят по смешанному замеру Opus 4.6/Fable 5.1. Перенос этого условного пула на Opus 5.5 добавляет ещё одну гипотезу; расходы новой модели берутся из её AA-профиля.',
       'Общий бюджет считается доступным одной выбранной модели. Квоты двух Opus внутри одной подписки не суммируются; месячный эквивалент использует четыре недели.',
       'Изменения пятичасовых ограничений при релизе не считаются подтверждённым увеличением недельного денежного пула.',
     ],
@@ -490,13 +521,18 @@ const result = {
     pricing_rows_sha256: rowsHash,
     source_revision: sourceRevision,
     source_sha256: sourceHashes,
+    local_source_reviews: {[claudeMaxReviewPath]: {
+      sha256: claudeMaxReviewHash, retrieved_at: claudeMaxReview.retrieved_at,
+      primary_source_url: claudeMaxReview.sources.post_url,
+      pinned_summary: claudeMaxReview.pinned_summary,
+    }},
     generated_by: 'scripts/build_empirical_evidence.mjs',
     rows: rows.length,
     method_counts: counts,
     method_ru: 'Объёмы для цены задачи берутся только из AA. Связанные замеры дают условную API-калибровку, неполные замеры и сообщения о пулах — отдельные сценарии низкой надёжности с явными допущениями. Общая токенная ёмкость RAP и фиксированная смесь не используются.',
     quality_policy_ru: 'Надёжность оценивается для переноса квоты на нагрузку AA: средняя — связанный замер с API-гипотезой, низкая — неполный/смешанный образец, внутренние денежные единицы, сообщённый пул или перенос между тарифами. Оценка RAP сохраняется отдельно и автоматически не наследуется.',
     period_note_ru: 'Недельные наблюдения приводятся к четырём неделям; это не календарный месяц. Пулы общие для моделей одного тарифа: ёмкости нельзя складывать.',
-    source_policy_ru: 'Снимок pricing и его аудит сохранены. Research и три дополнительные пары Grok 4.7 прочитаны из закреплённого коммита; их точные байты проверяются SHA-256. Три пары Opus 5.5 и шесть пар GPT-6 Sol/Luna добавлены отдельно как гипотезы переноса денежного пула Opus 5 и соответствующих GPT-5.6 Sol/Luna внутри того же тарифа, без выдуманного токенного лимита. Страницы AA новых моделей служат источниками профилей, а не доказательством одинаковых подписочных лимитов.',
+    source_policy_ru: 'Снимок pricing и его аудит сохранены. Research и три дополнительные пары Grok 4.7 прочитаны из закреплённого коммита; их точные байты проверяются SHA-256. Для Claude Max пересказ уточнён отдельным локальным аудитом первоисточника claude-max-source-review.json, с собственным SHA-256 и датой получения в local_source_reviews; закреплённый RAP не переписан. Три пары Opus 5.5 и шесть пар GPT-6 Sol/Luna добавлены отдельно как гипотезы переноса денежного пула Opus 5 и соответствующих GPT-5.6 Sol/Luna внутри того же тарифа, без выдуманного токенного лимита. Страницы AA новых моделей служат источниками профилей, а не доказательством одинаковых подписочных лимитов.',
   },
   rows,
   additional_plans: additionalPlans,

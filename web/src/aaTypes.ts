@@ -28,6 +28,8 @@ export interface EmpiricalBasis {
   };
   calibration?: {
     input_kind?: "reported_monthly_pool";
+    quota_assumption?: "unobserved_target_model";
+    source_models?: string[];
     reported_monthly_pool_usd?: number;
     observed_api_usd?: number;
     quota_fraction?: number;

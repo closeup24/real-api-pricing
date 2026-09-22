@@ -63,9 +63,9 @@ export function adaptAAChart(rows: readonly QuotaRow[], scope: Scope, data: Site
     const cost = row[scope]?.cost_usd;
     if (row.method === "unavailable_quota_weights" || row[scope]?.status === "unavailable" || !finite(cost) || cost < 0 || !finite(row.intelligence_index)) continue;
     const reference = aaReferencePoint(row, data);
-    const quality = aaQuality(row), prefix = aaIsApproximate(row, scope) ? "≈ " : "";
+    const quality = aaQuality(row);
     const point: Point = {
-      ...reference, model_display: prefix + reference.model_display, label: prefix + reference.label,
+      ...reference,
       real_usd_per_mtok: cost,
       cost_assessment: aaAssessment(row, scope),
     };

@@ -48,12 +48,13 @@ export function aaAssessmentColor(score: number | null): string {
   return finite(score) ? `hsl(${Math.max(0, Math.min(100, score)) * 1.2} 32% 52%)` : "#858a91";
 }
 
-function basisScore(row: QuotaRow): {score: number | null; rules: string[]} {
+function basisScore(row: QuotaRow): {score: number | null; rules: string[]; source?: {label: string; score: number}} {
   const category = Object.hasOwn(categories, row.method || "") ? categories[row.method!] : undefined;
   if (row.quality && !levels.includes(row.quality.level)) return {score: null, rules: ["Неизвестна категория надёжности исходных данных."]};
   const quality = aaQuality(row);
   if (!category || quality.level === "unavailable") return {score: null, rules: ["Недостаточно сведений о методе или надёжности основания."]};
   let score = category.base;
+  let sourceBasis: {label: string; score: number} | undefined;
   const rules: string[] = [];
   if (row.method === "empirical_api_calibration") {
     const bases: Record<string, number> = {direct_measurement: 65, pooled_measurements: 70, calibrated_measurement: 60, plan_extrapolation: 45};
@@ -63,6 +64,10 @@ function basisScore(row: QuotaRow): {score: number | null; rules: string[]} {
   } else if (row.method === "empirical_api_scenario") {
     if (row.empirical?.calibration?.input_kind === "reported_monthly_pool" || row.evidence_method === "reported_quota") score = 30;
     rules.push(`Условный сценарий: ${score}/100; точность исходной ёмкости ограничена допущениями.`);
+    if (row.empirical?.calibration?.quota_assumption === "unobserved_target_model") {
+      score = Math.max(0, score - 10);
+      rules.push(`Целевая модель не измерена в исходном образце: за дополнительный перенос денежного пула снимается 10 пунктов. Основание после этой поправки — ${score}/100.`);
+    }
   } else if (row.method === "empirical_model_transfer") {
     const transfer = row.empirical?.transfer;
     if (!transfer || !["empirical_api_calibration", "empirical_api_scenario"].includes(transfer.source_method)) {
@@ -71,12 +76,13 @@ function basisScore(row: QuotaRow): {score: number | null; rules: string[]} {
     const source = basisScore({...row, method: transfer.source_method, quality: transfer.source_quality,
       evidence_method: transfer.source_evidence_method, empirical: transfer.source_empirical});
     if (source.score === null) return {score: null, rules: source.rules};
+    sourceBasis = {label: `${transfer.source_model_name} · ${transfer.source_plan.replace(/\s*\(9\/14\+\)/g, "")}`, score: source.score};
     score = Math.min(55, Math.max(0, source.score - 10));
-    rules.push(`Исходное основание: ${source.score}/100. За непроверенный перенос между моделями снимается 10 пунктов; верхняя граница — 55/100. Это правило рубрики, а не измеренная погрешность.`);
+    rules.push(`Источник квоты: ${sourceBasis.label}, ${source.score}/100. За непроверенный перенос между моделями снимается 10 пунктов; верхняя граница — 55/100. Это правило рубрики, а не измеренная погрешность.`);
   } else rules.push(`Базовая оценка метода: ${score}/100.`);
   const cap = {high: 95, medium: 70, low: 40}[quality.level];
   if (score > cap) rules.push(`Надёжность исходных данных ограничивает результат до ${cap}/100.`);
-  return {score: Math.min(score, cap), rules};
+  return {score: Math.min(score, cap), rules, source: sourceBasis};
 }
 
 export function aaAssessment(row: QuotaRow, scope: Scope = "task"): AAAssessment {
@@ -93,9 +99,16 @@ export function aaAssessment(row: QuotaRow, scope: Scope = "task"): AAAssessment
     score = Math.min(score, 85);
     reasons.push("Стоимость API опубликована AA, но профиль помечен приближённым. Балл ограничен 85/100 из-за условий профиля и восстановления токенов; это не оценка вероятности ошибки в опубликованной сумме.");
   }
+  const transferDescription = basis.source
+    ? `Источник квоты: ${basis.source.label}. Надёжность: ${basis.source.score}/100 → ${score === null ? "нет оценки" : `${score}/100`} после переноса. Равенство денежных квот не измерено.`
+    : undefined;
+  const sample = row.empirical?.calibration;
+  const scenarioDescription = row.method === "empirical_api_scenario" && sample?.quota_assumption === "unobserved_target_model"
+    ? `Образец: ${sample.source_models?.join(" и ") || "другие модели"}. Его денежный пул условно перенесён на ${row.model}; сама целевая модель в этом замере отсутствует.`
+    : undefined;
   return {
     category: category?.name || "Нет оценки", score, color: aaAssessmentColor(score),
-    description: category?.description || "Расчёт не имеет достаточного основания. Отсутствие оценки показано серым и не приравнивается к нулевой стоимости.",
+    description: transferDescription || scenarioDescription || category?.description || "Расчёт не имеет достаточного основания. Отсутствие оценки показано серым и не приравнивается к нулевой стоимости.",
     reasons: unique([...reasons, ...(metric?.notes || [])]),
   };
 }

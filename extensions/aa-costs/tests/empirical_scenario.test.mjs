@@ -1,5 +1,6 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
+import { createHash } from 'node:crypto';
 import { readFile } from 'node:fs/promises';
 import { buildExpandedQuotaScenario } from '../scripts/empirical_scenario.mjs';
 import { buildQuotaScenario, pricingRowsSha256 } from '../scripts/quota_scenario.mjs';
@@ -489,13 +490,13 @@ test('Реальный снимок: Grok 4.7 сохраняет ID и свою 
   }
 });
 
-test('Fable и Opus Max используют частичные наблюдения и явные поправки, а не raw-token ёмкость', async () => {
+test('Fable и Opus Max используют свои денежные основания и явные допущения, а не raw-token ёмкость', async () => {
   const result = calculate(await snapshot());
   const fablePartial = (283_000_000 * .25 + 2_600_000 * 50) / 1e6;
-  const opusPartial = 2_100_000_000 * .5 / 1e6;
+  const opusReported = 1222;
   for (const [model, pool] of [
     ['claude-fable-5.1', fablePartial / .19 * 4 * (2 / 3) * 1.25 * .5],
-    ['claude-opus-5', opusPartial / .52 * 4],
+    ['claude-opus-5', opusReported / .52 * 4],
   ]) {
     const max20 = result.rows.filter(row => row.pricing_id === `claude_max_20x::${model}`);
     const max5 = result.rows.filter(row => row.pricing_id === `claude_max_5x::${model}`);
@@ -504,7 +505,7 @@ test('Fable и Opus Max используют частичные наблюден
     for (const row of [...max20, ...max5]) {
       assert.equal(row.method, 'empirical_api_scenario');
       assert.equal(row.quality.level, 'low');
-      close(row.empirical.calibration.observed_api_usd, model === 'claude-fable-5.1' ? fablePartial : opusPartial);
+      close(row.empirical.calibration.observed_api_usd, model === 'claude-fable-5.1' ? fablePartial : opusReported);
       close(row.monthly_quota, pool * (row.plan_id === 'claude_max_5x' ? .5 : 1));
       const api = result.rows.find(item => item.kind === 'api' && item.source_id === row.source_id);
       for (const scope of ['task', 'suite']) {
@@ -514,6 +515,70 @@ test('Fable и Opus Max используют частичные наблюден
     }
     for (const row of max20) close(row.task.cost_usd, max5.find(item => item.source_id === row.source_id).task.cost_usd);
   }
+});
+
+test('Claude Max: полный сообщённый расход сохраняет чужие модели и аудит; Pro не получает неподтверждённую промокоррекцию', async () => {
+  const data = await snapshot();
+  const result = calculate(data);
+  const reviewPath = 'data/pricing/claude-max-source-review.json';
+  const reviewBytes = await readFile(new URL(`../${reviewPath}`, import.meta.url));
+  const review = JSON.parse(reviewBytes.toString('utf8'));
+  const reviewHash = createHash('sha256').update(reviewBytes).digest('hex');
+  assert.equal(data.evidence.metadata.local_source_reviews[reviewPath].sha256, reviewHash);
+  assert.equal(data.evidence.metadata.local_source_reviews[reviewPath].primary_source_url, review.sources.post_url);
+  for (const [planId, pool] of [['claude_max_5x', 4700], ['claude_max_20x', 9400]]) {
+    for (const row of result.rows.filter(row => row.pricing_id === `${planId}::claude-opus-5`)) {
+      const sample = row.empirical.calibration;
+      close(sample.observed_api_usd, review.current_observation.reported_api_equivalent_usd);
+      close(sample.observed_api_usd, 1222);
+      close(sample.quota_fraction, .52);
+      close(row.monthly_quota, pool);
+      assert.equal(sample.quota_assumption, 'unobserved_target_model');
+      assert.equal(sample.window_start_date, '2026-09-17');
+      assert.deepEqual(sample.source_models, ['Opus 4.6', 'Fable 5.1']);
+      assert.deepEqual(sample.source_model_spend_shares.map(item => item.share), [.93, .07]);
+      assert.deepEqual(sample.source_review, {path: reviewPath, sha256: reviewHash});
+      assert.equal(Object.hasOwn(sample, 'sample_components'), false);
+      assert.equal(Object.hasOwn(sample, 'corrections'), false);
+      assert.equal(row.method, 'empirical_api_scenario');
+      assert.equal(row.quality.level, 'low');
+      assert.ok(row.sources.includes(review.sources.post_url));
+      assert.match(row.notes.join(' '), /\$1306.*гипотетическая/);
+    }
+  }
+  const pro = result.rows.find(row => row.pricing_id === 'claude_pro::claude-opus-5');
+  close(pro.monthly_quota, 25.72 / .07 * 4);
+  assert.equal(pro.evidence_method, 'direct_measurement');
+  assert.equal(pro.quality.level, 'medium');
+  assert.equal(Object.hasOwn(pro.empirical.calibration, 'corrections'), false);
+  assert.match(pro.quality.reasons.join(' '), /recordedAt 20 сентября.*дата аудита.*не подтверждённая дата сеанса/);
+  for (const row of result.rows.filter(row => ['claude-opus-5', 'claude-opus-5.5'].includes(row.model_id) && row.kind === 'subscription')) {
+    assert.match(row.quality.reasons.join(' '), /разные аккаунты и модельные нагрузки.*не подтверждено сопоставимым замером/);
+  }
+});
+
+test('Уточнение Max меняет только 20 строк Opus 5/5.5 Max; остальные цены и профили AA сохраняются', async () => {
+  const data = await snapshot();
+  const oldAnchor = structuredClone(data);
+  const changedPairs = new Set(['claude_max_5x', 'claude_max_20x'].flatMap(plan => ['claude-opus-5', 'claude-opus-5.5'].map(model => `${plan}::${model}`)));
+  for (const planId of ['claude_max_5x', 'claude_max_20x']) {
+    oldAnchor.evidence.rows.find(row => row.id === `${planId}::claude-opus-5`).calibration.observed_api_usd = 1050;
+  }
+  const before = calculate(oldAnchor), after = calculate(data);
+  let changed = 0;
+  for (const row of after.rows) {
+    const previous = before.rows.find(item => item.id === row.id);
+    assert.ok(previous, row.id);
+    assert.deepEqual(row.component_rates, previous.component_rates);
+    for (const scope of ['task', 'suite']) {
+      assert.deepEqual(row[scope].component_tokens, previous[scope].component_tokens);
+      if (changedPairs.has(row.pricing_id)) close(row[scope].cost_usd, previous[scope].cost_usd * 1050 / 1222);
+      else assert.equal(row[scope].cost_usd, previous[scope].cost_usd, row.id);
+    }
+    if (changedPairs.has(row.pricing_id)) changed += 1;
+    else assert.equal(row.monthly_quota, previous.monthly_quota, row.id);
+  }
+  assert.equal(changed, 20);
 });
 
 test('Opus 5.5: пять effort и три тарифа получают прежние денежные пулы с собственной нагрузкой AA', async () => {

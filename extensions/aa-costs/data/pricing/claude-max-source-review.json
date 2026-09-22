@@ -1,0 +1,150 @@
+{
+  "schema_version": 1,
+  "retrieved_at": "2026-09-22T19:15:44Z",
+  "purpose_ru": "Аудит первоисточника Max; этот файл сам по себе не меняет расчёты и не утверждает официальные веса подписки.",
+  "pinned_summary": {
+    "revision": "b7d9efa1f6ac50a5dfe2f6bfddcab9edf0b36c71",
+    "path": "data/research/claude-adoption-round9-2026-09-21.json",
+    "item_id": "reddit-audit-two-accounts"
+  },
+  "sources": {
+    "post_url": "https://www.reddit.com/r/ClaudeCode/comments/1wk3zq5/i_audited_my_session_logs_against_the_usage_meter/",
+    "comments_read_url": "https://www.reddit.com/r/ClaudeCode/comments/1wk3zq5/i_audited_my_session_logs_against_the_usage_meter/?sort=new",
+    "model_mix_comment_url": "https://www.reddit.com/r/ClaudeCode/comments/1wk3zq5/comment/panzsk1/",
+    "cache_repricing_comment_url": "https://www.reddit.com/r/ClaudeCode/comments/1wk3zq5/comment/panxykt/",
+    "category_table_comment_url": "https://www.reddit.com/r/ClaudeCode/comments/1wk3zq5/comment/panzirk/",
+    "author": "Siigari",
+    "comments_author_matches_post": true,
+    "comment_content_access_ru": "Текст комментариев прочитан в странице обсуждения с sort=new; отдельные permalink при проверке возвращали Cache miss.",
+    "exact_post_published_at": null,
+    "exact_comment_published_at": null,
+    "date_limitation_ru": "Страница показывала относительное время публикации; точные timestamps публикации не получены. Даты окна взяты из текста автора."
+  },
+  "current_observation": {
+    "plan": "Claude Max 20x",
+    "monthly_fee_usd": 200,
+    "accounts": 1,
+    "quota_window": "weekly",
+    "quota_scope": "all_models",
+    "quota_percent_used": 52,
+    "quota_fraction_used": 0.52,
+    "quota_is_remaining": false,
+    "window_start_date": "2026-09-17",
+    "reset_time_as_reported": "Thursday 11:00 PT",
+    "elapsed_hours_since_reset": 28,
+    "observation_date_inferred": "2026-09-18",
+    "date_inference_ru": "17 сентября, 11:00 PT, плюс 28 часов даёт 18 сентября, около 15:00 PT; это вывод из длительности окна, не timestamp публикации.",
+    "api_calls_rounded": 5600,
+    "reported_api_equivalent_usd": 1222,
+    "reported_api_equivalent_source": "post_url",
+    "source_model_ids": ["Opus 4.6", "Fable 5.1"],
+    "source_model_id_kind": "literal_reported_names_not_verified_api_ids",
+    "model_spend_shares": [
+      { "source_model_id": "Opus 4.6", "share": 0.93 },
+      { "source_model_id": "Fable 5.1", "share": 0.07 }
+    ],
+    "effort": {
+      "Opus 4.6": "medium",
+      "Fable 5.1": "medium"
+    },
+    "rounded_category_table": {
+      "input_tokens": 10900000,
+      "cache_write_tokens": 12100000,
+      "cache_read_tokens": 2110000000,
+      "output_tokens": 1550000,
+      "reported_input_usd": 54,
+      "reported_cache_write_usd": 75,
+      "reported_cache_read_usd": 1055,
+      "reported_output_usd": 39,
+      "reported_total_usd": 1223,
+      "source": "category_table_comment_url",
+      "per_model_category_split": null,
+      "answer_reasoning_split": null,
+      "cache_write_ttl_split": null
+    },
+    "author_opus_pricing_usd_per_million": {
+      "input": 5,
+      "output": 25,
+      "cache_write": 6.25,
+      "cache_read": 0.5
+    },
+    "fable_sub_observation": {
+      "cache_read_tokens": 112000000,
+      "api_cache_read_usd_per_million": 0.25,
+      "api_cache_read_usd": 28,
+      "reported_api_equivalent_usd_approx": 85,
+      "separate_fable_weekly_percent_used": 16,
+      "separate_fable_weekly_fraction_used": 0.16,
+      "source": "cache_repricing_comment_url",
+      "limitation_ru": "Это отдельный модельный счётчик, не 16% общей квоты; не заменяет общие 52% и не доказывает фиксированный Fable cap."
+    },
+    "normalization": {
+      "four_weeks_multiplier": 4,
+      "promotion_correction": 1,
+      "promotion_reason_ru": "Весь текущий замер начинается после reset 17 сентября, уже после изменения 14 сентября; повторная поправка 1.25/1.5 не применяется.",
+      "monthly_api_equivalent_formula": "1222 / 0.52 * 4",
+      "monthly_api_equivalent_usd": 9400,
+      "max5_plan_multiplier_if_used": 0.5,
+      "max5_derived_monthly_api_equivalent_usd": 4700,
+      "max5_limitation_ru": "В этом первоисточнике нет измерения Max 5x. Множитель 0.5 — отдельная ранее принятая гипотеза межпланового отношения, не результат данного аудита."
+    }
+  },
+  "previous_observation": {
+    "window_start_date": "2026-09-10",
+    "window_end_date": "2026-09-17",
+    "accounts": 2,
+    "api_calls_rounded": 55878,
+    "quota_fraction_total": 2.3,
+    "quota_explanation_ru": "Два аккаунта достигли 100%; одному добавили ещё 30%.",
+    "reported_api_equivalent_usd": 12751,
+    "rounded_category_table": {
+      "input_tokens": 46900000,
+      "cache_write_tokens": 86400000,
+      "cache_read_tokens": 23460000000,
+      "output_tokens": 11100000,
+      "reported_total_usd": 12783
+    },
+    "opus_4_6_spend_share": 0.95,
+    "opus_call_effort_shares": { "high": 0.28, "medium": 0.72 },
+    "fable_effort_as_reported": "medium/high/xhigh",
+    "use_for_current_estimate": false,
+    "limitation_ru": "Окно пересекает дату изменения 14 сентября, объединяет два аккаунта и добавочную квоту. Применять одну промопоправку ко всему окну без детализации нельзя."
+  },
+  "counterfactual_not_observed": {
+    "reported_repriced_api_equivalent_usd": 1306,
+    "original_api_equivalent_usd": 1222,
+    "fable_cache_read_old_usd_per_million": 0.25,
+    "fable_cache_read_hypothetical_usd_per_million": 1,
+    "delta_usd": 84,
+    "formula": "1222 + 112 * (1 - 0.25) = 1306",
+    "same_all_models_quota_fraction": 0.52,
+    "is_ttl_correction": false,
+    "use_as_measured_cost": false,
+    "explanation_ru": "Автор пересчитал Fable cache reads по вымышленному для проверки гипотезы тарифу 0.1x input вместо фактического 0.025x. Это не исправление измеренного расхода и не поправка 1h TTL."
+  },
+  "key_quotes": [
+    {
+      "source": "model_mix_comment_url",
+      "text": "Model mix: Opus 4.6 was 95 percent of spend last week, 93 percent this week. The rest is Fable 5.1."
+    },
+    {
+      "source": "cache_repricing_comment_url",
+      "text": "Whole account goes from $1,222 to $1,306 at list for the same 52 percent on the meter"
+    },
+    {
+      "source": "model_mix_comment_url",
+      "text": "On translating API cost to the limit, no, I don't have a reliable one"
+    }
+  ],
+  "audit_conclusion": {
+    "has_complete_aggregate_categories": true,
+    "has_complete_per_model_categories": false,
+    "has_reported_total_api_cost_for_same_quota": true,
+    "direct_opus_5_measurement": false,
+    "supports_official_api_proportional_quota_weights": false,
+    "recommended_quality": "low",
+    "recommended_interpretation_ru": "При использовании для Opus 5 это сценарий переноса общего пула смешанного аккаунта с Opus 4.6, а не прямой замер Opus 5. Полный сообщённый расход $1222 обоснованнее cache-only $1050, но не повышает надёжность до прямой калибровки.",
+    "rounding_and_consistency_ru": "Пост даёт $1222; таблица автора — $1223. Умножение её округлённых counts на единые указанные ставки Opus даёт $1223.875. Данных для точного воспроизведения смешанного помодельного счёта нет; суммы не следует молча выравнивать. Другой комментарий автора называет input+output $110, хотя строки таблицы дают $93; это дополнительное ограничение внутренней согласованности.",
+    "pro_comparison_ru": "При неизменном Pro anchor 25.72/7%*4 получаем $1469.714; его пул на доллар подписки в 1.564 раза выше Max с $9400, вместо 1.820 раза с cache-only $8076.923. Это условное сравнение разных наблюдений, не доказательство реального тарифного преимущества."
+  }
+}

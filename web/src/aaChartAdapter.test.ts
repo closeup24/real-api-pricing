@@ -142,18 +142,25 @@ test("старые срезы сохраняют четыре уровня на�
   assert.equal(aaQuality(quota({ confidence: "documented", method: "unavailable_quota_weights" })).level, "unavailable");
 });
 
-test("приблизительный сценарий с низкой надёжностью остаётся на обоих графиках с явной отметкой", () => {
+test("приблизительный сценарий сохраняет цветную оценку без префикса у имени", () => {
   const row = quota({ method: "empirical_api_scenario", quality: { level: "low", reasons: ["API-веса списания предположены."] } });
+  row.task!.status = "approximate";
+  row.suite!.status = "approximate";
+  const before = JSON.stringify(row);
   for (const scope of ["task", "suite"] as const) {
     const result = adaptAAChart([row], scope, site());
     assert.equal(result.rows.length, 1);
     assert.equal(result.sourceRows.get(`aa::${row.id}`), row);
     assert.equal(result.rows[0].point.real_usd_per_mtok, row[scope]?.cost_usd);
-    assert.match(result.rows[0].point.model_display, /^≈ /);
+    assert.equal(result.rows[0].point.model_display, "GPT-5.6 Luna · High");
+    assert.equal(result.rows[0].point.label, aaReferencePoint(row, site()).label);
+    assert.doesNotMatch(result.rows[0].point.label, /≈/);
     assert.equal(result.rows[0].point.cost_assessment?.category, "Приблизительный сценарий");
     assert.equal(result.rows[0].point.cost_assessment?.score, 35);
     assert.equal(aaIsApproximate(row, scope), true);
+    assert.equal(row[scope]?.status, "approximate");
   }
+  assert.equal(JSON.stringify(row), before);
   assert.equal(aaIsApproximate(quota({ task: { cost_usd: null }, quality: row.quality }), "task"), false);
 });
 
@@ -187,7 +194,8 @@ test("перенос между моделями получает общую м�
     assert.equal(result.rows[0].point.cost_assessment?.category, "Перенос между моделями");
     assert.equal(result.rows[0].point.cost_assessment?.score, 25);
     assert.equal(result.rows[0].mapping?.variant, "Max");
-    assert.match(result.rows[0].point.model_display, /^≈ Claude Opus 5\.5 · Max$/);
+    assert.equal(result.rows[0].point.model_display, "Claude Opus 5.5 · Max");
+    assert.doesNotMatch(result.rows[0].point.label, /≈/);
     assert.equal(result.sourceRows.get(`aa::${row.id}`), row);
   }
   assert.equal(JSON.stringify(row), before);

@@ -1,5 +1,6 @@
 # Исходные снимки сверяются по SHA-256 байтов; не менять переводы строк при checkout.
 data/pricing/raw/* -text
 data/aa/*.json -text
+data/pricing/claude-max-source-review.json -text
 # Этот файл создаёт нормализатор; он не является исходником в source_sha256.
 data/pricing/raw/aa-api-fallbacks.json text eol=lf
