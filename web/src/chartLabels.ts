@@ -622,10 +622,9 @@ export function buildExportDecorationsFromLayout(
     const hitColor = marks?.hits?.get(g.key);
     const ratingColor = marks?.assessments?.get(g.key) ?? "#858b95";
     const frontier = marks?.frontier?.has(g.key);
-    const frameColor = hitColor ?? ratingColor;
     images.push({
       source: `data:image/svg+xml;charset=utf-8,${encodeURIComponent(
-        `<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 16 16"><circle cx="8" cy="8" r="7.2" fill="white" stroke="${escapeHtml(frameColor)}" stroke-width="2"/><image href="${escapeHtml(src)}" x="3" y="3" width="10" height="10"/>${frontier ? '<circle cx="8" cy="8" r="7.7" fill="none" stroke="#20242a" stroke-width=".7"/>' : ""}${hitColor ? '<circle cx="8" cy="8" r="7.8" fill="none" stroke="' + escapeHtml(hitColor) + '" stroke-width=".8"/>' : ""}</svg>`,
+        `<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 16 16"><circle cx="8" cy="8" r="7.2" fill="white" stroke="${escapeHtml(ratingColor)}" stroke-width="2"/><image href="${escapeHtml(src)}" x="3" y="3" width="10" height="10"/>${frontier ? '<circle cx="8" cy="8" r="7.7" fill="none" stroke="#20242a" stroke-width=".7"/>' : ""}${hitColor ? '<circle cx="8" cy="8" r="7.8" fill="none" stroke="' + escapeHtml(hitColor) + '" stroke-width=".8"/>' : ""}</svg>`,
       )}`,
       xref: "paper",
       yref: "paper",

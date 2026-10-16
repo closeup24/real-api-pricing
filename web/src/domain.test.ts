@@ -853,8 +853,11 @@ test("Exported search marks use the channel colour on badges and labels", () => 
     },
   );
   const svg = images.map((i) => decodeURIComponent(String(i.source)));
-  assert.ok(svg.some((s) => s.includes('stroke="#B65CFF"') && s.includes('stroke-width="1.6"')));
-  assert.ok(svg.some((s) => s.includes('stroke="#20242a"') && s.includes('stroke-width="1"')));
+  // Компактные значки форка: обводка цветом надёжности остаётся у всех,
+  // поиск добавляет кольцо цвета канала, фронтир — тёмное кольцо.
+  assert.ok(svg.every((s) => s.includes('stroke="#858b95" stroke-width="2"')));
+  assert.ok(svg.some((s) => s.includes('stroke="#B65CFF" stroke-width=".8"')));
+  assert.ok(svg.some((s) => s.includes('stroke="#20242a" stroke-width=".7"')));
   assert.equal(
     annotations.find((a) => a.text === "Hit")?.bordercolor,
     "#B65CFF",
