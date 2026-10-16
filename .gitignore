@@ -17,3 +17,18 @@ Thumbs.db
 
 # Private local screenshots.
 /数据快记/
+
+# Rulesync: собранные файлы агентов, backups, cache и личные *.local — только локально
+/.agents/
+/.claude/
+/.cursor/
+/.opencode/
+/CLAUDE.md
+/CLAUDE.local.md
+/.mcp.json
+/opencode.jsonc
+/.rulesync/backups/
+/.rulesync/.cache/
+/.rulesync/skills/.curated/
+/.rulesync/rules/*.local.md
+/rulesync.local.jsonc

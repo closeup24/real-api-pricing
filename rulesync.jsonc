@@ -1,0 +1,10 @@
+{
+  "$schema": "https://github.com/dyoshikawa/rulesync/releases/latest/download/config-schema.json",
+  "targets": {
+    "codexcli": { "rules": true, "skills": true, "mcp": true },
+    "claudecode": { "rules": true, "skills": true, "mcp": true },
+    "opencode": { "rules": true, "skills": true, "mcp": true },
+    "cursor": { "rules": true, "skills": true, "mcp": true }
+  },
+  "delete": false
+}
