@@ -1,8 +1,10 @@
 # Local archive; never publish it (it may contain private diagnostics).
 /_backup/
+/output/
 /tmp/
 /_build/
 /AGENTS.md
+/.codex/
 __pycache__/
 *.py[cod]
 node_modules/

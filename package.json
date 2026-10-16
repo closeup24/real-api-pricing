@@ -3,6 +3,7 @@
   "private": true,
   "license": "MIT",
   "scripts": {
+    "start": "node scripts/start-local.mjs",
     "render": "node scripts/render_svg.cjs"
   },
   "dependencies": {
